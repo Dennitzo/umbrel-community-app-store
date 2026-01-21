@@ -13,7 +13,7 @@ website: https://kaspa.org
 support: https://github.com/kaspanet
 dependencies:
   - rusty-kaspad
-port: 0
+port: 8080
 gallery: []
 path: ""
 defaultUsername: ""
