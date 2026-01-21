@@ -22,9 +22,11 @@ services:
     image: supertypo/simply-kaspa-indexer:latest
     restart: on-failure
     stop_grace_period: 1m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       -u
-      -s ws://${APP_KASPA_NODE_ADDRESS:-10.21.23.2}:${APP_KASPA_NODE_PORT:-17110}
+      -s ws://${APP_KASPA_NODE_ADDRESS:-host.docker.internal}:${APP_KASPA_NODE_PORT:-17110}
       -d postgresql://${APP_KASPA_DB_USER}:${APP_KASPA_DB_PASSWORD}@${APP_KASPA_DB_ADDRESS}:${APP_KASPA_DB_PORT}/${APP_KASPA_DB_NAME}
       --retention=7d
       --exclude-fields=tx_out_script_public_key_address
