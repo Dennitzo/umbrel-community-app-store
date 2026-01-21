@@ -2,7 +2,7 @@ manifestVersion: 1
 id: kaspa-indexer
 category: crypto
 name: Kaspa Indexer
-version: "0.1.4"
+version: "0.1.7"
 tagline: Shared database and indexing for Kaspa UIs
 description: >-
   Provides the shared PostgreSQL database, simply-kaspa-indexer, and transaction
@@ -14,7 +14,7 @@ website: https://kaspa.org
 support: https://github.com/kaspanet
 dependencies:
   - rusty-kaspad
-port: 0
+port: 5001
 gallery: []
 path: ""
 defaultUsername: ""
