@@ -2,12 +2,12 @@ manifestVersion: 1
 id: kaspa-indexer
 category: crypto
 name: Kaspa Indexer
-version: "0.1.3"
+version: "0.1.4"
 tagline: Shared database and indexing for Kaspa UIs
 description: >-
   Provides the shared PostgreSQL database, simply-kaspa-indexer, and transaction
   processor that Kaspa Explorer and companion UIs rely on.
-icon: kaspa-indexer.svg
+icon: https://kaspa.org/wp-content/uploads/2023/06/Kaspa-Icon-Black.svg
 releaseNotes: ""
 developer: Kaspa Community
 website: https://kaspa.org
