@@ -1,5 +1,6 @@
 # Kaspa database and indexing export variables
 export APP_KASPA_DB_ADDRESS="10.21.24.10"
+export APP_KASPA_NODE_ADDRESS="${APP_KASPA_NODE_ADDRESS:-10.21.23.2}"
 export APP_KASPA_DB_PORT="5432"
 export APP_KASPA_DB_NAME="kaspa"
 export APP_KASPA_NODE_PORT="${APP_KASPA_NODE_PORT:-17110}"
