@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kaspa Indexer Logs</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Kaspa Indexer</p>
+          <h1>Live Log Stream</h1>
+          <p class="subtitle">Read the latest output from simply-kaspa-indexer.</p>
+        </div>
+        <div class="meta">
+          <div class="pill" id="status">Loading logs...</div>
+          <div class="timestamp" id="timestamp">Waiting for first fetch</div>
+        </div>
+      </header>
+      <section class="controls">
+        <label>
+          Lines
+          <select id="tail">
+            <option value="200">200</option>
+            <option value="400" selected>400</option>
+            <option value="800">800</option>
+            <option value="2000">2000</option>
+          </select>
+        </label>
+        <button id="refresh">Refresh</button>
+      </section>
+      <section class="log-card">
+        <pre id="log-output">Loading...</pre>
+      </section>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

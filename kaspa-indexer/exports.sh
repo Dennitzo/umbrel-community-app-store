@@ -4,7 +4,7 @@ export APP_KASPA_DB_PORT="5432"
 export APP_KASPA_DB_NAME="kaspa"
 
 KASPA_DB_ENV="${EXPORTS_APP_DIR}/.env"
-mkdir -p "${EXPORTS_APP_DIR}/data"
+mkdir -p "${EXPORTS_APP_DIR}/data/logs"
 
 if [[ ! -f "${KASPA_DB_ENV}" ]]; then
 	APP_KASPA_DB_USER="kaspa"
