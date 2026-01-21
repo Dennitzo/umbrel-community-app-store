@@ -28,6 +28,7 @@ services:
       -u
       -s ws://${APP_KASPA_NODE_ADDRESS:-host.docker.internal}:${APP_KASPA_NODE_PORT:-17110}
       -d postgresql://${APP_KASPA_DB_USER}:${APP_KASPA_DB_PASSWORD}@${APP_KASPA_DB_ADDRESS}:${APP_KASPA_DB_PORT}/${APP_KASPA_DB_NAME}
+      --prune-db
       --retention=7d
       --exclude-fields=tx_out_script_public_key_address
     depends_on:
