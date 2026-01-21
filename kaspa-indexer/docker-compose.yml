@@ -1,13 +1,6 @@
 version: "3.7"
 
 services:
-  app_proxy:
-    profiles:
-      - umbrel
-    environment:
-      APP_HOST: kaspa-indexer_ui_1
-      APP_PORT: 5001
-
   kaspa_db:
     image: postgres:17-alpine
     restart: on-failure
@@ -40,16 +33,6 @@ services:
     networks:
       default:
         ipv4_address: ${APP_KASPA_INDEXER_ADDRESS}
-
-  ui:
-    image: nginx:1.27-alpine
-    restart: on-failure
-    volumes:
-      - ./ui/public:/usr/share/nginx/html:ro
-      - ./ui/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      default:
-        ipv4_address: 10.21.24.13
 
   k-transaction-processor:
     image: thesheepcat/k-transaction-processor:latest
