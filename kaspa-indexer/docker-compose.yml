@@ -2,6 +2,8 @@ version: "3.7"
 
 services:
   app_proxy:
+    profiles:
+      - umbrel
     environment:
       APP_HOST: kaspa-indexer_ui_1
       APP_PORT: 5001
