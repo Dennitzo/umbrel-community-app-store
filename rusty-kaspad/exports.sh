@@ -1,6 +1,0 @@
-# Default IPs/ports for the Kaspa node
-export APP_KASPA_NODE_ADDRESS="10.21.23.2"
-export APP_KASPA_NODE_GRPC_PORT="16110"
-export APP_KASPA_NODE_P2P_PORT="16111"
-export APP_KASPA_NODE_PORT="17110"
-export APP_KASPA_NODE_RPC_PORT="18110"
