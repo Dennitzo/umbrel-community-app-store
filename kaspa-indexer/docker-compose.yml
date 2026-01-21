@@ -1,11 +1,6 @@
 version: "3.7"
 
 services:
-  app_proxy:
-    environment:
-      APP_HOST: kaspa-indexer_kaspa_indexer_ui_1
-      APP_PORT: 8080
-
   kaspa_db:
     image: postgres:17-alpine
     restart: on-failure
@@ -27,7 +22,6 @@ services:
     image: supertypo/simply-kaspa-indexer:latest
     restart: on-failure
     stop_grace_period: 1m
-    tty: true
     command: >
       -u
       -s ws://${APP_KASPA_NODE_ADDRESS}:${APP_KASPA_NODE_PORT}
@@ -39,20 +33,6 @@ services:
     networks:
       default:
         ipv4_address: ${APP_KASPA_INDEXER_ADDRESS}
-
-  kaspa_indexer_ui:
-    build:
-      context: ./ui
-    restart: on-failure
-    environment:
-      SERVICE_NAME: simply_kaspa_indexer
-    depends_on:
-      - simply_kaspa_indexer
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      default:
-        ipv4_address: 10.21.24.13
 
   k-transaction-processor:
     image: thesheepcat/k-transaction-processor:latest
