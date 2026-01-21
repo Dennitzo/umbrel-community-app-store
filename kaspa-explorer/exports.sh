@@ -1,0 +1,10 @@
+# IP assignments for Kaspa Explorer UI services
+export APP_KASPA_EXPLORER_UI_ADDRESS="10.21.24.2"
+export APP_KASPA_REST_SERVER_ADDRESS="10.21.24.3"
+export APP_KASPA_SOCKET_SERVER_ADDRESS="10.21.24.4"
+
+# For other apps that might need to reach the Explorer services directly
+export APP_KASPA_EXPLORER_PORT="8080"
+export APP_KASPA_EXPLORER_API_URI="http://${APP_KASPA_REST_SERVER_ADDRESS}:8000"
+export APP_KASPA_EXPLORER_API_WS_URI="ws://${APP_KASPA_SOCKET_SERVER_ADDRESS}:8000"
+export APP_KASPA_EXPLORER_WS_PORT="8000"
