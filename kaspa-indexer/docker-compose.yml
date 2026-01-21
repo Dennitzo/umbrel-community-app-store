@@ -44,8 +44,6 @@ services:
     build:
       context: ./ui
     restart: on-failure
-    ports:
-      - "8080:8080"
     environment:
       SERVICE_NAME: simply_kaspa_indexer
     depends_on:
