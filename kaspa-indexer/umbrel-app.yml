@@ -14,7 +14,7 @@ website: https://kaspa.org
 support: https://github.com/kaspanet
 dependencies:
   - rusty-kaspad
-port: 0
+port: 4321
 gallery: []
 path: ""
 defaultUsername: ""

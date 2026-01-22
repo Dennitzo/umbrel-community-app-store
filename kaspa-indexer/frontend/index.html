@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Kaspa Indexer Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="kaspa-indexer.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "kaspa-teal": "#14b8a6",
+                        "kaspa-purple": "#c084fc"
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="min-h-screen px-4 py-8 sm:px-6 lg:px-12">
+        <main class="mx-auto max-w-6xl space-y-6">
+            <div class="backdrop-panel">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+                    <img src="kaspa-indexer.svg" alt="Kaspa Indexer" width="72" height="72" class="rounded-2xl border border-white/10 shadow-2xl" />
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.3em] text-zinc-400">Kaspa Indexer</p>
+                        <h1 class="text-3xl font-semibold text-white">Shared database & processing</h1>
+                        <p class="mt-2 text-sm text-zinc-400">
+                            This stack keeps PostgreSQL, simply-kaspa-indexer, and the transaction processor in sync so explorer UIs can rely on a single source of truth.
+                        </p>
+                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                            <span class="glow-pill" id="statusBadge">Loading status</span>
+                            <div class="flex items-center gap-1 text-sm">
+                                <span class="w-3 h-3 rounded-full bg-teal-400 animate-pulse" id="statusDot"></span>
+                                <span id="statusLabel" class="text-zinc-400">Connecting...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div class="stat-card">
+                    <p class="stat-label">Database Size</p>
+                    <p class="stat-value" id="dbSizeValue">--</p>
+                    <p class="stat-sub">Largest sampled table: <span id="largestTableValue">—</span></p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Connected Clients</p>
+                    <p class="stat-value" id="connectedClientsValue">--</p>
+                    <p class="stat-sub">Active connections to PostgreSQL</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Tables Indexed</p>
+                    <p class="stat-value" id="tableCountValue">--</p>
+                    <p class="stat-sub" id="rowSummary">-- rows observed in sample</p>
+                </div>
+            </div>
+
+            <div class="grid gap-6 lg:grid-cols-2">
+                <section class="table-card">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-white">Top Tables</h2>
+                        <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Approximate rows</span>
+                    </div>
+                    <p class="mt-2 text-sm text-zinc-400">
+                        pg_stat_user_tables reports give a snapshot of how many tuples each table is maintaining.
+                    </p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table</th>
+                                <th>Rows</th>
+                                <th>Size</th>
+                                <th>Seq scans</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableStatsBody">
+                            <tr>
+                                <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="stat-card space-y-4">
+                    <h2 class="text-xl font-semibold text-white">Indexer Stack</h2>
+                    <p class="text-sm text-zinc-400">
+                        Every image below collaborates to keep the Kaspa ecosystem searchable: the database, the indexer that consumes block data, and the processor that keeps everything fresh.
+                    </p>
+                    <ul class="stack-list">
+                        <li>
+                            <div>
+                                <p class="text-sm font-semibold text-white">postgres:17-alpine</p>
+                                <p class="text-xs text-zinc-500">Persistent event store</p>
+                            </div>
+                            <span class="stack-badge">Storage</span>
+                        </li>
+                        <li>
+                            <div>
+                                <p class="text-sm font-semibold text-white">supertypo/simply-kaspa-indexer</p>
+                                <p class="text-xs text-zinc-500">Feeds logs into PostgreSQL</p>
+                            </div>
+                            <span class="stack-badge">Indexer</span>
+                        </li>
+                        <li>
+                            <div>
+                                <p class="text-sm font-semibold text-white">thesheepcat/k-transaction-processor</p>
+                                <p class="text-xs text-zinc-500">Post-processing & cleanup</p>
+                            </div>
+                            <span class="stack-badge">Processor</span>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+
+            <div class="last-updated">
+                Last updated: <span id="lastUpdated">never</span>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

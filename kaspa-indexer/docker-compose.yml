@@ -56,3 +56,33 @@ services:
     networks:
       default:
         ipv4_address: ${APP_KASPA_PROCESSOR_ADDRESS}
+
+  indexer-ui-api:
+    build: ./api
+    container_name: kaspa-indexer-ui-api
+    restart: on-failure
+    stop_grace_period: 1m
+    depends_on:
+      - kaspa_db
+    environment:
+      APP_KASPA_DB_ADDRESS: ${APP_KASPA_DB_ADDRESS}
+      APP_KASPA_DB_PORT: ${APP_KASPA_DB_PORT}
+      APP_KASPA_DB_USER: ${APP_KASPA_DB_USER}
+      APP_KASPA_DB_PASSWORD: ${APP_KASPA_DB_PASSWORD}
+      APP_KASPA_DB_NAME: ${APP_KASPA_DB_NAME}
+    networks:
+      default:
+        ipv4_address: ${APP_KASPA_INDEXER_API_ADDRESS}
+
+  frontend:
+    build: ./frontend
+    container_name: kaspa-indexer-ui
+    restart: on-failure
+    stop_grace_period: 1m
+    ports:
+      - "${APP_KASPA_INDEXER_UI_PORT}:${APP_KASPA_INDEXER_UI_PORT}"
+    depends_on:
+      - indexer-ui-api
+    networks:
+      default:
+        ipv4_address: ${APP_KASPA_INDEXER_UI_ADDRESS}
