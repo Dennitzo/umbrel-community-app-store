@@ -164,6 +164,7 @@ class KaspaDatabaseDashboard {
             const text = await response.text();
             this.logBuffer = text ? text.split('\n') : [];
             this.elements.logOutput.textContent = this.logBuffer.join('\n') || 'No logs available yet.';
+            this.elements.logOutput.scrollTop = this.elements.logOutput.scrollHeight;
         } catch (error) {
             console.error(error);
             this.elements.logOutput.textContent = 'Unable to load logs right now.';
