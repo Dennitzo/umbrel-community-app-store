@@ -2,6 +2,8 @@ services:
   k-webserver:
     image: thesheepcat/k-webserver:latest
     restart: on-failure
+    env_file:
+      - ${KASPA_DB_ENV_PATH:-/home/umbrel/umbrel/app-data/kaspa-database/.env}
     environment:
       APP_KASPA_DB_ADDRESS: ${APP_KASPA_DB_ADDRESS:-host.docker.internal}
       APP_KASPA_DB_PORT: ${APP_KASPA_DB_PORT:-5432}
