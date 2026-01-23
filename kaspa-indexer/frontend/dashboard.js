@@ -1,6 +1,7 @@
 class KaspaIndexerDashboard {
     constructor() {
         this.updateInterval = 10000;
+        this.logStream = null;
         this.elements = this.cacheElements();
         this.init();
     }
@@ -161,27 +162,44 @@ class KaspaIndexerDashboard {
         if (!this.elements.logModal) return;
         const title = listItem?.querySelector('p.text-sm.font-semibold')?.textContent || serviceKey;
         this.elements.logModalTitle.textContent = title;
-        this.elements.logOutput.textContent = 'Loading logs...';
+        this.elements.logOutput.textContent = 'Connecting to log stream...';
         this.elements.logModal.classList.add('active');
         this.elements.logModal.setAttribute('aria-hidden', 'false');
 
-        try {
-            const response = await fetch(`/api/logs/${serviceKey}?tail=200`);
-            if (!response.ok) {
-                throw new Error('Log request failed');
-            }
-            const payload = await response.json();
-            this.elements.logOutput.textContent = payload.logs || 'No logs returned.';
-        } catch (error) {
-            console.error(error);
-            this.elements.logOutput.textContent = 'Unable to load logs.';
+        if (this.logStream) {
+            this.logStream.close();
+            this.logStream = null;
         }
+
+        const streamUrl = `/api/logs/${serviceKey}/stream?tail=200`;
+        this.logStream = new EventSource(streamUrl);
+        this.elements.logOutput.textContent = '';
+
+        this.logStream.onmessage = (event) => {
+            this.appendLogLine(event.data);
+        };
+
+        this.logStream.onerror = () => {
+            this.appendLogLine('--- log stream disconnected ---');
+        };
     }
 
     closeLogs() {
         if (!this.elements.logModal) return;
         this.elements.logModal.classList.remove('active');
         this.elements.logModal.setAttribute('aria-hidden', 'true');
+        if (this.logStream) {
+            this.logStream.close();
+            this.logStream = null;
+        }
+    }
+
+    appendLogLine(line) {
+        const current = this.elements.logOutput.textContent;
+        const next = current ? `${current}\n${line}` : line;
+        const maxChars = 20000;
+        this.elements.logOutput.textContent = next.length > maxChars ? next.slice(-maxChars) : next;
+        this.elements.logOutput.scrollTop = this.elements.logOutput.scrollHeight;
     }
 
     formatBytes(value) {

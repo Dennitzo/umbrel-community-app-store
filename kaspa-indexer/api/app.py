@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import docker
 import psycopg2
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
@@ -153,6 +153,32 @@ def service_logs(service_key: str):
         return jsonify({"error": "Unable to fetch logs"}), 503
 
     return jsonify({"service": service_key, "logs": logs.decode("utf-8", errors="replace")})
+
+
+@app.route("/api/logs/<service_key>/stream", methods=["GET"])
+def service_logs_stream(service_key: str):
+    container_name = CONTAINER_MAP.get(service_key)
+    if not container_name:
+        return jsonify({"error": "Unknown service"}), 404
+
+    tail = request.args.get("tail", "200")
+    try:
+        tail = max(1, min(int(tail), 2000))
+    except ValueError:
+        tail = 200
+
+    def event_stream():
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_name)
+            for chunk in container.logs(stream=True, follow=True, tail=tail, timestamps=True):
+                line = chunk.decode("utf-8", errors="replace").rstrip("\n")
+                yield f"data: {line}\n\n"
+        except Exception as exc:  # pragma: no cover - external dependency
+            app.logger.exception("Unable to stream container logs", exc_info=exc)
+            yield "event: error\ndata: Unable to stream logs\n\n"
+
+    return Response(event_stream(), mimetype="text/event-stream")
 
 
 if __name__ == "__main__":
