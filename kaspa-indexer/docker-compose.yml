@@ -3,6 +3,7 @@ version: "3.7"
 services:
   kaspa_db:
     image: postgres:17-alpine
+    container_name: kaspa-indexer-kaspa_db
     restart: on-failure
     stop_grace_period: 1m
     shm_size: 4G
@@ -19,6 +20,7 @@ services:
 
   simply_kaspa_indexer:
     image: supertypo/simply-kaspa-indexer:latest
+    container_name: kaspa-indexer-simply_kaspa_indexer
     restart: on-failure
     stop_grace_period: 1m
     extra_hosts:
@@ -37,6 +39,7 @@ services:
 
   k-transaction-processor:
     image: thesheepcat/k-transaction-processor:latest
+    container_name: kaspa-indexer-k-transaction-processor
     restart: on-failure
     stop_grace_period: 1m
     command: >
