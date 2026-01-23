@@ -2,7 +2,7 @@ services:
   app_proxy:
     environment:
       APP_HOST: frontend
-      APP_PORT: 19110
+      APP_PORT: 19111
     depends_on:
       - frontend
 
@@ -73,7 +73,7 @@ services:
     depends_on:
       - indexer-ui-api
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:19110/ >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:19111/ >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 3s
       retries: 5
