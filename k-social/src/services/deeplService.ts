@@ -54,9 +54,11 @@ export function addTranslationLog(entry: TranslationLogEntry, enabled: boolean):
 export async function translateText({ text, targetLang, apiKey }: TranslateParams): Promise<string> {
   const res = await fetch('/deepl/v2/translate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: `DeepL-Auth-Key ${apiKey}`
+    },
     body: new URLSearchParams({
-      auth_key: apiKey,
       text,
       target_lang: targetLang,
       preserve_formatting: '1',
