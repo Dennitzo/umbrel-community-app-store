@@ -76,8 +76,6 @@ services:
     image: dennitzo/kaspa-database-ui:latest
     restart: on-failure
     stop_grace_period: 1m
-    ports:
-      - "${APP_KASPA_INDEXER_UI_PORT}:${APP_KASPA_INDEXER_UI_PORT}"
     depends_on:
       - indexer-ui-api
     networks:
