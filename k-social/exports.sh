@@ -16,6 +16,15 @@ else
   echo "Missing kaspa-database/exports.sh at ${KASPA_DB_EXPORTS_DIR}" >&2
 fi
 
+# Load DB credentials from the Umbrel app-data .env if present.
+KASPA_DB_ENV_PATH="${KASPA_DB_ENV_PATH:-/home/umbrel/umbrel/app-data/kaspa-database/.env}"
+if [[ -f "${KASPA_DB_ENV_PATH}" ]]; then
+  # shellcheck disable=SC1090
+  source "${KASPA_DB_ENV_PATH}"
+else
+  echo "Missing kaspa-database .env at ${KASPA_DB_ENV_PATH}" >&2
+fi
+
 # Override DB host for local dev to reach kaspa-database via host.docker.internal.
 export APP_KASPA_DB_ADDRESS="host.docker.internal"
 export APP_KASPA_DB_PORT="${APP_KASPA_DB_PORT:-5432}"
