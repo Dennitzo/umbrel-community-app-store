@@ -24,6 +24,8 @@ services:
     image: supertypo/simply-kaspa-indexer:latest
     restart: on-failure
     stop_grace_period: 1m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       -u
       -s ws://${APP_KASPA_NODE_ADDRESS:-host.docker.internal}:${APP_KASPA_NODE_PORT:-17110}
