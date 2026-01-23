@@ -13,7 +13,7 @@ developer: Kaspa Community
 website: https://kaspa.org
 support: https://github.com/kaspanet
 dependencies:
-  - rusty-kaspad
+  - kaspa-node
 port: 19111
 gallery: []
 path: ""
