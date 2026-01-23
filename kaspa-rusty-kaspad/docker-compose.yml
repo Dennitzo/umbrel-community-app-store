@@ -1,7 +1,7 @@
 services:
   app_proxy:
     environment:
-      APP_HOST: elldeeone-kas-rusty-kaspad_frontend_1
+      APP_HOST: kaspa-rusty-kaspad_frontend_1
       APP_PORT: 4321
 
   frontend:
@@ -18,7 +18,7 @@ services:
     environment:
       KASPAD_HOST: kaspad
       KASPAD_RPC_PORT: 18110
-      KASPAD_CONTAINER_NAME: elldeeone-kas-rusty-kaspad_kaspad_1
+      KASPAD_CONTAINER_NAME: kaspa-rusty-kaspad_kaspad_1
     volumes:
       - ${APP_DATA_DIR}/logs:/logs:ro  # For log parsing
     depends_on:
