@@ -5,7 +5,6 @@ class KaspaDatabaseDashboard {
         this.apiTimeout = 30000;
         this.apiBase = this.resolveApiBase();
         this.elements = this.cacheElements();
-        this.hasData = false;
         this.logStream = null;
         this.logBuffer = [];
         this.pollTimer = null;
@@ -26,8 +25,6 @@ class KaspaDatabaseDashboard {
             logModal: document.getElementById('logModal'),
             logOutput: document.getElementById('logOutput'),
             logServiceLabel: document.getElementById('logServiceLabel'),
-            loadingScreen: document.getElementById('loadingScreen'),
-            appRoot: document.getElementById('appRoot'),
         };
     }
 
@@ -51,8 +48,7 @@ class KaspaDatabaseDashboard {
 
             const data = await response.json();
             this.render(data);
-            this.updateStatus(true, 'Indexer connected');
-            this.markReady();
+            this.updateStatus(true, 'Synced with API');
             this.scheduleNext(this.updateInterval);
         } catch (error) {
             clearTimeout(timeoutId);
@@ -87,19 +83,6 @@ class KaspaDatabaseDashboard {
             clearTimeout(this.pollTimer);
         }
         this.pollTimer = setTimeout(() => this.fetchData(), delayMs);
-    }
-
-    markReady() {
-        if (this.hasData) {
-            return;
-        }
-        this.hasData = true;
-        if (this.elements.loadingScreen) {
-            this.elements.loadingScreen.classList.add('is-hidden');
-        }
-        if (this.elements.appRoot) {
-            this.elements.appRoot.classList.remove('is-hidden');
-        }
     }
 
     bindLogLinks() {
@@ -231,20 +214,18 @@ class KaspaDatabaseDashboard {
             this.elements.statusBadge.textContent = 'Offline';
             this.elements.statusBadge.style.borderColor = 'rgba(248, 113, 113, 0.7)';
             this.elements.statusBadge.style.backgroundColor = 'rgba(248, 113, 113, 0.15)';
-            this.elements.statusLabel.textContent = 'Unable to reach API';
+            this.elements.statusLabel.textContent = 'Waiting for API response';
             this.elements.statusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
-            if (!this.hasData) {
-                this.elements.dbSizeValue.textContent = '--';
-                this.elements.connectedClientsValue.textContent = '--';
-                this.elements.tableCountValue.textContent = '--';
-                this.elements.rowSummary.textContent = 'Waiting for connection...';
-                this.elements.largestTableValue.textContent = '—';
-                this.elements.tableStatsBody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
-                    </tr>
-                `;
-            }
+            this.elements.dbSizeValue.textContent = '--';
+            this.elements.connectedClientsValue.textContent = '--';
+            this.elements.tableCountValue.textContent = '--';
+            this.elements.rowSummary.textContent = 'Waiting for connection...';
+            this.elements.largestTableValue.textContent = '—';
+            this.elements.tableStatsBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+                </tr>
+            `;
         }
     }
 
