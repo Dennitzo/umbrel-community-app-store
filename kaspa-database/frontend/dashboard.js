@@ -1,6 +1,7 @@
 class KaspaDatabaseDashboard {
     constructor() {
         this.updateInterval = 10000;
+        this.apiBase = this.resolveApiBase();
         this.elements = this.cacheElements();
         this.init();
     }
@@ -27,7 +28,7 @@ class KaspaDatabaseDashboard {
 
     async fetchData() {
         try {
-            const response = await fetch(`/api/status?t=${Date.now()}`);
+            const response = await fetch(this.buildApiUrl(`/api/status?t=${Date.now()}`));
 
             if (!response.ok) {
                 throw new Error('API returned an unexpected status');
@@ -40,6 +41,26 @@ class KaspaDatabaseDashboard {
             console.error(error);
             this.handleError();
         }
+    }
+
+    resolveApiBase() {
+        const params = new URLSearchParams(window.location.search);
+        const origin = params.get('origin');
+        const app = params.get('app');
+
+        if (!origin || !app) {
+            return '';
+        }
+
+        return `${window.location.origin}/?origin=${encodeURIComponent(origin)}&app=${encodeURIComponent(app)}&path=`;
+    }
+
+    buildApiUrl(path) {
+        if (!this.apiBase) {
+            return path;
+        }
+
+        return `${this.apiBase}${encodeURIComponent(path)}`;
     }
 
     render(payload) {
