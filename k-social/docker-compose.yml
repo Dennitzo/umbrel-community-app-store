@@ -2,6 +2,9 @@ services:
   k-webserver:
     image: thesheepcat/k-webserver:latest
     restart: on-failure
+    environment:
+      APP_KASPA_DB_ADDRESS: ${APP_KASPA_DB_ADDRESS:-host.docker.internal}
+      APP_KASPA_DB_PORT: ${APP_KASPA_DB_PORT:-5432}
     command: >
       --db-host ${APP_KASPA_DB_ADDRESS:-host.docker.internal}
       --db-port ${APP_KASPA_DB_PORT:-5432}
@@ -20,17 +23,17 @@ services:
     depends_on:
       - k-webserver
     environment:
-      APP_K_SOCIAL_PORT: ${APP_K_SOCIAL_PORT:-5173}
+      APP_K_SOCIAL_PORT: 5173
       APP_K_SOCIAL_KWEBSERVER_API_URI: http://k-webserver:${APP_K_SOCIAL_KWEBSERVER_PORT:-3001}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "${APP_K_SOCIAL_PORT:-5173}:${APP_K_SOCIAL_PORT:-5173}"
+      - "5173:5173"
     volumes:
       - ./:/app
       - k_social_node_modules:/app/node_modules
     command: >
-      sh -lc "npm install --legacy-peer-deps && npm run dev -- --host 0.0.0.0 --port ${APP_K_SOCIAL_PORT:-5173}"
+      sh -lc "npm install --legacy-peer-deps && npm run dev -- --host 0.0.0.0 --port 5173"
 
 volumes:
   k_social_node_modules:
