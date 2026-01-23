@@ -1,27 +1,8 @@
-version: "3.7"
-
 services:
   app_proxy:
     environment:
       APP_HOST: k-social_web_1
       APP_PORT: ${APP_K_SOCIAL_PORT}
-
-  k-transaction-processor:
-    image: thesheepcat/k-transaction-processor:latest
-    restart: on-failure
-    stop_grace_period: 1m
-    command: >
-      --upgrade-db
-      --network ${APP_KASPA_NETWORK}
-      --db-host ${APP_KASPA_DB_ADDRESS}
-      --db-port ${APP_KASPA_DB_PORT}
-      --db-name ${APP_KASPA_DB_NAME}
-      --db-user ${APP_KASPA_DB_USER}
-      --db-password ${APP_KASPA_DB_PASSWORD}
-      --workers 4
-    networks:
-      default:
-        ipv4_address: ${APP_K_SOCIAL_PROCESSOR_ADDRESS}
 
   k-webserver:
     image: thesheepcat/k-webserver:latest
@@ -34,8 +15,8 @@ services:
       --db-user ${APP_KASPA_DB_USER}
       --db-password ${APP_KASPA_DB_PASSWORD}
       --bind-address 0.0.0.0:${APP_K_SOCIAL_KWEBSERVER_PORT}
-    depends_on:
-      - k-transaction-processor
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       default:
         ipv4_address: ${APP_K_SOCIAL_KWEBSERVER_ADDRESS}
@@ -49,6 +30,8 @@ services:
     environment:
       APP_K_SOCIAL_PORT: ${APP_K_SOCIAL_PORT}
       APP_K_SOCIAL_KWEBSERVER_API_URI: http://${APP_K_SOCIAL_KWEBSERVER_ADDRESS}:${APP_K_SOCIAL_KWEBSERVER_PORT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       default:
         ipv4_address: ${APP_K_SOCIAL_WEB_ADDRESS}
