@@ -1,8 +1,8 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY K/package*.json ./
+COPY package*.json ./
 RUN npm install --legacy-peer-deps
-COPY K ./
+COPY . ./
 
 FROM node:20-alpine
 WORKDIR /app
