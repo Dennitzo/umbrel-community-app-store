@@ -1,12 +1,14 @@
 class KaspaDatabaseDashboard {
     constructor() {
         this.updateInterval = 10000;
+        this.retryInterval = 5000;
+        this.apiTimeout = 30000;
         this.apiBase = this.resolveApiBase();
         this.elements = this.cacheElements();
-        this.statusStream = null;
         this.hasData = false;
         this.logStream = null;
         this.logBuffer = [];
+        this.pollTimer = null;
         this.init();
     }
 
@@ -30,33 +32,34 @@ class KaspaDatabaseDashboard {
     }
 
     init() {
-        this.startStatusStream();
+        this.fetchData();
         this.bindLogLinks();
     }
 
-    startStatusStream() {
-        if (this.statusStream) {
-            this.statusStream.close();
-        }
-        const intervalSeconds = Math.max(5, Math.round(this.updateInterval / 1000));
-        const url = this.buildApiUrl(`/api/status/stream?interval=${intervalSeconds}`);
-        this.statusStream = new EventSource(url);
-        this.statusStream.onmessage = (event) => {
-            if (!event.data) {
-                return;
+    async fetchData() {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.apiTimeout);
+        try {
+            const response = await fetch(this.buildApiUrl(`/api/status?t=${Date.now()}`), {
+                signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error('API returned an unexpected status');
             }
-            try {
-                const data = JSON.parse(event.data);
-                this.render(data);
-                this.updateStatus(true, 'Indexer connected');
-                this.markReady();
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        this.statusStream.onerror = () => {
+
+            const data = await response.json();
+            this.render(data);
+            this.updateStatus(true, 'Indexer connected');
+            this.markReady();
+            this.scheduleNext(this.updateInterval);
+        } catch (error) {
+            clearTimeout(timeoutId);
+            console.error(error);
             this.updateStatus(false);
-        };
+            this.scheduleNext(this.retryInterval);
+        }
     }
 
     resolveApiBase() {
@@ -77,6 +80,13 @@ class KaspaDatabaseDashboard {
         }
 
         return `${this.apiBase}${encodeURIComponent(path)}`;
+    }
+
+    scheduleNext(delayMs) {
+        if (this.pollTimer) {
+            clearTimeout(this.pollTimer);
+        }
+        this.pollTimer = setTimeout(() => this.fetchData(), delayMs);
     }
 
     markReady() {

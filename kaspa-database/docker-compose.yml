@@ -1,13 +1,4 @@
 services:
-  app_proxy:
-    environment:
-      APP_HOST: frontend
-      APP_PORT: 19111
-    depends_on:
-      - frontend
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
   kaspa_db:
     image: postgres:17-alpine
     restart: on-failure
@@ -80,3 +71,5 @@ services:
       - indexer-ui-api
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    ports:
+      - "19111:19111"
