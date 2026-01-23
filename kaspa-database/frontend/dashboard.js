@@ -1,6 +1,7 @@
 class KaspaDatabaseDashboard {
     constructor() {
         this.updateInterval = 10000;
+        this.apiTimeout = 30000;
         this.apiBase = this.resolveApiBase();
         this.elements = this.cacheElements();
         this.logStream = null;
@@ -32,7 +33,12 @@ class KaspaDatabaseDashboard {
 
     async fetchData() {
         try {
-            const response = await fetch(this.buildApiUrl(`/api/status?t=${Date.now()}`));
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), this.apiTimeout);
+            const response = await fetch(this.buildApiUrl(`/api/status?t=${Date.now()}`), {
+                signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 throw new Error('API returned an unexpected status');
