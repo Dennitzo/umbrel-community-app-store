@@ -7,6 +7,8 @@ class KaspaDatabaseDashboard {
         this.elements = this.cacheElements();
         this.logStream = null;
         this.logBuffer = [];
+        this.logPollTimer = null;
+        this.activeLogService = null;
         this.pollTimer = null;
         this.init();
     }
@@ -25,6 +27,7 @@ class KaspaDatabaseDashboard {
             logModal: document.getElementById('logModal'),
             logOutput: document.getElementById('logOutput'),
             logServiceLabel: document.getElementById('logServiceLabel'),
+            lastUpdated: document.getElementById('lastUpdated'),
         };
     }
 
@@ -118,22 +121,13 @@ class KaspaDatabaseDashboard {
 
         this.closeLogStream();
         this.logBuffer = [];
+        this.activeLogService = service;
         this.elements.logServiceLabel.textContent = label;
         this.elements.logOutput.textContent = 'Connecting to live logs...';
         this.elements.logModal.classList.add('is-open');
         this.elements.logModal.setAttribute('aria-hidden', 'false');
 
-        const url = this.buildApiUrl(`/api/logs/${encodeURIComponent(service)}`);
-        this.logStream = new EventSource(url);
-        this.logStream.onmessage = (event) => {
-            if (!event.data) {
-                return;
-            }
-            this.appendLogLine(event.data);
-        };
-        this.logStream.onerror = () => {
-            this.appendLogLine('--- connection lost ---');
-        };
+        this.fetchLogs();
     }
 
     closeLogStream() {
@@ -141,9 +135,42 @@ class KaspaDatabaseDashboard {
             this.logStream.close();
             this.logStream = null;
         }
+        if (this.logPollTimer) {
+            clearTimeout(this.logPollTimer);
+            this.logPollTimer = null;
+        }
+        this.activeLogService = null;
         if (this.elements.logModal) {
             this.elements.logModal.classList.remove('is-open');
             this.elements.logModal.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    async fetchLogs() {
+        if (!this.activeLogService) {
+            return;
+        }
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            const response = await fetch(
+                this.buildApiUrl(`/api/logs/${encodeURIComponent(this.activeLogService)}?tail=200`),
+                { signal: controller.signal }
+            );
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                throw new Error('Log fetch failed');
+            }
+            const text = await response.text();
+            this.logBuffer = text ? text.split('\n') : [];
+            this.elements.logOutput.textContent = this.logBuffer.join('\n') || 'No logs available yet.';
+        } catch (error) {
+            console.error(error);
+            this.elements.logOutput.textContent = 'Unable to load logs right now.';
+        } finally {
+            if (this.activeLogService) {
+                this.logPollTimer = setTimeout(() => this.fetchLogs(), 3000);
+            }
         }
     }
 
@@ -176,6 +203,16 @@ class KaspaDatabaseDashboard {
 
         this.populateTableStats(payload.tableStats || []);
 
+        if (this.elements.lastUpdated) {
+            if (payload.timestamp) {
+                const updatedAt = new Date(payload.timestamp);
+                this.elements.lastUpdated.textContent = Number.isNaN(updatedAt.getTime())
+                    ? new Date().toLocaleString()
+                    : updatedAt.toLocaleString();
+            } else {
+                this.elements.lastUpdated.textContent = new Date().toLocaleString();
+            }
+        }
     }
 
     populateTableStats(stats) {
@@ -226,6 +263,9 @@ class KaspaDatabaseDashboard {
                     <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
                 </tr>
             `;
+            if (this.elements.lastUpdated) {
+                this.elements.lastUpdated.textContent = '--';
+            }
         }
     }
 

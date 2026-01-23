@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timezone
 
 import psycopg2
-from flask import Flask, Response, jsonify, request, stream_with_context
+from flask import Flask, Response, jsonify, request
 from psycopg2.extras import RealDictCursor
 import docker
 
@@ -197,31 +197,26 @@ def logs(service: str):
         return jsonify({"error": "Unable to locate container"}), 404
 
     tail = request.args.get("tail", "200")
+    since = request.args.get("since")
     try:
         tail_count = max(10, min(int(tail), 500))
     except ValueError:
         tail_count = 200
+    try:
+        since_value = int(since) if since else None
+    except ValueError:
+        since_value = None
 
-    def generate():
-        yield f"data: connected to {LOG_SERVICES[service]}\n\n"
-        try:
-            for raw_line in container.logs(stream=True, follow=True, tail=tail_count):
-                line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
-                line = _strip_ansi(line)
-                if not line:
-                    continue
-                yield f"data: {line}\n\n"
-        except Exception as exc:
-            app.logger.exception("Log stream error", exc_info=exc)
-            payload = json.dumps({"error": "log stream interrupted"})
-            yield f"event: error\ndata: {payload}\n\n"
+    try:
+        raw_logs = container.logs(stream=False, follow=False, tail=tail_count, since=since_value)
+    except Exception as exc:
+        app.logger.exception("Log fetch error", exc_info=exc)
+        return jsonify({"error": "Unable to fetch logs"}), 503
 
-    headers = {
-        "Cache-Control": "no-cache",
-        "Content-Type": "text/event-stream",
-        "X-Accel-Buffering": "no",
-    }
-    return Response(stream_with_context(generate()), headers=headers)
+    text = raw_logs.decode("utf-8", errors="replace")
+    lines = [_strip_ansi(line) for line in text.splitlines()]
+    payload = "\n".join(line for line in lines if line)
+    return Response(payload, mimetype="text/plain")
 
 
 
