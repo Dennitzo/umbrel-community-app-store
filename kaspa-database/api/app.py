@@ -25,10 +25,10 @@ ORDER BY n_live_tup DESC
 LIMIT 6
 """
 
-CONTAINER_MAP = {
-    "postgres": "kaspa-database-kaspa_db",
-    "indexer": "kaspa-database-simply_kaspa_indexer",
-    "processor": "kaspa-database-k-transaction-processor",
+SERVICE_MAP = {
+    "postgres": "kaspa_db",
+    "indexer": "simply_kaspa_indexer",
+    "processor": "k-transaction-processor",
 }
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
@@ -107,6 +107,21 @@ def _collect_stats() -> dict:
     }
 
 
+def _get_container(service_key: str):
+    service_name = SERVICE_MAP.get(service_key)
+    if not service_name:
+        return None
+
+    project = os.environ.get("COMPOSE_PROJECT_NAME") or os.environ.get("APP_ID")
+    filters = {"label": [f"com.docker.compose.service={service_name}"]}
+    if project:
+        filters["label"].append(f"com.docker.compose.project={project}")
+
+    client = docker.from_env()
+    containers = client.containers.list(all=True, filters=filters)
+    return containers[0] if containers else None
+
+
 @app.after_request
 def do_not_cache(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -137,8 +152,8 @@ def healthz():  # pragma: no cover - trivial endpoint
 
 @app.route("/api/logs/<service_key>", methods=["GET"])
 def service_logs(service_key: str):
-    container_name = CONTAINER_MAP.get(service_key)
-    if not container_name:
+    container = _get_container(service_key)
+    if not container:
         return jsonify({"error": "Unknown service"}), 404
 
     tail = request.args.get("tail", "200")
@@ -148,8 +163,6 @@ def service_logs(service_key: str):
         tail = 200
 
     try:
-        client = docker.from_env()
-        container = client.containers.get(container_name)
         logs = container.logs(tail=tail, timestamps=True)
     except Exception as exc:  # pragma: no cover - external dependency
         app.logger.exception("Unable to fetch container logs", exc_info=exc)
@@ -161,8 +174,8 @@ def service_logs(service_key: str):
 
 @app.route("/api/logs/<service_key>/stream", methods=["GET"])
 def service_logs_stream(service_key: str):
-    container_name = CONTAINER_MAP.get(service_key)
-    if not container_name:
+    container = _get_container(service_key)
+    if not container:
         return jsonify({"error": "Unknown service"}), 404
 
     tail = request.args.get("tail", "200")
@@ -173,8 +186,6 @@ def service_logs_stream(service_key: str):
 
     def event_stream():
         try:
-            client = docker.from_env()
-            container = client.containers.get(container_name)
             for chunk in container.logs(stream=True, follow=True, tail=tail, timestamps=True):
                 line = chunk.decode("utf-8", errors="replace").rstrip("\n")
                 line = ANSI_ESCAPE_RE.sub("", line)
