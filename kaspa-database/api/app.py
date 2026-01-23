@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import time
 from datetime import datetime, timezone
 
@@ -13,6 +14,8 @@ app = Flask(__name__)
 app.config["JSON_SORT_KEYS"] = False
 logging.basicConfig(level=logging.INFO)
 docker_client = docker.from_env()
+
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 LOG_SERVICES = {
     "kaspa_db": "postgres:17-alpine",
@@ -119,6 +122,9 @@ def _resolve_container(service: str):
         return containers[0]
     raise LookupError(f"Container not found for service: {service}")
 
+def _strip_ansi(value: str) -> str:
+    return ANSI_ESCAPE_RE.sub("", value)
+
 
 
 @app.after_request
@@ -201,6 +207,7 @@ def logs(service: str):
         try:
             for raw_line in container.logs(stream=True, follow=True, tail=tail_count):
                 line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
+                line = _strip_ansi(line)
                 if not line:
                     continue
                 yield f"data: {line}\n\n"
