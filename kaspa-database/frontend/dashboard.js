@@ -23,7 +23,6 @@ class KaspaDatabaseDashboard {
 
     init() {
         this.fetchData();
-        setInterval(() => this.fetchData(), this.updateInterval);
     }
 
     async fetchData() {
