@@ -16,6 +16,10 @@ else
   echo "Missing kaspa-database/exports.sh at ${KASPA_DB_EXPORTS_DIR}" >&2
 fi
 
+# Override DB host for local dev to reach kaspa-database via host.docker.internal.
+export APP_KASPA_DB_ADDRESS="host.docker.internal"
+export APP_KASPA_DB_PORT="${APP_KASPA_DB_PORT:-5432}"
+
 required_vars=(
   APP_KASPA_DB_ADDRESS
   APP_KASPA_DB_PORT
