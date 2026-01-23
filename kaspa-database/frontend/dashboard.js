@@ -1,4 +1,4 @@
-class KaspaIndexerDashboard {
+class KaspaDatabaseDashboard {
     constructor() {
         this.updateInterval = 10000;
         this.logStream = null;
@@ -229,5 +229,5 @@ class KaspaIndexerDashboard {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    new KaspaIndexerDashboard();
+    new KaspaDatabaseDashboard();
 });

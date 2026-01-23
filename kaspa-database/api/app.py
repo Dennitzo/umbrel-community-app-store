@@ -25,9 +25,9 @@ LIMIT 6
 """
 
 CONTAINER_MAP = {
-    "postgres": "kaspa-indexer-kaspa_db",
-    "indexer": "kaspa-indexer-simply_kaspa_indexer",
-    "processor": "kaspa-indexer-k-transaction-processor",
+    "postgres": "kaspa-database-kaspa_db",
+    "indexer": "kaspa-database-simply_kaspa_indexer",
+    "processor": "kaspa-database-k-transaction-processor",
 }
 
 

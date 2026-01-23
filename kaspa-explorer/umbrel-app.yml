@@ -14,7 +14,7 @@ website: https://kaspa.org
 support: https://github.com/kaspanet
 dependencies:
   - rusty-kaspad
-  - kaspa-indexer
+  - kaspa-database
 port: 8080
 gallery: []
 path: ""

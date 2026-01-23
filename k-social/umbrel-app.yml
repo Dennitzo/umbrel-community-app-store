@@ -7,14 +7,14 @@ tagline: Social hub for Kaspa built on the K web experience
 description: >-
   K-Social pairs the K web client with the Thesheepcat Kaspa backend services so
   the community can browse transactions, stats, and chat through the Node.js UI.
-  This app depends on the shared Rusty Kaspad node and Kaspa Indexer services.
+  This app depends on the shared Rusty Kaspad node and Kaspa Database services.
 releaseNotes: ""
 developer: Kaspa Community
 website: https://k.social
 support: https://github.com/kaspanet
 dependencies:
   - rusty-kaspad
-  - kaspa-indexer
+  - kaspa-database
 port: 8090
 gallery: []
 path: ""
