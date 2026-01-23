@@ -17,10 +17,16 @@ class KaspaIndexerDashboard {
             statusBadge: document.getElementById('statusBadge'),
             statusLabel: document.getElementById('statusLabel'),
             statusDot: document.getElementById('statusDot'),
+            logButtons: document.querySelectorAll('.log-button'),
+            logModal: document.getElementById('logModal'),
+            logModalTitle: document.getElementById('logModalTitle'),
+            logModalClose: document.getElementById('logModalClose'),
+            logOutput: document.getElementById('logOutput'),
         };
     }
 
     init() {
+        this.bindLogButtons();
         this.fetchData();
         setInterval(() => this.fetchData(), this.updateInterval);
     }
@@ -127,6 +133,55 @@ class KaspaIndexerDashboard {
 
     handleError() {
         this.updateStatus(false);
+    }
+
+    bindLogButtons() {
+        this.elements.logButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const target = button.getAttribute('data-log-target');
+                if (!target) return;
+                this.openLogs(target, button.closest('li'));
+            });
+        });
+
+        if (this.elements.logModalClose) {
+            this.elements.logModalClose.addEventListener('click', () => this.closeLogs());
+        }
+
+        if (this.elements.logModal) {
+            this.elements.logModal.addEventListener('click', (event) => {
+                if (event.target === this.elements.logModal) {
+                    this.closeLogs();
+                }
+            });
+        }
+    }
+
+    async openLogs(serviceKey, listItem) {
+        if (!this.elements.logModal) return;
+        const title = listItem?.querySelector('p.text-sm.font-semibold')?.textContent || serviceKey;
+        this.elements.logModalTitle.textContent = title;
+        this.elements.logOutput.textContent = 'Loading logs...';
+        this.elements.logModal.classList.add('active');
+        this.elements.logModal.setAttribute('aria-hidden', 'false');
+
+        try {
+            const response = await fetch(`/api/logs/${serviceKey}?tail=200`);
+            if (!response.ok) {
+                throw new Error('Log request failed');
+            }
+            const payload = await response.json();
+            this.elements.logOutput.textContent = payload.logs || 'No logs returned.';
+        } catch (error) {
+            console.error(error);
+            this.elements.logOutput.textContent = 'Unable to load logs.';
+        }
+    }
+
+    closeLogs() {
+        if (!this.elements.logModal) return;
+        this.elements.logModal.classList.remove('active');
+        this.elements.logModal.setAttribute('aria-hidden', 'true');
     }
 
     formatBytes(value) {

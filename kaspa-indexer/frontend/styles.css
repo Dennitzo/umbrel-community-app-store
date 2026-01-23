@@ -139,6 +139,75 @@ body {
     color: #a7f3d0;
 }
 
+.log-button {
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.7);
+    color: #e2e8f0;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.log-button:hover {
+    border-color: rgba(56, 189, 248, 0.8);
+    color: #7dd3fc;
+}
+
+.log-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 50;
+}
+
+.log-modal.active {
+    display: flex;
+}
+
+.log-modal-card {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    width: min(960px, 100%);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.log-modal-close {
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #e2e8f0;
+}
+
+.log-modal-close:hover {
+    border-color: rgba(248, 113, 113, 0.8);
+    color: #fca5a5;
+}
+
+.log-output {
+    background: rgba(2, 6, 23, 0.8);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: #e2e8f0;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
 .last-updated {
     text-align: center;
     color: var(--text-muted);

@@ -2,8 +2,9 @@ import logging
 import os
 from datetime import datetime, timezone
 
+import docker
 import psycopg2
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
@@ -22,6 +23,12 @@ FROM pg_stat_user_tables
 ORDER BY n_live_tup DESC
 LIMIT 6
 """
+
+CONTAINER_MAP = {
+    "postgres": "kaspa-indexer-kaspa_db",
+    "indexer": "kaspa-indexer-simply_kaspa_indexer",
+    "processor": "kaspa-indexer-k-transaction-processor",
+}
 
 
 def _env(name: str, default: str | None = None) -> str:
@@ -123,6 +130,29 @@ def status():
 @app.route("/api/healthz", methods=["GET"])
 def healthz():  # pragma: no cover - trivial endpoint
     return jsonify({"status": "ok"})
+
+
+@app.route("/api/logs/<service_key>", methods=["GET"])
+def service_logs(service_key: str):
+    container_name = CONTAINER_MAP.get(service_key)
+    if not container_name:
+        return jsonify({"error": "Unknown service"}), 404
+
+    tail = request.args.get("tail", "200")
+    try:
+        tail = max(1, min(int(tail), 2000))
+    except ValueError:
+        tail = 200
+
+    try:
+        client = docker.from_env()
+        container = client.containers.get(container_name)
+        logs = container.logs(tail=tail, timestamps=True)
+    except Exception as exc:  # pragma: no cover - external dependency
+        app.logger.exception("Unable to fetch container logs", exc_info=exc)
+        return jsonify({"error": "Unable to fetch logs"}), 503
+
+    return jsonify({"service": service_key, "logs": logs.decode("utf-8", errors="replace")})
 
 
 if __name__ == "__main__":

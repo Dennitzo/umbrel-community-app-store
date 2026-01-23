@@ -101,21 +101,30 @@
                                 <p class="text-sm font-semibold text-white">postgres:17-alpine</p>
                                 <p class="text-xs text-zinc-500">Persistent event store</p>
                             </div>
-                            <span class="stack-badge">Storage</span>
+                            <div class="flex items-center gap-2">
+                                <span class="stack-badge">Storage</span>
+                                <button class="log-button" data-log-target="postgres">View logs</button>
+                            </div>
                         </li>
                         <li>
                             <div>
                                 <p class="text-sm font-semibold text-white">supertypo/simply-kaspa-indexer</p>
                                 <p class="text-xs text-zinc-500">Feeds logs into PostgreSQL</p>
                             </div>
-                            <span class="stack-badge">Indexer</span>
+                            <div class="flex items-center gap-2">
+                                <span class="stack-badge">Indexer</span>
+                                <button class="log-button" data-log-target="indexer">View logs</button>
+                            </div>
                         </li>
                         <li>
                             <div>
                                 <p class="text-sm font-semibold text-white">thesheepcat/k-transaction-processor</p>
                                 <p class="text-xs text-zinc-500">Post-processing & cleanup</p>
                             </div>
-                            <span class="stack-badge">Processor</span>
+                            <div class="flex items-center gap-2">
+                                <span class="stack-badge">Processor</span>
+                                <button class="log-button" data-log-target="processor">View logs</button>
+                            </div>
                         </li>
                     </ul>
                 </section>
@@ -125,6 +134,19 @@
                 Last updated: <span id="lastUpdated">never</span>
             </div>
         </main>
+    </div>
+
+    <div class="log-modal" id="logModal" aria-hidden="true">
+        <div class="log-modal-card">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.3em] text-zinc-500">Container Logs</p>
+                    <h3 class="text-lg font-semibold text-white" id="logModalTitle">Logs</h3>
+                </div>
+                <button class="log-modal-close" id="logModalClose" aria-label="Close logs">Close</button>
+            </div>
+            <pre class="log-output" id="logOutput">Loading...</pre>
+        </div>
     </div>
 
     <script src="dashboard.js"></script>
