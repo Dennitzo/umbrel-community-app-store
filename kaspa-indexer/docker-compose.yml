@@ -15,7 +15,7 @@ services:
     ports:
       - "${APP_KASPA_DB_PORT}:${APP_KASPA_DB_PORT}"
     networks:
-      default:
+      kaspa-net:
         ipv4_address: ${APP_KASPA_DB_ADDRESS}
 
   simply_kaspa_indexer:
@@ -34,7 +34,7 @@ services:
     depends_on:
       - kaspa_db
     networks:
-      default:
+      kaspa-net:
         ipv4_address: ${APP_KASPA_INDEXER_ADDRESS}
 
   k-transaction-processor:
@@ -54,7 +54,7 @@ services:
       - kaspa_db
       - simply_kaspa_indexer
     networks:
-      default:
+      kaspa-net:
         ipv4_address: ${APP_KASPA_PROCESSOR_ADDRESS}
 
   indexer-ui-api:
@@ -71,7 +71,7 @@ services:
       APP_KASPA_DB_PASSWORD: ${APP_KASPA_DB_PASSWORD}
       APP_KASPA_DB_NAME: ${APP_KASPA_DB_NAME}
     networks:
-      default:
+      kaspa-net:
         ipv4_address: ${APP_KASPA_INDEXER_API_ADDRESS}
 
   frontend:
@@ -84,5 +84,13 @@ services:
     depends_on:
       - indexer-ui-api
     networks:
-      default:
+      kaspa-net:
         ipv4_address: ${APP_KASPA_INDEXER_UI_ADDRESS}
+
+networks:
+  kaspa-net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.21.24.0/24
