@@ -1,7 +1,7 @@
 services:
   app_proxy:
     environment:
-      APP_HOST: kaspa-database_frontend_1
+      APP_HOST: frontend
       APP_PORT: ${APP_KASPA_INDEXER_UI_PORT}
 
   kaspa_db:
