@@ -76,6 +76,8 @@ interface UserSettingsProviderProps {
 const SETTINGS_STORAGE_KEY = 'kaspa_user_settings';
 
 export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ children }) => {
+  const defaultCustomIndexerUrl = 'http://umbrel.local:3001';
+  const defaultCustomKaspaNodeUrl = 'ws://umbrel.local:17110';
   const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>(DEFAULT_NETWORK);
   const [indexerType, setIndexerTypeState] = useState<IndexerType>('custom');
   const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>(defaultCustomIndexerUrl);
@@ -95,8 +97,6 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const [turquoiseThemeEnabled, setTurquoiseThemeEnabledState] = useState<boolean>(false);
   const [debugLogEnabled, setDebugLogEnabledState] = useState<boolean>(false);
   const [profileAutoRefreshEnabled, setProfileAutoRefreshEnabledState] = useState<boolean>(false);
-  const defaultCustomIndexerUrl = 'http://umbrel.local:3001';
-  const defaultCustomKaspaNodeUrl = 'ws://umbrel.local:17110';
 
   // Derive apiBaseUrl from indexerType and customIndexerUrl
   const apiBaseUrl = indexerType === 'public'
