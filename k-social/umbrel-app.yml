@@ -15,7 +15,7 @@ support: https://github.com/kaspanet
 dependencies:
   - rusty-kaspad
   - kaspa-database
-port: 8090
+port: 5173
 gallery: []
 path: ""
 defaultUsername: ""
