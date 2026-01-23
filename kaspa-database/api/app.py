@@ -1,14 +1,23 @@
+import json
 import logging
 import os
 from datetime import datetime, timezone
 
 import psycopg2
-from flask import Flask, jsonify
+from flask import Flask, Response, jsonify, request, stream_with_context
 from psycopg2.extras import RealDictCursor
+import docker
 
 app = Flask(__name__)
 app.config["JSON_SORT_KEYS"] = False
 logging.basicConfig(level=logging.INFO)
+docker_client = docker.from_env()
+
+LOG_SERVICES = {
+    "kaspa_db": "postgres:17-alpine",
+    "simply_kaspa_indexer": "supertypo/simply-kaspa-indexer",
+    "k-transaction-processor": "thesheepcat/k-transaction-processor",
+}
 
 TABLE_STATS_SQL = """
 SELECT
@@ -96,6 +105,19 @@ def _collect_stats() -> dict:
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
+def _resolve_container(service: str):
+    project = os.environ.get("APP_COMPOSE_PROJECT") or os.environ.get("APP_ID") or "kaspa-database"
+    filters = {
+        "label": [
+            f"com.docker.compose.project={project}",
+            f"com.docker.compose.service={service}",
+        ]
+    }
+    containers = docker_client.containers.list(filters=filters)
+    if containers:
+        return containers[0]
+    raise LookupError(f"Container not found for service: {service}")
+
 
 
 @app.after_request
@@ -124,6 +146,44 @@ def status():
 @app.route("/api/healthz", methods=["GET"])
 def healthz():  # pragma: no cover - trivial endpoint
     return jsonify({"status": "ok"})
+
+
+@app.route("/api/logs/<service>", methods=["GET"])
+def logs(service: str):
+    if service not in LOG_SERVICES:
+        return jsonify({"error": "Unknown service"}), 404
+
+    try:
+        container = _resolve_container(service)
+    except Exception as exc:
+        app.logger.exception("Unable to resolve container", exc_info=exc)
+        return jsonify({"error": "Unable to locate container"}), 404
+
+    tail = request.args.get("tail", "200")
+    try:
+        tail_count = max(10, min(int(tail), 500))
+    except ValueError:
+        tail_count = 200
+
+    def generate():
+        yield f"data: connected to {LOG_SERVICES[service]}\n\n"
+        try:
+            for raw_line in container.logs(stream=True, follow=True, tail=tail_count):
+                line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
+                if not line:
+                    continue
+                yield f"data: {line}\n\n"
+        except Exception as exc:
+            app.logger.exception("Log stream error", exc_info=exc)
+            payload = json.dumps({"error": "log stream interrupted"})
+            yield f"event: error\ndata: {payload}\n\n"
+
+    headers = {
+        "Cache-Control": "no-cache",
+        "Content-Type": "text/event-stream",
+        "X-Accel-Buffering": "no",
+    }
+    return Response(stream_with_context(generate()), headers=headers)
 
 
 

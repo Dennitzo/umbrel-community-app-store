@@ -9,7 +9,7 @@
     <title>Kaspa Database Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="kaspa-database.svg">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=0.3.11">
     <script>
         tailwind.config = {
             theme: {
@@ -98,21 +98,42 @@
                     <ul class="stack-list">
                         <li>
                             <div>
-                                <p class="text-sm font-semibold text-white">postgres:17-alpine</p>
+                                <button
+                                    class="stack-link text-sm font-semibold text-white"
+                                    type="button"
+                                    data-log-service="kaspa_db"
+                                    data-log-label="postgres:17-alpine"
+                                >
+                                    postgres:17-alpine
+                                </button>
                                 <p class="text-xs text-zinc-500">Persistent event store</p>
                             </div>
                             <span class="stack-badge">Storage</span>
                         </li>
                         <li>
                             <div>
-                                <p class="text-sm font-semibold text-white">supertypo/simply-kaspa-indexer</p>
+                                <button
+                                    class="stack-link text-sm font-semibold text-white"
+                                    type="button"
+                                    data-log-service="simply_kaspa_indexer"
+                                    data-log-label="supertypo/simply-kaspa-indexer"
+                                >
+                                    supertypo/simply-kaspa-indexer
+                                </button>
                                 <p class="text-xs text-zinc-500">Feeds logs into PostgreSQL</p>
                             </div>
                             <span class="stack-badge">Indexer</span>
                         </li>
                         <li>
                             <div>
-                                <p class="text-sm font-semibold text-white">thesheepcat/k-transaction-processor</p>
+                                <button
+                                    class="stack-link text-sm font-semibold text-white"
+                                    type="button"
+                                    data-log-service="k-transaction-processor"
+                                    data-log-label="thesheepcat/k-transaction-processor"
+                                >
+                                    thesheepcat/k-transaction-processor
+                                </button>
                                 <p class="text-xs text-zinc-500">Post-processing & cleanup</p>
                             </div>
                             <span class="stack-badge">Processor</span>
@@ -121,12 +142,23 @@
                 </section>
             </div>
 
-            <div class="last-updated">
-                Last updated: <span id="lastUpdated">never</span>
-            </div>
         </main>
     </div>
 
-    <script src="dashboard.js?v=0.3.10"></script>
+    <div id="logModal" class="log-modal" aria-hidden="true">
+        <div class="log-modal__backdrop" data-log-close></div>
+        <div class="log-modal__panel" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
+            <div class="log-modal__header">
+                <div>
+                    <p class="log-modal__title" id="logModalTitle">Live logs</p>
+                    <p class="log-modal__subtitle" id="logServiceLabel">Service</p>
+                </div>
+                <button class="log-modal__close" type="button" data-log-close>Close</button>
+            </div>
+            <pre id="logOutput" class="log-modal__output">Select a service to stream logs.</pre>
+        </div>
+    </div>
+
+    <script src="dashboard.js?v=0.3.11"></script>
 </body>
 </html>

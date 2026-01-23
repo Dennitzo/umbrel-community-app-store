@@ -3,6 +3,8 @@ class KaspaDatabaseDashboard {
         this.updateInterval = 10000;
         this.apiBase = this.resolveApiBase();
         this.elements = this.cacheElements();
+        this.logStream = null;
+        this.logBuffer = [];
         this.init();
     }
 
@@ -14,15 +16,18 @@ class KaspaDatabaseDashboard {
             largestTableValue: document.getElementById('largestTableValue'),
             rowSummary: document.getElementById('rowSummary'),
             tableStatsBody: document.getElementById('tableStatsBody'),
-            lastUpdated: document.getElementById('lastUpdated'),
             statusBadge: document.getElementById('statusBadge'),
             statusLabel: document.getElementById('statusLabel'),
             statusDot: document.getElementById('statusDot'),
+            logModal: document.getElementById('logModal'),
+            logOutput: document.getElementById('logOutput'),
+            logServiceLabel: document.getElementById('logServiceLabel'),
         };
     }
 
     init() {
         this.fetchData();
+        this.bindLogLinks();
     }
 
     async fetchData() {
@@ -62,6 +67,80 @@ class KaspaDatabaseDashboard {
         return `${this.apiBase}${encodeURIComponent(path)}`;
     }
 
+    bindLogLinks() {
+        const logLinks = document.querySelectorAll('[data-log-service]');
+        const closeTargets = document.querySelectorAll('[data-log-close]');
+
+        logLinks.forEach((link) => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const service = link.getAttribute('data-log-service');
+                const label = link.getAttribute('data-log-label') || link.textContent.trim();
+                if (service) {
+                    this.openLogStream(service, label);
+                }
+            });
+        });
+
+        closeTargets.forEach((button) => {
+            button.addEventListener('click', () => this.closeLogStream());
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                this.closeLogStream();
+            }
+        });
+    }
+
+    openLogStream(service, label) {
+        if (!this.elements.logModal || !this.elements.logOutput) {
+            return;
+        }
+
+        this.closeLogStream();
+        this.logBuffer = [];
+        this.elements.logServiceLabel.textContent = label;
+        this.elements.logOutput.textContent = 'Connecting to live logs...';
+        this.elements.logModal.classList.add('is-open');
+        this.elements.logModal.setAttribute('aria-hidden', 'false');
+
+        const url = this.buildApiUrl(`/api/logs/${encodeURIComponent(service)}`);
+        this.logStream = new EventSource(url);
+        this.logStream.onmessage = (event) => {
+            if (!event.data) {
+                return;
+            }
+            this.appendLogLine(event.data);
+        };
+        this.logStream.onerror = () => {
+            this.appendLogLine('--- connection lost ---');
+        };
+    }
+
+    closeLogStream() {
+        if (this.logStream) {
+            this.logStream.close();
+            this.logStream = null;
+        }
+        if (this.elements.logModal) {
+            this.elements.logModal.classList.remove('is-open');
+            this.elements.logModal.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    appendLogLine(line) {
+        if (!this.elements.logOutput) {
+            return;
+        }
+        this.logBuffer.push(line);
+        if (this.logBuffer.length > 400) {
+            this.logBuffer.shift();
+        }
+        this.elements.logOutput.textContent = this.logBuffer.join('\n');
+        this.elements.logOutput.scrollTop = this.elements.logOutput.scrollHeight;
+    }
+
     render(payload) {
         const dbSize = Number(payload.dbSizeBytes ?? 0);
         const connectedClients = Number(payload.connectedClients ?? 0);
@@ -79,18 +158,6 @@ class KaspaDatabaseDashboard {
 
         this.populateTableStats(payload.tableStats || []);
 
-        if (payload.timestamp) {
-            try {
-                const updatedAt = new Date(payload.timestamp);
-                if (!Number.isNaN(updatedAt.getTime())) {
-                    this.elements.lastUpdated.textContent = updatedAt.toLocaleString();
-                }
-            } catch {
-                this.elements.lastUpdated.textContent = new Date().toLocaleString();
-            }
-        } else {
-            this.elements.lastUpdated.textContent = new Date().toLocaleString();
-        }
     }
 
     populateTableStats(stats) {
@@ -136,7 +203,6 @@ class KaspaDatabaseDashboard {
             this.elements.tableCountValue.textContent = '--';
             this.elements.rowSummary.textContent = 'Waiting for connection...';
             this.elements.largestTableValue.textContent = '—';
-            this.elements.lastUpdated.textContent = 'never';
             this.elements.tableStatsBody.innerHTML = `
                 <tr>
                     <td colspan="4" class="py-6 text-center text-red-400">Unable to load data.</td>
