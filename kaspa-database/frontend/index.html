@@ -9,7 +9,7 @@
     <title>Kaspa Database Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="kaspa-database.svg">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css?v=0.3.12">
+    <link rel="stylesheet" href="styles.css?v=0.3.13">
     <script>
         tailwind.config = {
             theme: {
@@ -24,7 +24,13 @@
     </script>
 </head>
 <body>
-    <div class="min-h-screen px-4 py-8 sm:px-6 lg:px-12">
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-screen__panel">
+            <p class="loading-screen__title">Waiting for Kaspa Database</p>
+            <p class="loading-screen__subtitle">Connecting to the API before rendering the dashboard.</p>
+        </div>
+    </div>
+    <div id="appRoot" class="min-h-screen px-4 py-8 sm:px-6 lg:px-12 is-hidden">
         <main class="mx-auto max-w-6xl space-y-6">
             <div class="backdrop-panel">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
@@ -159,6 +165,6 @@
         </div>
     </div>
 
-    <script src="dashboard.js?v=0.3.12"></script>
+    <script src="dashboard.js?v=0.3.13"></script>
 </body>
 </html>

@@ -1,9 +1,10 @@
 class KaspaDatabaseDashboard {
     constructor() {
         this.updateInterval = 10000;
-        this.apiTimeout = 30000;
         this.apiBase = this.resolveApiBase();
         this.elements = this.cacheElements();
+        this.statusStream = null;
+        this.hasData = false;
         this.logStream = null;
         this.logBuffer = [];
         this.init();
@@ -23,34 +24,39 @@ class KaspaDatabaseDashboard {
             logModal: document.getElementById('logModal'),
             logOutput: document.getElementById('logOutput'),
             logServiceLabel: document.getElementById('logServiceLabel'),
+            loadingScreen: document.getElementById('loadingScreen'),
+            appRoot: document.getElementById('appRoot'),
         };
     }
 
     init() {
-        this.fetchData();
+        this.startStatusStream();
         this.bindLogLinks();
     }
 
-    async fetchData() {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), this.apiTimeout);
-            const response = await fetch(this.buildApiUrl(`/api/status?t=${Date.now()}`), {
-                signal: controller.signal,
-            });
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                throw new Error('API returned an unexpected status');
-            }
-
-            const data = await response.json();
-            this.render(data);
-            this.updateStatus(true, 'Indexer connected');
-        } catch (error) {
-            console.error(error);
-            this.handleError();
+    startStatusStream() {
+        if (this.statusStream) {
+            this.statusStream.close();
         }
+        const intervalSeconds = Math.max(5, Math.round(this.updateInterval / 1000));
+        const url = this.buildApiUrl(`/api/status/stream?interval=${intervalSeconds}`);
+        this.statusStream = new EventSource(url);
+        this.statusStream.onmessage = (event) => {
+            if (!event.data) {
+                return;
+            }
+            try {
+                const data = JSON.parse(event.data);
+                this.render(data);
+                this.updateStatus(true, 'Indexer connected');
+                this.markReady();
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        this.statusStream.onerror = () => {
+            this.updateStatus(false);
+        };
     }
 
     resolveApiBase() {
@@ -71,6 +77,19 @@ class KaspaDatabaseDashboard {
         }
 
         return `${this.apiBase}${encodeURIComponent(path)}`;
+    }
+
+    markReady() {
+        if (this.hasData) {
+            return;
+        }
+        this.hasData = true;
+        if (this.elements.loadingScreen) {
+            this.elements.loadingScreen.classList.add('is-hidden');
+        }
+        if (this.elements.appRoot) {
+            this.elements.appRoot.classList.remove('is-hidden');
+        }
     }
 
     bindLogLinks() {
@@ -204,16 +223,18 @@ class KaspaDatabaseDashboard {
             this.elements.statusBadge.style.backgroundColor = 'rgba(248, 113, 113, 0.15)';
             this.elements.statusLabel.textContent = 'Unable to reach API';
             this.elements.statusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
-            this.elements.dbSizeValue.textContent = '--';
-            this.elements.connectedClientsValue.textContent = '--';
-            this.elements.tableCountValue.textContent = '--';
-            this.elements.rowSummary.textContent = 'Waiting for connection...';
-            this.elements.largestTableValue.textContent = '—';
-            this.elements.tableStatsBody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="py-6 text-center text-red-400">Unable to load data.</td>
-                </tr>
-            `;
+            if (!this.hasData) {
+                this.elements.dbSizeValue.textContent = '--';
+                this.elements.connectedClientsValue.textContent = '--';
+                this.elements.tableCountValue.textContent = '--';
+                this.elements.rowSummary.textContent = 'Waiting for connection...';
+                this.elements.largestTableValue.textContent = '—';
+                this.elements.tableStatsBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+                    </tr>
+                `;
+            }
         }
     }
 

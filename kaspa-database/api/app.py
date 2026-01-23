@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from datetime import datetime, timezone
 
 import psycopg2
@@ -141,6 +142,36 @@ def status():
     except Exception as exc:  # pragma: no cover - external dependency
         app.logger.exception("Unable to gather indexer metrics", exc_info=exc)
         return jsonify({"error": "Unable to collect indexer metrics"}), 503
+
+
+@app.route("/api/status/stream", methods=["GET"])
+def status_stream():
+    interval = request.args.get("interval", "10")
+    try:
+        interval_seconds = max(5, min(int(interval), 60))
+    except ValueError:
+        interval_seconds = 10
+
+    def generate():
+        while True:
+            try:
+                payload = _collect_stats()
+                yield f"data: {json.dumps(payload)}\n\n"
+            except Exception as exc:  # pragma: no cover - external dependency
+                app.logger.exception("Unable to gather indexer metrics", exc_info=exc)
+                payload = json.dumps({"error": "Unable to collect indexer metrics"})
+                yield f"event: error\ndata: {payload}\n\n"
+            try:
+                time.sleep(interval_seconds)
+            except GeneratorExit:
+                break
+
+    headers = {
+        "Cache-Control": "no-cache",
+        "Content-Type": "text/event-stream",
+        "X-Accel-Buffering": "no",
+    }
+    return Response(stream_with_context(generate()), headers=headers)
 
 
 @app.route("/api/healthz", methods=["GET"])
