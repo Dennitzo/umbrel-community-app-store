@@ -56,7 +56,7 @@ services:
       - kaspa-net
 
   indexer-ui-api:
-    build: ./api
+    image: dennitzo/kaspa-database-api:latest
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
@@ -73,7 +73,7 @@ services:
       - kaspa-net
 
   frontend:
-    build: ./frontend
+    image: dennitzo/kaspa-database-ui:latest
     restart: on-failure
     stop_grace_period: 1m
     ports:

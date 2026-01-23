@@ -1,0 +1,6 @@
+services:
+  indexer-ui-api:
+    build: ./api
+
+  frontend:
+    build: ./frontend
