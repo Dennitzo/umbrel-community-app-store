@@ -52,7 +52,7 @@ services:
       - simply_kaspa_indexer
 
   indexer-ui-api:
-    image: dennitzo/kaspa-database-api:latest
+    image: dennitzo/kaspa-database-api:0.3.0
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
@@ -67,7 +67,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   frontend:
-    image: dennitzo/kaspa-database-ui:latest
+    image: dennitzo/kaspa-database-ui:0.3.0
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
