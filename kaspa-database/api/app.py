@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timezone
 
 import docker
+import re
 import psycopg2
 from flask import Flask, Response, jsonify, request
 from psycopg2.extras import RealDictCursor
@@ -29,6 +30,8 @@ CONTAINER_MAP = {
     "indexer": "kaspa-database-simply_kaspa_indexer",
     "processor": "kaspa-database-k-transaction-processor",
 }
+
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 
 def _env(name: str, default: str | None = None) -> str:
@@ -152,7 +155,8 @@ def service_logs(service_key: str):
         app.logger.exception("Unable to fetch container logs", exc_info=exc)
         return jsonify({"error": "Unable to fetch logs"}), 503
 
-    return jsonify({"service": service_key, "logs": logs.decode("utf-8", errors="replace")})
+    decoded = logs.decode("utf-8", errors="replace")
+    return jsonify({"service": service_key, "logs": ANSI_ESCAPE_RE.sub("", decoded)})
 
 
 @app.route("/api/logs/<service_key>/stream", methods=["GET"])
@@ -173,6 +177,7 @@ def service_logs_stream(service_key: str):
             container = client.containers.get(container_name)
             for chunk in container.logs(stream=True, follow=True, tail=tail, timestamps=True):
                 line = chunk.decode("utf-8", errors="replace").rstrip("\n")
+                line = ANSI_ESCAPE_RE.sub("", line)
                 yield f"data: {line}\n\n"
         except Exception as exc:  # pragma: no cover - external dependency
             app.logger.exception("Unable to stream container logs", exc_info=exc)
