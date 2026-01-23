@@ -150,6 +150,18 @@ body {
     letter-spacing: 0.12em;
 }
 
+.log-link {
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+}
+
+.log-link:hover {
+    color: #7dd3fc;
+}
+
 .log-button:hover {
     border-color: rgba(56, 189, 248, 0.8);
     color: #7dd3fc;

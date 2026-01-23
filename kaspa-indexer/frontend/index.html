@@ -98,32 +98,38 @@
                     <ul class="stack-list">
                         <li>
                             <div>
-                                <p class="text-sm font-semibold text-white">postgres:17-alpine</p>
+                                <button class="text-sm font-semibold text-white log-trigger log-link" data-log-target="postgres" type="button">
+                                    postgres:17-alpine
+                                </button>
                                 <p class="text-xs text-zinc-500">Persistent event store</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="stack-badge">Storage</span>
-                                <button class="log-button" data-log-target="postgres">View logs</button>
+                                <button class="log-button log-trigger" data-log-target="postgres" type="button">View logs</button>
                             </div>
                         </li>
                         <li>
                             <div>
-                                <p class="text-sm font-semibold text-white">supertypo/simply-kaspa-indexer</p>
+                                <button class="text-sm font-semibold text-white log-trigger log-link" data-log-target="indexer" type="button">
+                                    supertypo/simply-kaspa-indexer
+                                </button>
                                 <p class="text-xs text-zinc-500">Feeds logs into PostgreSQL</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="stack-badge">Indexer</span>
-                                <button class="log-button" data-log-target="indexer">View logs</button>
+                                <button class="log-button log-trigger" data-log-target="indexer" type="button">View logs</button>
                             </div>
                         </li>
                         <li>
                             <div>
-                                <p class="text-sm font-semibold text-white">thesheepcat/k-transaction-processor</p>
+                                <button class="text-sm font-semibold text-white log-trigger log-link" data-log-target="processor" type="button">
+                                    thesheepcat/k-transaction-processor
+                                </button>
                                 <p class="text-xs text-zinc-500">Post-processing & cleanup</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="stack-badge">Processor</span>
-                                <button class="log-button" data-log-target="processor">View logs</button>
+                                <button class="log-button log-trigger" data-log-target="processor" type="button">View logs</button>
                             </div>
                         </li>
                     </ul>

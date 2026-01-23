@@ -17,7 +17,7 @@ class KaspaIndexerDashboard {
             statusBadge: document.getElementById('statusBadge'),
             statusLabel: document.getElementById('statusLabel'),
             statusDot: document.getElementById('statusDot'),
-            logButtons: document.querySelectorAll('.log-button'),
+            logButtons: document.querySelectorAll('.log-trigger'),
             logModal: document.getElementById('logModal'),
             logModalTitle: document.getElementById('logModalTitle'),
             logModalClose: document.getElementById('logModalClose'),
