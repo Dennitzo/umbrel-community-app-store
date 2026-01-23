@@ -77,10 +77,10 @@ const SETTINGS_STORAGE_KEY = 'kaspa_user_settings';
 
 export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ children }) => {
   const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>(DEFAULT_NETWORK);
-  const [indexerType, setIndexerTypeState] = useState<IndexerType>('public');
-  const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>('');
-  const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
-  const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
+  const [indexerType, setIndexerTypeState] = useState<IndexerType>('custom');
+  const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>(defaultCustomIndexerUrl);
+  const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('custom-node');
+  const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>(defaultCustomKaspaNodeUrl);
   const [theme, setThemeState] = useState<Theme>('light');
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
   const [deeplApiKey, setDeeplApiKeyState] = useState<string>('');
@@ -95,6 +95,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const [turquoiseThemeEnabled, setTurquoiseThemeEnabledState] = useState<boolean>(false);
   const [debugLogEnabled, setDebugLogEnabledState] = useState<boolean>(false);
   const [profileAutoRefreshEnabled, setProfileAutoRefreshEnabledState] = useState<boolean>(false);
+  const defaultCustomIndexerUrl = 'http://umbrel.local:3001';
+  const defaultCustomKaspaNodeUrl = 'ws://umbrel.local:17110';
 
   // Derive apiBaseUrl from indexerType and customIndexerUrl
   const apiBaseUrl = indexerType === 'public'
@@ -126,9 +128,11 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
           // Migrate 'kaspatalk' to 'public' if found
           const migratedType = settings.indexerType === 'kaspatalk' ? 'public' : settings.indexerType;
           setIndexerTypeState(migratedType);
-          if (settings.customIndexerUrl && typeof settings.customIndexerUrl === 'string') {
-            setCustomIndexerUrlState(settings.customIndexerUrl);
-          }
+        if (settings.customIndexerUrl && typeof settings.customIndexerUrl === 'string') {
+          setCustomIndexerUrlState(settings.customIndexerUrl);
+        } else if (migratedType === 'custom') {
+          setCustomIndexerUrlState(defaultCustomIndexerUrl);
+        }
         } else if (settings.apiBaseUrl && typeof settings.apiBaseUrl === 'string') {
           // Migrate old apiBaseUrl to new system
           const url = settings.apiBaseUrl;
@@ -138,7 +142,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
             setIndexerTypeState('local');
           } else {
             setIndexerTypeState('custom');
-            setCustomIndexerUrlState(url);
+            setCustomIndexerUrlState(url || defaultCustomIndexerUrl);
           }
         }
 
@@ -149,6 +153,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
 
         if (settings.customKaspaNodeUrl && typeof settings.customKaspaNodeUrl === 'string') {
           setCustomKaspaNodeUrlState(settings.customKaspaNodeUrl);
+        } else if (settings.kaspaConnectionType === 'custom-node') {
+          setCustomKaspaNodeUrlState(defaultCustomKaspaNodeUrl);
         }
 
         if (settings.theme && ['light', 'dark'].includes(settings.theme)) {
