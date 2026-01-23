@@ -1,7 +1,6 @@
 class KaspaDatabaseDashboard {
     constructor() {
         this.updateInterval = 10000;
-        this.logStream = null;
         this.elements = this.cacheElements();
         this.init();
     }
@@ -18,16 +17,10 @@ class KaspaDatabaseDashboard {
             statusBadge: document.getElementById('statusBadge'),
             statusLabel: document.getElementById('statusLabel'),
             statusDot: document.getElementById('statusDot'),
-            logButtons: document.querySelectorAll('.log-trigger'),
-            logModal: document.getElementById('logModal'),
-            logModalTitle: document.getElementById('logModalTitle'),
-            logModalClose: document.getElementById('logModalClose'),
-            logOutput: document.getElementById('logOutput'),
         };
     }
 
     init() {
-        this.bindLogButtons();
         this.fetchData();
         setInterval(() => this.fetchData(), this.updateInterval);
     }
@@ -134,72 +127,6 @@ class KaspaDatabaseDashboard {
 
     handleError() {
         this.updateStatus(false);
-    }
-
-    bindLogButtons() {
-        this.elements.logButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                const target = button.getAttribute('data-log-target');
-                if (!target) return;
-                this.openLogs(target, button.closest('li'));
-            });
-        });
-
-        if (this.elements.logModalClose) {
-            this.elements.logModalClose.addEventListener('click', () => this.closeLogs());
-        }
-
-        if (this.elements.logModal) {
-            this.elements.logModal.addEventListener('click', (event) => {
-                if (event.target === this.elements.logModal) {
-                    this.closeLogs();
-                }
-            });
-        }
-    }
-
-    async openLogs(serviceKey, listItem) {
-        if (!this.elements.logModal) return;
-        const title = listItem?.querySelector('p.text-sm.font-semibold')?.textContent || serviceKey;
-        this.elements.logModalTitle.textContent = title;
-        this.elements.logOutput.textContent = 'Connecting to log stream...';
-        this.elements.logModal.classList.add('active');
-        this.elements.logModal.setAttribute('aria-hidden', 'false');
-
-        if (this.logStream) {
-            this.logStream.close();
-            this.logStream = null;
-        }
-
-        const streamUrl = `/api/logs/${serviceKey}/stream?tail=200`;
-        this.logStream = new EventSource(streamUrl);
-        this.elements.logOutput.textContent = '';
-
-        this.logStream.onmessage = (event) => {
-            this.appendLogLine(event.data);
-        };
-
-        this.logStream.onerror = () => {
-            this.appendLogLine('--- log stream disconnected ---');
-        };
-    }
-
-    closeLogs() {
-        if (!this.elements.logModal) return;
-        this.elements.logModal.classList.remove('active');
-        this.elements.logModal.setAttribute('aria-hidden', 'true');
-        if (this.logStream) {
-            this.logStream.close();
-            this.logStream = null;
-        }
-    }
-
-    appendLogLine(line) {
-        const current = this.elements.logOutput.textContent;
-        const next = current ? `${current}\n${line}` : line;
-        const maxChars = 20000;
-        this.elements.logOutput.textContent = next.length > maxChars ? next.slice(-maxChars) : next;
-        this.elements.logOutput.scrollTop = this.elements.logOutput.scrollHeight;
     }
 
     formatBytes(value) {

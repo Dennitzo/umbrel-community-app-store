@@ -98,27 +98,21 @@
                     <ul class="stack-list">
                         <li>
                             <div>
-                                <button class="text-sm font-semibold text-white log-trigger log-link" data-log-target="postgres" type="button">
-                                    postgres:17-alpine
-                                </button>
+                                <p class="text-sm font-semibold text-white">postgres:17-alpine</p>
                                 <p class="text-xs text-zinc-500">Persistent event store</p>
                             </div>
                             <span class="stack-badge">Storage</span>
                         </li>
                         <li>
                             <div>
-                                <button class="text-sm font-semibold text-white log-trigger log-link" data-log-target="indexer" type="button">
-                                    supertypo/simply-kaspa-indexer
-                                </button>
+                                <p class="text-sm font-semibold text-white">supertypo/simply-kaspa-indexer</p>
                                 <p class="text-xs text-zinc-500">Feeds logs into PostgreSQL</p>
                             </div>
                             <span class="stack-badge">Indexer</span>
                         </li>
                         <li>
                             <div>
-                                <button class="text-sm font-semibold text-white log-trigger log-link" data-log-target="processor" type="button">
-                                    thesheepcat/k-transaction-processor
-                                </button>
+                                <p class="text-sm font-semibold text-white">thesheepcat/k-transaction-processor</p>
                                 <p class="text-xs text-zinc-500">Post-processing & cleanup</p>
                             </div>
                             <span class="stack-badge">Processor</span>
@@ -131,19 +125,6 @@
                 Last updated: <span id="lastUpdated">never</span>
             </div>
         </main>
-    </div>
-
-    <div class="log-modal" id="logModal" aria-hidden="true">
-        <div class="log-modal-card">
-            <div class="flex items-center justify-between gap-3">
-                <div>
-                    <p class="text-xs uppercase tracking-[0.3em] text-zinc-500">Container Logs</p>
-                    <h3 class="text-lg font-semibold text-white" id="logModalTitle">Logs</h3>
-                </div>
-                <button class="log-modal-close" id="logModalClose" aria-label="Close logs">Close</button>
-            </div>
-            <pre class="log-output" id="logOutput">Loading...</pre>
-        </div>
     </div>
 
     <script src="dashboard.js"></script>

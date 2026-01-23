@@ -2,10 +2,8 @@ import logging
 import os
 from datetime import datetime, timezone
 
-import docker
-import re
 import psycopg2
-from flask import Flask, Response, jsonify, request
+from flask import Flask, jsonify
 from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
@@ -24,14 +22,6 @@ FROM pg_stat_user_tables
 ORDER BY n_live_tup DESC
 LIMIT 6
 """
-
-SERVICE_MAP = {
-    "postgres": "kaspa_db",
-    "indexer": "simply_kaspa_indexer",
-    "processor": "k-transaction-processor",
-}
-
-ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 
 def _env(name: str, default: str | None = None) -> str:
@@ -107,20 +97,6 @@ def _collect_stats() -> dict:
     }
 
 
-def _get_container(service_key: str):
-    service_name = SERVICE_MAP.get(service_key)
-    if not service_name:
-        return None
-
-    project = os.environ.get("COMPOSE_PROJECT_NAME") or os.environ.get("APP_ID")
-    filters = {"label": [f"com.docker.compose.service={service_name}"]}
-    if project:
-        filters["label"].append(f"com.docker.compose.project={project}")
-
-    client = docker.from_env()
-    containers = client.containers.list(all=True, filters=filters)
-    return containers[0] if containers else None
-
 
 @app.after_request
 def do_not_cache(response):
@@ -149,52 +125,6 @@ def status():
 def healthz():  # pragma: no cover - trivial endpoint
     return jsonify({"status": "ok"})
 
-
-@app.route("/api/logs/<service_key>", methods=["GET"])
-def service_logs(service_key: str):
-    container = _get_container(service_key)
-    if not container:
-        return jsonify({"error": "Unknown service"}), 404
-
-    tail = request.args.get("tail", "200")
-    try:
-        tail = max(1, min(int(tail), 2000))
-    except ValueError:
-        tail = 200
-
-    try:
-        logs = container.logs(tail=tail, timestamps=True)
-    except Exception as exc:  # pragma: no cover - external dependency
-        app.logger.exception("Unable to fetch container logs", exc_info=exc)
-        return jsonify({"error": "Unable to fetch logs"}), 503
-
-    decoded = logs.decode("utf-8", errors="replace")
-    return jsonify({"service": service_key, "logs": ANSI_ESCAPE_RE.sub("", decoded)})
-
-
-@app.route("/api/logs/<service_key>/stream", methods=["GET"])
-def service_logs_stream(service_key: str):
-    container = _get_container(service_key)
-    if not container:
-        return jsonify({"error": "Unknown service"}), 404
-
-    tail = request.args.get("tail", "200")
-    try:
-        tail = max(1, min(int(tail), 2000))
-    except ValueError:
-        tail = 200
-
-    def event_stream():
-        try:
-            for chunk in container.logs(stream=True, follow=True, tail=tail, timestamps=True):
-                line = chunk.decode("utf-8", errors="replace").rstrip("\n")
-                line = ANSI_ESCAPE_RE.sub("", line)
-                yield f"data: {line}\n\n"
-        except Exception as exc:  # pragma: no cover - external dependency
-            app.logger.exception("Unable to stream container logs", exc_info=exc)
-            yield "event: error\ndata: Unable to stream logs\n\n"
-
-    return Response(event_stream(), mimetype="text/event-stream")
 
 
 if __name__ == "__main__":
