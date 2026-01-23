@@ -24,18 +24,9 @@
     "electron:build": "npm run build && electron-builder --linux",
     "electron:build:deb": "npm run build && electron-builder --linux deb",
     "electron:build:appimage": "npm run build && electron-builder --linux AppImage",
-    "electron:build:win": "npm run build && electron-builder --win --x64",
-    "android:sync": "npx cap sync android",
-    "android:build": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug"
+    "electron:build:win": "npm run build && electron-builder --win --x64"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.4",
-    "@capacitor/app": "^7.1.1",
-    "@capacitor/cli": "^7.4.3",
-    "@capacitor/core": "^7.4.4",
-    "@capacitor/keyboard": "^7.0.4",
-    "@capacitor/status-bar": "^7.0.4",
-    "@capgo/capacitor-navigation-bar": "^7.3.18",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/vite": "4.1.17",
