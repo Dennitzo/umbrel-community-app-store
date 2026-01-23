@@ -17,8 +17,6 @@ services:
       POSTGRES_DB: ${APP_KASPA_DB_NAME}
     ports:
       - "${APP_KASPA_DB_PORT}:${APP_KASPA_DB_PORT}"
-    networks:
-      - kaspa-net
 
   simply_kaspa_indexer:
     image: supertypo/simply-kaspa-indexer:latest
@@ -35,8 +33,6 @@ services:
       --exclude-fields=tx_out_script_public_key_address
     depends_on:
       - kaspa_db
-    networks:
-      - kaspa-net
 
   k-transaction-processor:
     image: thesheepcat/k-transaction-processor:latest
@@ -54,8 +50,6 @@ services:
     depends_on:
       - kaspa_db
       - simply_kaspa_indexer
-    networks:
-      - kaspa-net
 
   indexer-ui-api:
     image: dennitzo/kaspa-database-api:latest
@@ -71,8 +65,6 @@ services:
       APP_KASPA_DB_NAME: ${APP_KASPA_DB_NAME}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - kaspa-net
 
   frontend:
     image: dennitzo/kaspa-database-ui:latest
@@ -80,9 +72,3 @@ services:
     stop_grace_period: 1m
     depends_on:
       - indexer-ui-api
-    networks:
-      - kaspa-net
-
-networks:
-  kaspa-net:
-    driver: bridge
