@@ -3,6 +3,8 @@ services:
     environment:
       APP_HOST: frontend
       APP_PORT: 80
+    depends_on:
+      - frontend
 
   kaspa_db:
     image: postgres:17-alpine
@@ -70,3 +72,8 @@ services:
     stop_grace_period: 1m
     depends_on:
       - indexer-ui-api
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
