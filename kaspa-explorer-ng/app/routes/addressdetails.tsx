@@ -12,7 +12,6 @@ import Info from "../assets/info.svg";
 import Kaspa from "../assets/kaspa.svg";
 import { MarketDataContext } from "../context/MarketDataProvider";
 import { useAddressBalance } from "../hooks/useAddressBalance";
-import { useAddressNames } from "../hooks/useAddressNames";
 import { useAddressTxCount } from "../hooks/useAddressTxCount";
 import { useAddressUtxos } from "../hooks/useAddressUtxos";
 import { useTransactions } from "../hooks/useTransactions";
@@ -57,7 +56,6 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
   const { data, isLoading: isLoadingAddressBalance } = useAddressBalance(loaderData.address);
   const { data: utxoData, isLoading: isLoadingUtxoData } = useAddressUtxos(loaderData.address);
   const { data: txCount, isLoading: isLoadingTxCount } = useAddressTxCount(loaderData.address);
-  const { data: addressNames } = useAddressNames();
   const marketData = useContext(MarketDataContext);
   const [beforeAfter, setBeforeAfter] = useState<number[]>([0, 0]);
   const [currentPage, setCurrentPage] = useState<number>(1);

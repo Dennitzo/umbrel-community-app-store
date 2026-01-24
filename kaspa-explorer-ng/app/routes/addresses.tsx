@@ -3,7 +3,6 @@ import LoadingMessage from "../LoadingMessage";
 import PageTable from "../PageTable";
 import AccountBalanceWallet from "../assets/account_balance_wallet.svg";
 import { useAddressDistribution } from "../hooks/useAddressDistribution";
-import { useAddressNames } from "../hooks/useAddressNames";
 import { useCoinSupply } from "../hooks/useCoinSupply";
 import { useTopAddresses } from "../hooks/useTopAddresses";
 import Card from "../layout/Card";
@@ -27,7 +26,6 @@ export default function Addresses() {
   const { data: topAddresses, isLoading } = useTopAddresses();
   const { data: coinSupply, isLoading: isLoadingSupply } = useCoinSupply();
 
-  const { data: addressNames } = useAddressNames();
   const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
   if (isLoading || isLoadingSupply) {
@@ -81,11 +79,7 @@ export default function Addresses() {
           rows={safeTopAddresses.ranking.slice(0, 100).map((addressInfo) => [
             addressInfo.rank + 1,
             <KasLink linkType="address" link to={addressInfo.address} mono />,
-            addressNames && addressNames[addressInfo.address] && (
-              <div className="inline-block bg-accent-yellow text-alert rounded-full px-2 text-center text-nowrap min-h-5">
-                {addressNames[addressInfo.address]}
-              </div>
-            ),
+            null,
             <span className="text-nowrap">
               {numeral(addressInfo.amount).format("0,0")}
               <span className="text-gray-500 text-nowrap"> KAS</span>

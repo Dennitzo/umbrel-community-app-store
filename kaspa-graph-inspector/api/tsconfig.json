@@ -11,6 +11,9 @@
     "allowSyntheticDefaultImports": true,
     "module": "esnext",
     "moduleResolution": "node",
+    "types": [
+      "node"
+    ],
     "outDir": "dist",
     "sourceMap": true
   },
