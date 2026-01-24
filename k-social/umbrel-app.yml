@@ -1,6 +1,6 @@
 manifestVersion: 1
 id: k-social
-category: social
+category: crypto
 name: K-Social
 icon: https://raw.githubusercontent.com/Dennitzo/umbrel-community-app-store/master/kaspa_icon.svg
 version: "0.1.2"
