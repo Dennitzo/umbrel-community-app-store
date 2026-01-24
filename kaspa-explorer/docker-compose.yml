@@ -1,12 +1,4 @@
 services:
-  app_proxy:
-    image: getumbrel/app-proxy:1.0.0
-    depends_on:
-      - web
-    environment:
-      APP_HOST: web
-      APP_PORT: 8080
-
   kaspa_rest_server:
     image: kaspanet/kaspa-rest-server:latest
     restart: on-failure
@@ -38,6 +30,10 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8080
+      VITE_KASPA_API_BASE: http://umbrel.local:8091
+      VITE_KASPA_SOCKET_URL: ws://umbrel.local:8092
+    ports:
+      - "19113:8080"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ >/dev/null 2>&1 || exit 1"]
       interval: 30s
@@ -46,16 +42,3 @@ services:
     depends_on:
       - kaspa_rest_server
       - simply_kaspa_socket_server
-
-  web_proxy:
-    image: nginx:1.27.4-alpine
-    restart: on-failure
-    stop_grace_period: 1m
-    depends_on:
-      - web
-      - kaspa_rest_server
-      - simply_kaspa_socket_server
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    ports:
-      - "19113:8080"
