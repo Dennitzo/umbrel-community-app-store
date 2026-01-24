@@ -80,22 +80,13 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: true,
     port: 5173,
-    allowedHosts: [
-    'umbrel.local',
-    ],
     fs: {
       allow: ['..']
-    },
-    proxy: {
-      '/deepl': {
-        target: 'https://api-free.deepl.com',
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/deepl/, '')
-      }
     }
   },
   optimizeDeps: {
     exclude: ['buffer']
   }
 }))
+
+

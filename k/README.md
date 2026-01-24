@@ -63,6 +63,7 @@ Born from the Kaspa community, K is designed to evolve through collaboration wit
 - ✅ **User notifications**: User is notified when mentioned
 - ✅ **Following/Unfollowing**: Manage your content feed
 - ✅ **Desktop app**: K available on desktop environment, without using the K site (on Linux and Windows)
+- ✅ **Mobile app**: K available on smartphone environment, without using the K site (on Android)
 - ✅ **Personal indexer**: A light and clean indexer for personal use
 
 ### ❌ Future Features (not yet available)  
@@ -128,6 +129,7 @@ K can be used in two ways: **Hosted** (using the community-hosted version) or **
 #### 🌐 Access K
 - **Web**: https://k-social.network
 - **Desktop app**: Linux/Windows application ([Download](https://github.com/thesheepcat/K/releases))
+- **Mobile app**: Android application ([Download](https://github.com/thesheepcat/K/releases))
 
 #### 🔑 Create Your Identity
 1. Generate a new **Private/Public key pair**
@@ -230,6 +232,35 @@ npm run electron:build:win
 
 The compiled applications will be available in the `build/` directory.
 
+#### 4. **Build Standalone Mobile Application for Android (Optional)**
+
+You can compile K as a standalone mobile application for Android using Capacitor:
+
+**Prerequisites:**
+- **Android Studio** installed on your system
+- **Java Development Kit (JDK) 21** or higher
+- **Android SDK** (usually installed with Android Studio)
+- **Gradle** (usually included with Android Studio)
+
+**Build Steps:**
+```bash
+# Install dependencies (if not already done)
+npm install
+
+# Build the Android application
+npm run build:android
+```
+
+The build process will generate an APK file that can be found in:
+`android/app/build/outputs/apk/debug/app-debug.apk`
+
+**⚠️ Important Notes:**
+- **This build generates a DEBUG version** of the application, which is intended for development and testing purposes only.
+- **The APK is UNSIGNED**, meaning it won't be suitable for distribution through official app stores.
+- For production releases, you'll need to create a signed release build using proper keystore credentials.
+- The debug APK can be installed directly on Android devices for testing by enabling "Install from unknown sources" in device settings.
+
+---
 ## ❓ Frequently Asked Questions
 1. **"How are the user contents (posts, replies, etc) being stored? In the Kaspa node?**: All K relevant data are included in regular Kaspa transactions (in the payload) and processed by Kaspa node; K-indexer is connected to Kaspa node, it receives all transactions and it filters only K relevant transactions; then, K-indexer saves all these data in a dedicated database. 
 2. **"How are you planning on enabling historical data?**: If historial data have already been saved in K-indexer, they are available to the user; if historical data traversed Kaspa network before K-indexer was acttivated, they aren't available. We're exploring the possibility to use kaspa.org APIs to retrieve hostorical data for specific transactions requested by the user, as a fallback mechanism. For the moment, we don't have a way to sync new K-indexers with existing K-indexers.

@@ -12,7 +12,6 @@ export type { KaspaNetwork } from '@/constants/networks';
 export type KaspaConnectionType = 'resolver' | 'public-node' | 'custom-node';
 export type IndexerType = 'public' | 'local' | 'custom';
 export type Theme = 'light' | 'dark';
-export type TranslationTargetLang = 'DE' | 'EN' | 'FR' | 'ES' | 'IT' | 'NL' | 'PL';
 
 interface UserSettingsContextType {
   selectedNetwork: KaspaNetwork;
@@ -32,30 +31,6 @@ interface UserSettingsContextType {
   kaspaNodeUrl: string;
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  deeplApiKey: string;
-  setDeeplApiKey: (key: string) => void;
-  deeplTargetLang: TranslationTargetLang;
-  setDeeplTargetLang: (lang: TranslationTargetLang) => void;
-  tabTitleEnabled: boolean;
-  setTabTitleEnabled: (enabled: boolean) => void;
-  systemNotificationsEnabled: boolean;
-  setSystemNotificationsEnabled: (enabled: boolean) => void;
-  bookmarksEnabled: boolean;
-  setBookmarksEnabled: (enabled: boolean) => void;
-  searchbarEnabled: boolean;
-  setSearchbarEnabled: (enabled: boolean) => void;
-  searchbarLoadLimit: number;
-  setSearchbarLoadLimit: (limit: number) => void;
-  embedLinksEnabled: boolean;
-  setEmbedLinksEnabled: (enabled: boolean) => void;
-  hideTransactionPopup: boolean;
-  setHideTransactionPopup: (enabled: boolean) => void;
-  turquoiseThemeEnabled: boolean;
-  setTurquoiseThemeEnabled: (enabled: boolean) => void;
-  debugLogEnabled: boolean;
-  setDebugLogEnabled: (enabled: boolean) => void;
-  profileAutoRefreshEnabled: boolean;
-  setProfileAutoRefreshEnabled: (enabled: boolean) => void;
   isSettingsLoaded: boolean;
 }
 
@@ -76,27 +51,13 @@ interface UserSettingsProviderProps {
 const SETTINGS_STORAGE_KEY = 'kaspa_user_settings';
 
 export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ children }) => {
-  const defaultCustomIndexerUrl = 'http://umbrel.local:3001';
-  const defaultCustomKaspaNodeUrl = 'ws://umbrel.local:17110';
   const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>(DEFAULT_NETWORK);
-  const [indexerType, setIndexerTypeState] = useState<IndexerType>('custom');
-  const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>(defaultCustomIndexerUrl);
-  const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('custom-node');
-  const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>(defaultCustomKaspaNodeUrl);
+  const [indexerType, setIndexerTypeState] = useState<IndexerType>('public');
+  const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>('');
+  const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
+  const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
   const [theme, setThemeState] = useState<Theme>('light');
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
-  const [deeplApiKey, setDeeplApiKeyState] = useState<string>('');
-  const [deeplTargetLang, setDeeplTargetLangState] = useState<TranslationTargetLang>('DE');
-  const [tabTitleEnabled, setTabTitleEnabledState] = useState<boolean>(true);
-  const [systemNotificationsEnabled, setSystemNotificationsEnabledState] = useState<boolean>(false);
-  const [bookmarksEnabled, setBookmarksEnabledState] = useState<boolean>(true);
-  const [searchbarEnabled, setSearchbarEnabledState] = useState<boolean>(false);
-  const [searchbarLoadLimit, setSearchbarLoadLimitState] = useState<number>(100);
-  const [embedLinksEnabled, setEmbedLinksEnabledState] = useState<boolean>(false);
-  const [hideTransactionPopup, setHideTransactionPopupState] = useState<boolean>(false);
-  const [turquoiseThemeEnabled, setTurquoiseThemeEnabledState] = useState<boolean>(false);
-  const [debugLogEnabled, setDebugLogEnabledState] = useState<boolean>(false);
-  const [profileAutoRefreshEnabled, setProfileAutoRefreshEnabledState] = useState<boolean>(false);
 
   // Derive apiBaseUrl from indexerType and customIndexerUrl
   const apiBaseUrl = indexerType === 'public'
@@ -128,11 +89,9 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
           // Migrate 'kaspatalk' to 'public' if found
           const migratedType = settings.indexerType === 'kaspatalk' ? 'public' : settings.indexerType;
           setIndexerTypeState(migratedType);
-        if (settings.customIndexerUrl && typeof settings.customIndexerUrl === 'string') {
-          setCustomIndexerUrlState(settings.customIndexerUrl);
-        } else if (migratedType === 'custom') {
-          setCustomIndexerUrlState(defaultCustomIndexerUrl);
-        }
+          if (settings.customIndexerUrl && typeof settings.customIndexerUrl === 'string') {
+            setCustomIndexerUrlState(settings.customIndexerUrl);
+          }
         } else if (settings.apiBaseUrl && typeof settings.apiBaseUrl === 'string') {
           // Migrate old apiBaseUrl to new system
           const url = settings.apiBaseUrl;
@@ -142,7 +101,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
             setIndexerTypeState('local');
           } else {
             setIndexerTypeState('custom');
-            setCustomIndexerUrlState(url || defaultCustomIndexerUrl);
+            setCustomIndexerUrlState(url);
           }
         }
 
@@ -153,8 +112,6 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
 
         if (settings.customKaspaNodeUrl && typeof settings.customKaspaNodeUrl === 'string') {
           setCustomKaspaNodeUrlState(settings.customKaspaNodeUrl);
-        } else if (settings.kaspaConnectionType === 'custom-node') {
-          setCustomKaspaNodeUrlState(defaultCustomKaspaNodeUrl);
         }
 
         if (settings.theme && ['light', 'dark'].includes(settings.theme)) {
@@ -163,55 +120,6 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
           if (typeof document !== 'undefined') {
             document.documentElement.setAttribute('data-theme', settings.theme);
           }
-        }
-        if (typeof settings.deeplApiKey === 'string') {
-          setDeeplApiKeyState(settings.deeplApiKey);
-        }
-        if (settings.deeplTargetLang && ['DE', 'EN', 'FR', 'ES', 'IT', 'NL', 'PL'].includes(settings.deeplTargetLang)) {
-          setDeeplTargetLangState(settings.deeplTargetLang);
-        }
-        if (typeof settings.tabTitleEnabled === 'boolean') {
-          setTabTitleEnabledState(settings.tabTitleEnabled);
-        }
-        if (typeof settings.systemNotificationsEnabled === 'boolean') {
-          setSystemNotificationsEnabledState(settings.systemNotificationsEnabled);
-        }
-        if (typeof settings.bookmarksEnabled === 'boolean') {
-          setBookmarksEnabledState(settings.bookmarksEnabled);
-        }
-        if (typeof settings.searchbarEnabled === 'boolean') {
-          setSearchbarEnabledState(settings.searchbarEnabled);
-        }
-        if (Number.isFinite(settings.searchbarLoadLimit)) {
-          const indexerTypeForClamp =
-            settings.indexerType && ['public', 'local', 'custom'].includes(settings.indexerType)
-              ? settings.indexerType
-              : indexerType;
-          const maxLimit = indexerTypeForClamp === 'custom' ? 1000 : 500;
-          const clamped = Math.min(maxLimit, Math.max(100, Math.round(settings.searchbarLoadLimit)));
-          setSearchbarLoadLimitState(clamped);
-        }
-        if (typeof settings.embedLinksEnabled === 'boolean') {
-          setEmbedLinksEnabledState(settings.embedLinksEnabled);
-        }
-        if (typeof settings.hideTransactionPopup === 'boolean') {
-          setHideTransactionPopupState(settings.hideTransactionPopup);
-        }
-        if (typeof settings.turquoiseThemeEnabled === 'boolean') {
-          setTurquoiseThemeEnabledState(settings.turquoiseThemeEnabled);
-          if (typeof document !== 'undefined') {
-            if (settings.turquoiseThemeEnabled) {
-              document.documentElement.setAttribute('data-accent', 'turquoise');
-            } else {
-              document.documentElement.removeAttribute('data-accent');
-            }
-          }
-        }
-        if (typeof settings.debugLogEnabled === 'boolean') {
-          setDebugLogEnabledState(settings.debugLogEnabled);
-        }
-        if (typeof settings.profileAutoRefreshEnabled === 'boolean') {
-          setProfileAutoRefreshEnabledState(settings.profileAutoRefreshEnabled);
         }
       }
     } catch (error) {
@@ -241,19 +149,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
       customIndexerUrl,
       kaspaConnectionType,
       customKaspaNodeUrl,
-      theme,
-      deeplApiKey,
-      deeplTargetLang,
-      tabTitleEnabled,
-      systemNotificationsEnabled,
-      bookmarksEnabled,
-      searchbarEnabled,
-      searchbarLoadLimit,
-      embedLinksEnabled,
-      hideTransactionPopup,
-      turquoiseThemeEnabled,
-      debugLogEnabled,
-      profileAutoRefreshEnabled
+      theme
     };
 
     try {
@@ -261,27 +157,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     } catch (error) {
       console.error('Error auto-saving settings:', error);
     }
-  }, [
-    selectedNetwork,
-    indexerType,
-    customIndexerUrl,
-    kaspaConnectionType,
-    customKaspaNodeUrl,
-    theme,
-    deeplApiKey,
-    deeplTargetLang,
-    tabTitleEnabled,
-    systemNotificationsEnabled,
-    bookmarksEnabled,
-    searchbarEnabled,
-    searchbarLoadLimit,
-    embedLinksEnabled,
-    hideTransactionPopup,
-    turquoiseThemeEnabled,
-    debugLogEnabled,
-    profileAutoRefreshEnabled,
-    isSettingsLoaded
-  ]);
+  }, [selectedNetwork, indexerType, customIndexerUrl, kaspaConnectionType, customKaspaNodeUrl, theme, isSettingsLoaded]);
 
   const setSelectedNetwork = (network: KaspaNetwork) => {
     setSelectedNetworkState(network);
@@ -324,68 +200,6 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     }
   };
 
-  const setDeeplApiKey = (key: string) => {
-    setDeeplApiKeyState(key);
-  };
-
-  const setDeeplTargetLang = (lang: TranslationTargetLang) => {
-    setDeeplTargetLangState(lang);
-  };
-
-  const setTabTitleEnabled = (enabled: boolean) => {
-    setTabTitleEnabledState(enabled);
-  };
-
-  const setSystemNotificationsEnabled = (enabled: boolean) => {
-    setSystemNotificationsEnabledState(enabled);
-  };
-
-  const setBookmarksEnabled = (enabled: boolean) => {
-    setBookmarksEnabledState(enabled);
-  };
-
-  const setSearchbarEnabled = (enabled: boolean) => {
-    setSearchbarEnabledState(enabled);
-  };
-
-  const setSearchbarLoadLimit = (limit: number) => {
-    const maxLimit = indexerType === 'custom' ? 1000 : 500;
-    const clamped = Math.min(maxLimit, Math.max(100, Math.round(limit)));
-    setSearchbarLoadLimitState(clamped);
-  };
-
-  const setEmbedLinksEnabled = (enabled: boolean) => {
-    setEmbedLinksEnabledState(enabled);
-  };
-
-  useEffect(() => {
-    const maxLimit = indexerType === 'custom' ? 1000 : 500;
-    setSearchbarLoadLimitState((current) => Math.min(maxLimit, Math.max(100, current)));
-  }, [indexerType]);
-
-  const setHideTransactionPopup = (enabled: boolean) => {
-    setHideTransactionPopupState(enabled);
-  };
-
-  const setTurquoiseThemeEnabled = (enabled: boolean) => {
-    setTurquoiseThemeEnabledState(enabled);
-    if (typeof document !== 'undefined') {
-      if (enabled) {
-        document.documentElement.setAttribute('data-accent', 'turquoise');
-      } else {
-        document.documentElement.removeAttribute('data-accent');
-      }
-    }
-  };
-
-  const setDebugLogEnabled = (enabled: boolean) => {
-    setDebugLogEnabledState(enabled);
-  };
-
-  const setProfileAutoRefreshEnabled = (enabled: boolean) => {
-    setProfileAutoRefreshEnabledState(enabled);
-  };
-
   const getNetworkDisplayName = (network: KaspaNetwork): string => {
     return getNetworkDisplayNameUtil(network);
   };
@@ -412,30 +226,6 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     kaspaNodeUrl,
     theme,
     setTheme,
-    deeplApiKey,
-    setDeeplApiKey,
-    deeplTargetLang,
-    setDeeplTargetLang,
-    tabTitleEnabled,
-    setTabTitleEnabled,
-    systemNotificationsEnabled,
-    setSystemNotificationsEnabled,
-    bookmarksEnabled,
-    setBookmarksEnabled,
-    searchbarEnabled,
-    setSearchbarEnabled,
-    searchbarLoadLimit,
-    setSearchbarLoadLimit,
-    embedLinksEnabled,
-    setEmbedLinksEnabled,
-    hideTransactionPopup,
-    setHideTransactionPopup,
-    turquoiseThemeEnabled,
-    setTurquoiseThemeEnabled,
-    debugLogEnabled,
-    setDebugLogEnabled,
-    profileAutoRefreshEnabled,
-    setProfileAutoRefreshEnabled,
     isSettingsLoaded
   };
 

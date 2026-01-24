@@ -14,7 +14,7 @@ your-domain.com/api/      → API backend (proxied to localhost:3000)
 
 **Steps:**
 1. Build the React app: `npm run build:prod`
-2. Deploy built files to `/var/www/k-social/dist/`
+2. Deploy built files to `/var/www/K/dist/`
 3. Run your API backend on `localhost:3000`
 4. Use the provided `nginx.conf` configuration
 5. Users can use `/api` as the API URL in settings
@@ -25,7 +25,7 @@ Deploy only the React app, users configure their own backend URLs.
 
 **Steps:**
 1. Build the React app: `npm run build:prod`
-2. Deploy built files to `/var/www/k-social/dist/`
+2. Deploy built files to `/var/www/K/dist/`
 3. Remove/disable the `/api/` location block in nginx.conf
 4. Users enter their backend URLs in Settings (e.g., `https://their-backend.com`)
 
@@ -55,23 +55,7 @@ add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept";
 - Local backend: `http://localhost:3000`
 - Same domain: `/api`
 - Remote backend: `https://api.example.com`
-- Custom port: `https://example.com:8090`
-
-## DeepL Proxy (Required for Browser Requests)
-
-DeepL blocks direct browser requests due to CORS. Proxy requests through your web server:
-
-```nginx
-location /deepl/ {
-  proxy_pass https://api-free.deepl.com/;
-  proxy_set_header Host api-free.deepl.com;
-  proxy_set_header X-Real-IP $remote_addr;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
-
-The frontend sends translation requests to `/deepl/v2/translate`.
+- Custom port: `https://example.com:8080`
 
 ## Backend Requirements
 
@@ -106,7 +90,7 @@ npm run build:prod
 ./deploy.sh
 
 # Or manual deployment:
-sudo cp -r dist/* /var/www/k-social/dist/
+sudo cp -r dist/* /var/www/K/dist/
 sudo systemctl reload nginx
 ```
 
