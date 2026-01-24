@@ -74,6 +74,9 @@ server.get('/head', async (request, response) => {
         await database.withClient(async client => {
             const heightDifference = parseIntParam(request.query.heightDifference, "heightDifference");
             const endHeight = await database.getMaxHeight(client);
+            if (!Number.isFinite(endHeight)) {
+                throw new Error("indexer not ready");
+            }
             let startHeight = endHeight - heightDifference;
             if (startHeight < 0) {
                 startHeight = 0;

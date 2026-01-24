@@ -144,7 +144,8 @@ export default class Database {
         if (result.rows.length === 0) {
             return 0;
         }
-        return parseInt(result.rows[0].max_height);
+        const maxHeight = parseInt(result.rows[0].max_height);
+        return Number.isFinite(maxHeight) ? maxHeight : 0;
     }
 
     getBlockHeight = async (client: pg.PoolClient, blockHash: string): Promise<number> => {
