@@ -40,7 +40,14 @@ class KaspaDatabaseDashboard {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new Error('API returned an unexpected status');
+                const errorText = await response.text();
+                throw new Error(`API error ${response.status}: ${errorText}`);
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const errorText = await response.text();
+                throw new Error(`Unexpected response: ${errorText}`);
             }
 
             const data = await response.json();
