@@ -41,16 +41,23 @@ export default class ApiDataSource implements DataSource {
     };
 
     private fetch = async <T>(url: string): Promise<T | void> => {
-        const response = await fetch(url)
-            .catch(_ => {
-                // Do nothing
-            })
-            .then(response => {
-                return response;
-            });
-        if (!response) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+            }
+
+            const contentType = response.headers.get("content-type") || "";
+            if (!contentType.includes("application/json")) {
+                const errorText = await response.text();
+                throw new Error(`Expected JSON, got: ${errorText || "non-JSON response"}`);
+            }
+
+            return response.json();
+        } catch (error) {
+            console.error(`Fetch failed for ${url}:`, error);
             return Promise.resolve();
         }
-        return response.json();
     };
 }
