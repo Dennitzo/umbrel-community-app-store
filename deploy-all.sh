@@ -36,7 +36,7 @@ cd "${ROOT_DIR}/bridge"
 git pull
 
 cd "${ROOT_DIR}"
-docker build -t dennitzo/kaspa-stratum-bridge:latest -f bridge/Dockerfile.stratum-bridge bridge
+docker build -t dennitzo/kaspa-stratum-bridge:latest -f bridge/Dockerfile.stratum-bridge "${ROOT_DIR}"
 docker push dennitzo/kaspa-stratum-bridge:latest
 
 docker build -t dennitzo/kaspa-stratum-dashboard:latest -f bridge/Dockerfile.dashboard bridge
