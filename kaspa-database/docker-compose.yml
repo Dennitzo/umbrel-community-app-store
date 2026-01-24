@@ -2,6 +2,7 @@ services:
   kaspa_db:
     image: postgres:17-alpine
     restart: on-failure
+    stop_grace_period: 1m
     shm_size: 4G
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -17,6 +18,7 @@ services:
   simply_kaspa_indexer:
     image: supertypo/simply-kaspa-indexer:latest
     restart: on-failure
+    stop_grace_period: 1m
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: >
@@ -32,6 +34,7 @@ services:
   k-transaction-processor:
     image: thesheepcat/k-transaction-processor:latest
     restart: on-failure
+    stop_grace_period: 1m
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: >
@@ -50,6 +53,7 @@ services:
   indexer-ui-api:
     image: dennitzo/kaspa-database-api:latest
     restart: on-failure
+    stop_grace_period: 1m
     depends_on:
       - kaspa_db
     extra_hosts:
@@ -67,6 +71,7 @@ services:
   frontend:
     image: dennitzo/kaspa-database-ui:latest
     restart: on-failure
+    stop_grace_period: 1m
     depends_on:
       - indexer-ui-api
     extra_hosts:

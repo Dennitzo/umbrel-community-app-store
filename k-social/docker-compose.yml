@@ -2,6 +2,7 @@ services:
   k-webserver:
     image: thesheepcat/k-webserver:latest
     restart: on-failure
+    stop_grace_period: 1m
     env_file:
       - ${KASPA_DB_ENV_PATH:-/home/umbrel/umbrel/app-data/kaspa-database/.env}
     environment:
@@ -22,6 +23,7 @@ services:
   web:
     build: .
     restart: on-failure
+    stop_grace_period: 1m
     depends_on:
       - k-webserver
     environment:
