@@ -1,26 +1,25 @@
 services:
   app_proxy:
     environment:
-      APP_HOST: kaspa-node_frontend_1
+      APP_HOST: frontend
       APP_PORT: 4321
 
   frontend:
-    image: elldee/kaspa-frontend:v0.3.1@sha256:bf9dc2189df37561a9d81e1368c935d1d94c7e3cd57da8d759cb83be6ea3b44a
+    image: dennitzo/kaspa-node-ui:latest
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
       - kaspa-api
   
   kaspa-api:
-    image: elldee/kaspa-api:v0.3.1@sha256:1ddc6fd181aab9bd2679769233766dcfaba2030e52f3972fc15acad06297bc8a
+    image: dennitzo/kaspa-node-api:latest
     restart: on-failure
     stop_grace_period: 1m
     environment:
-      KASPAD_HOST: kaspad
-      KASPAD_RPC_PORT: 18110
-      KASPAD_CONTAINER_NAME: kaspa-node_kaspad_1
+      APP_COMPOSE_PROJECT: kaspa-node
+      APP_KASPAD_SERVICE: kaspad
     volumes:
-      - ${APP_DATA_DIR}/logs:/logs:ro  # For log parsing
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - kaspad
 
