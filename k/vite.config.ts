@@ -80,6 +80,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: true,
     port: 5173,
+    allowedHosts: [
+    'umbrel.local',
+    ],
     fs: {
       allow: ['..']
     }
