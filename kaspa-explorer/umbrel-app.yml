@@ -16,7 +16,7 @@ support: https://github.com/kaspanet
 dependencies:
   - kaspa-node
   - kaspa-database
-port: 8080
+port: 19113
 gallery: []
 path: ""
 defaultUsername: ""

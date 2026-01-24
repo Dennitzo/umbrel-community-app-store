@@ -4,8 +4,6 @@ set -euo pipefail
 # Build and push all Kaspa stack images (no compose up/down).
 
 ROOT_DIR="/home/umbrel/Kaspa/umbrel-community-app-store"
-APP_DATA_BASE="/home/umbrel/umbrel/app-data"
-
 docker login
 
 # kaspa-k-social
@@ -24,6 +22,14 @@ docker build -t dennitzo/kaspa-database-api:latest ./api
 docker push dennitzo/kaspa-database-api:latest
 docker build -t dennitzo/kaspa-database-ui:latest ./frontend
 docker push dennitzo/kaspa-database-ui:latest
+
+# kaspa-explorer-ng
+cd "${ROOT_DIR}/kaspa-explorer-ng"
+git pull
+
+cd "${ROOT_DIR}"
+docker build -t dennitzo/kaspa-explorer-ng:latest -f kaspa-explorer-ng/Dockerfile kaspa-explorer-ng
+docker push dennitzo/kaspa-explorer-ng:latest
 
 # kaspa-node (incl. graph-inspector images)
 cd "${ROOT_DIR}"
