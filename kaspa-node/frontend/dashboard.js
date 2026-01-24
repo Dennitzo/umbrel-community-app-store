@@ -191,14 +191,24 @@ class KaspaDatabaseDashboard {
         const nodeStatus = payload.status || 'unknown';
         const image = payload.image || '—';
         const uptimeSeconds = Number(payload.uptimeSeconds ?? 0);
-        const appDir = payload.appDir || '—';
-        const utxoIndexEnabled = payload.utxoIndexEnabled ? 'enabled' : 'disabled';
+        const appDir = payload.appDir || '/app/data';
+        const utxoIndexEnabled = payload.utxoIndexEnabled ? '--utxoindex' : '';
 
         this.elements.dbSizeValue.textContent = nodeStatus;
         this.elements.connectedClientsValue.textContent = this.formatDuration(uptimeSeconds);
-        this.elements.tableCountValue.textContent = utxoIndexEnabled;
+        this.elements.tableCountValue.textContent = '--appdir=/app/data';
         this.elements.largestTableValue.textContent = image;
-        this.elements.rowSummary.textContent = `App dir: ${appDir}`;
+        this.elements.rowSummary.textContent = [
+            '--yes',
+            '--nologfiles',
+            '--disable-upnp',
+            utxoIndexEnabled,
+            '--rpclisten=0.0.0.0:16110',
+            '--rpclisten-borsh=0.0.0.0:17110',
+            '--rpclisten-json=0.0.0.0:18110',
+        ]
+            .filter(Boolean)
+            .join(' ');
 
         this.populateTableStats(payload.logTail || []);
 
@@ -233,7 +243,6 @@ class KaspaDatabaseDashboard {
                 <td class="font-medium text-sm leading-tight">${entry.message}</td>
                 <td>${entry.level}</td>
                 <td>${entry.timestamp}</td>
-                <td>${entry.source}</td>
             `;
             container.appendChild(row);
         });

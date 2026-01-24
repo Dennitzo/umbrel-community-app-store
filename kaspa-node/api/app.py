@@ -57,9 +57,8 @@ def _parse_log_line(line: str) -> dict:
             "message": message.strip(),
             "level": level or "--",
             "timestamp": timestamp or "--",
-            "source": "kaspad",
         }
-    return {"message": line, "level": "--", "timestamp": "--", "source": "kaspad"}
+    return {"message": line, "level": "--", "timestamp": "--"}
 
 
 @app.after_request
