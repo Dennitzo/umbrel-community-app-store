@@ -15,6 +15,7 @@ exec /app/entrypoint.sh kaspad \
   --rpclisten=0.0.0.0:16110 \
   --rpclisten-borsh=0.0.0.0:17110 \
   --rpclisten-json=0.0.0.0:18110 \
+  --utxoindex \
   --loglevel=info \
   --yes \
   --nologfiles \
