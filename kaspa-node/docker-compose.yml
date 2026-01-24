@@ -7,6 +7,8 @@ services:
       - kaspa-api
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    ports:
+      - "19112:19112"
   
   kaspa-api:
     image: dennitzo/kaspa-node-api:latest
