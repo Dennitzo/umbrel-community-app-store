@@ -10,7 +10,10 @@ export const useTransactionsCount = () =>
       try {
         const { data } = await axios.get(apiUrl("/transactions/count/"));
         return data as TransactionCount;
-      } catch {
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 503) {
+          return null;
+        }
         return {
           timestamp: 0,
           dateTime: "",
@@ -19,6 +22,7 @@ export const useTransactionsCount = () =>
         } satisfies TransactionCount;
       }
     },
+    retry: false,
   });
 
 interface TransactionCount {

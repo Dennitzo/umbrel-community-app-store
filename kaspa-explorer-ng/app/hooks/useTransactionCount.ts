@@ -29,6 +29,7 @@ export const useTransactionCount = () =>
       const initialDate = new Date().toISOString().split("T")[0];
       return fetchForDate(initialDate);
     },
+    retry: false,
   });
 
 export interface TransactionCount {

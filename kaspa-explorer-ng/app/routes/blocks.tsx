@@ -59,9 +59,12 @@ export default function Blocks() {
     regular: 0,
     coinbase: 0,
   };
+  const hasTxCounts = transactionsCount !== null;
   const totalTxCount = isLoadingTxCount
     ? ""
-    : Math.floor((safeTransactionsCount.regular + safeTransactionsCount.coinbase) / 1_000_000).toString();
+    : hasTxCounts
+      ? Math.floor((safeTransactionsCount.regular + safeTransactionsCount.coinbase) / 1_000_000).toString()
+      : "N/A";
 
   return (
     <>
