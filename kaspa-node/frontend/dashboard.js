@@ -20,6 +20,7 @@ class KaspaDatabaseDashboard {
             storageValue: document.getElementById('storageValue'),
             rowSummary: document.getElementById('rowSummary'),
             tableStatsBody: document.getElementById('tableStatsBody'),
+            graphLogBody: document.getElementById('graphLogBody'),
             statusBadge: document.getElementById('statusBadge'),
             statusLabel: document.getElementById('statusLabel'),
             statusDot: document.getElementById('statusDot'),
@@ -123,7 +124,8 @@ class KaspaDatabaseDashboard {
             .filter(Boolean)
             .join('\n');
 
-        this.populateTableStats(payload.logTail || []);
+        this.populateTableStats(payload.logTail || [], this.elements.tableStatsBody);
+        this.populateTableStats(payload.graphLogTail || [], this.elements.graphLogBody);
 
         if (this.elements.lastUpdated) {
             if (payload.timestamp) {
@@ -137,8 +139,10 @@ class KaspaDatabaseDashboard {
         }
     }
 
-    populateTableStats(stats) {
-        const container = this.elements.tableStatsBody;
+    populateTableStats(stats, container) {
+        if (!container) {
+            return;
+        }
         container.innerHTML = '';
 
         if (!Array.isArray(stats) || stats.length === 0) {
@@ -155,7 +159,7 @@ class KaspaDatabaseDashboard {
             row.innerHTML = `
                 <td class="font-medium text-sm leading-tight">${entry.message}</td>
                 <td>${entry.level}</td>
-                <td>${entry.timestamp}</td>
+                <td>${this.formatLogTime(entry.timestamp)}</td>
             `;
             container.appendChild(row);
         });
@@ -200,6 +204,13 @@ class KaspaDatabaseDashboard {
                     <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
                 </tr>
             `;
+            if (this.elements.graphLogBody) {
+                this.elements.graphLogBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+                    </tr>
+                `;
+            }
             if (this.elements.lastUpdated) {
                 this.elements.lastUpdated.textContent = '--';
             }
@@ -250,6 +261,17 @@ class KaspaDatabaseDashboard {
             return `${hours}h ${minutes}m`;
         }
         return `${minutes}m`;
+    }
+
+    formatLogTime(value) {
+        if (!value) {
+            return '--';
+        }
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) {
+            return value;
+        }
+        return parsed.toLocaleString();
     }
 
     formatStatus(value) {

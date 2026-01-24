@@ -15,6 +15,7 @@ docker_client = docker.from_env()
 
 PROJECT_NAME = os.environ.get("APP_COMPOSE_PROJECT", "kaspa-node")
 KASPAD_SERVICE = os.environ.get("APP_KASPAD_SERVICE", "kaspad")
+GRAPH_PROCESSING_SERVICE = os.environ.get("APP_GRAPH_PROCESSING_SERVICE", "graph-processing")
 KNOWN_SERVICES = {
     "kaspad": "kaspanet/rusty-kaspad",
     "kaspa-api": "kaspa-node-api",
@@ -99,7 +100,7 @@ def status():
         state = container.attrs.get("State", {})
         config = container.attrs.get("Config", {})
         cmd = " ".join(config.get("Cmd") or [])
-        log_tail_raw = container.logs(tail=12).decode("utf-8", errors="replace")
+        log_tail_raw = container.logs(tail=10).decode("utf-8", errors="replace")
         log_tail = [
             _parse_log_line(line.strip()) for line in log_tail_raw.splitlines() if line.strip()
         ]
@@ -110,6 +111,16 @@ def status():
             if match:
                 kaspad_version = match.group(1)
                 break
+        graph_log_tail = []
+        try:
+            graph_container = _resolve_container(GRAPH_PROCESSING_SERVICE)
+            graph_raw = graph_container.logs(tail=5).decode("utf-8", errors="replace")
+            graph_log_tail = [
+                _parse_log_line(line.strip()) for line in graph_raw.splitlines() if line.strip()
+            ]
+            graph_log_tail.reverse()
+        except Exception:
+            graph_log_tail = []
         payload = {
             "status": state.get("Status", "unknown"),
             "image": config.get("Image", "unknown"),
@@ -118,6 +129,7 @@ def status():
             "appDirSizeBytes": _container_appdir_bytes(container),
             "utxoIndexEnabled": "--utxoindex" in cmd,
             "logTail": log_tail,
+            "graphLogTail": graph_log_tail,
             "kaspadVersion": kaspad_version,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }

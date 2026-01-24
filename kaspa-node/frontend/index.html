@@ -66,8 +66,7 @@
             <div class="grid gap-6 lg:grid-cols-1">
                 <section class="table-card">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-xl font-semibold text-white">Latest Log Lines</h2>
-                        <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Tail</span>
+                        <h2 class="text-xl font-semibold text-white">Rusty Kaspad Log</h2>
                     </div>
                     <p class="mt-2 text-sm text-zinc-400">
                         A short tail of the kaspad logs to spot sync, peers, and startup events.
@@ -81,6 +80,29 @@
                             </tr>
                         </thead>
                         <tbody id="tableStatsBody">
+                            <tr>
+                                <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="table-card">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-white">DAG-Visualizer Log</h2>
+                    </div>
+                    <p class="mt-2 text-sm text-zinc-400">
+                        Recent graph-processing logs to verify DAG data ingestion.
+                    </p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Message</th>
+                                <th>Level</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="graphLogBody">
                             <tr>
                                 <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
                             </tr>
