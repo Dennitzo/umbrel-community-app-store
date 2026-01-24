@@ -32,14 +32,14 @@ docker build -t dennitzo/kaspa-explorer-ng:latest -f kaspa-explorer-ng/Dockerfil
 docker push dennitzo/kaspa-explorer-ng:latest
 
 # kaspa-stratum
-cd "${ROOT_DIR}/bridge"
+cd "${ROOT_DIR}/rusty-kaspa-RKStratum2.0"
 git pull
 
 cd "${ROOT_DIR}"
-docker build -t dennitzo/kaspa-stratum-bridge:latest -f bridge/Dockerfile.stratum-bridge "${ROOT_DIR}"
+docker build -t dennitzo/kaspa-stratum-bridge:latest -f rusty-kaspa-RKStratum2.0/bridge/Dockerfile.stratum-bridge rusty-kaspa-RKStratum2.0
 docker push dennitzo/kaspa-stratum-bridge:latest
 
-docker build -t dennitzo/kaspa-stratum-dashboard:latest -f bridge/Dockerfile.dashboard bridge
+docker build -t dennitzo/kaspa-stratum-dashboard:latest -f rusty-kaspa-RKStratum2.0/bridge/Dockerfile.dashboard rusty-kaspa-RKStratum2.0/bridge
 docker push dennitzo/kaspa-stratum-dashboard:latest
 
 # kaspa-node (incl. graph-inspector images)
