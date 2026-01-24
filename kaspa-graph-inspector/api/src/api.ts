@@ -146,6 +146,11 @@ server.get('/blockDAAScore', async (request, response) => {
         });
         return;
     } catch (error) {
+        const message = String(error);
+        if (message.includes("DAA scores")) {
+            response.send(JSON.stringify({ blocks: [], edges: [], heightGroups: [] }));
+            return;
+        }
         response.status(400).send(`invalid input: ${error}`);
         return;
     }
