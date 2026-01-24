@@ -12,10 +12,10 @@ class KaspaDatabaseDashboard {
     cacheElements() {
         return {
             dbSizeValue: document.getElementById('dbSizeValue'),
-            connectedClientsValue: document.getElementById('connectedClientsValue'),
             tableCountValue: document.getElementById('tableCountValue'),
             largestTableValue: document.getElementById('largestTableValue'),
-            statusStorageValue: document.getElementById('statusStorageValue'),
+            uptimeValue: document.getElementById('uptimeValue'),
+            storageValue: document.getElementById('storageValue'),
             rowSummary: document.getElementById('rowSummary'),
             tableStatsBody: document.getElementById('tableStatsBody'),
             statusBadge: document.getElementById('statusBadge'),
@@ -90,10 +90,12 @@ class KaspaDatabaseDashboard {
         const utxoIndexEnabled = payload.utxoIndexEnabled;
 
         this.elements.dbSizeValue.textContent = nodeStatus;
-        this.elements.connectedClientsValue.textContent = `Uptime: ${this.formatDuration(uptimeSeconds)}`;
         this.elements.largestTableValue.textContent = image;
-        if (this.elements.statusStorageValue) {
-            this.elements.statusStorageValue.textContent = `Storage: ${this.formatBytes(appDirSizeBytes)}`;
+        if (this.elements.uptimeValue) {
+            this.elements.uptimeValue.textContent = this.formatDuration(uptimeSeconds);
+        }
+        if (this.elements.storageValue) {
+            this.elements.storageValue.textContent = this.formatBytes(appDirSizeBytes);
         }
         this.elements.rowSummary.textContent = [
             `--appdir=${appDir}`,
@@ -160,12 +162,14 @@ class KaspaDatabaseDashboard {
             this.elements.statusLabel.textContent = 'Waiting for API response';
             this.elements.statusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
             this.elements.dbSizeValue.textContent = '--';
-            this.elements.connectedClientsValue.textContent = 'Uptime: --';
             if (this.elements.tableCountValue) {
                 this.elements.tableCountValue.textContent = '--';
             }
-            if (this.elements.statusStorageValue) {
-                this.elements.statusStorageValue.textContent = 'Storage: --';
+            if (this.elements.uptimeValue) {
+                this.elements.uptimeValue.textContent = '--';
+            }
+            if (this.elements.storageValue) {
+                this.elements.storageValue.textContent = '--';
             }
             this.elements.rowSummary.textContent = 'Waiting for connection...';
             this.elements.largestTableValue.textContent = '—';
