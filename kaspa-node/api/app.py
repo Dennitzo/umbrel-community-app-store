@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from datetime import datetime, timezone
 
 import docker
@@ -104,15 +105,10 @@ def status():
         ]
         sync_percent = None
         for line in reversed(log_tail_raw.splitlines()):
-            if "%" in line:
-                parts = line.split("%", 1)[0].split()
-                if parts:
-                    candidate = parts[-1]
-                    try:
-                        sync_percent = float(candidate)
-                        break
-                    except ValueError:
-                        continue
+            match = re.search(r"\bIBD:.*\((\d+(?:\.\d+)?)%\)", line)
+            if match:
+                sync_percent = float(match.group(1))
+                break
         payload = {
             "status": state.get("Status", "unknown"),
             "image": config.get("Image", "unknown"),
