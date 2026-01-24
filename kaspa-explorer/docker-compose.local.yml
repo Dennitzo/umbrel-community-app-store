@@ -1,0 +1,8 @@
+services:
+  app_proxy:
+    profiles:
+      - umbrel
+
+  web:
+    ports:
+      - "19113:8080"
