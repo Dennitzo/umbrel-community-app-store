@@ -5,18 +5,28 @@ set -e
 LOG_DIR="/logs"
 LOG_FILE="${LOG_DIR}/kaspad_buffer.log"
 BUFFER_SIZE=10000
+CONFIG_DIR="/data/config"
+CONFIG_FILE="${CONFIG_DIR}/kaspad.toml"
 
 # Ensure log directory exists
 mkdir -p "${LOG_DIR}"
 
+# Ensure config exists for appdir/utxoindex defaults
+mkdir -p "${CONFIG_DIR}"
+if [ ! -f "${CONFIG_FILE}" ]; then
+  cat > "${CONFIG_FILE}" <<'EOF'
+appdir = "/data"
+utxoindex = true
+EOF
+fi
+
 # Call the original entrypoint with kaspad and our custom arguments
 # The original entrypoint handles user switching and IP detection
 exec /app/entrypoint.sh kaspad \
-  --appdir=/data \
+  -C "${CONFIG_FILE}" \
   --rpclisten=0.0.0.0:16110 \
   --rpclisten-borsh=0.0.0.0:17110 \
   --rpclisten-json=0.0.0.0:18110 \
-  --utxoindex \
   --loglevel=info \
   --yes \
   --nologfiles \
