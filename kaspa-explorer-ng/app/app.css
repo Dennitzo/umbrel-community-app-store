@@ -55,40 +55,10 @@
 }
 
 body {
-    background-color: #0b0e11;
+    background-color: #f3f3f3;
     display: block;
     font-family: Rubik, system-ui, Avenir, Helvetica, Arial, sans-serif;
     font-size: 14px;
-    color: #e5e7eb;
-}
-
-/* Dark mode overrides for utility classes used across the UI */
-.bg-white {
-    background-color: #101318 !important;
-}
-
-.bg-gray-50 {
-    background-color: #151a22 !important;
-}
-
-.bg-gray-25 {
-    background-color: #1b222d !important;
-}
-
-.text-black {
-    color: #f3f4f6 !important;
-}
-
-.text-gray-500 {
-    color: #a1a1aa !important;
-}
-
-.text-gray-600 {
-    color: #9ca3af !important;
-}
-
-.border-gray-200 {
-    border-color: #242b36 !important;
 }
 
 .link-container {
