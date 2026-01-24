@@ -48,3 +48,72 @@ services:
       --rpclisten=0.0.0.0:16110
       --rpclisten-borsh=0.0.0.0:17110
       --rpclisten-json=0.0.0.0:18110
+
+  graph-postgres:
+    image: postgres:13.2
+    restart: on-failure
+    stop_grace_period: 1m
+    environment:
+      POSTGRES_USER: kgi
+      POSTGRES_PASSWORD: kgi
+      POSTGRES_DB: kgi
+    volumes:
+      - ${APP_DATA_DIR}/graph-postgres:/var/lib/postgresql/data
+
+  graph-processing:
+    build:
+      context: ../kaspa-graph-inspector/processing
+      args:
+        KASPAD_VERSION: v1.0.2
+    restart: on-failure
+    stop_grace_period: 1m
+    depends_on:
+      - graph-postgres
+      - kaspad
+    environment:
+      POSTGRES_USER: kgi
+      POSTGRES_PASSWORD: kgi
+      POSTGRES_DB: kgi
+      POSTGRES_HOST: graph-postgres
+      POSTGRES_PORT: "5432"
+      KGI_RPCSERVER: kaspad:16110
+    command: >
+      /app/processing
+      --connection-string=postgres://kgi:kgi@graph-postgres:5432/kgi?sslmode=disable
+      --rpcserver=kaspad:16110
+
+  graph-api:
+    build:
+      context: ../kaspa-graph-inspector/api
+    restart: on-failure
+    stop_grace_period: 1m
+    depends_on:
+      - graph-processing
+    environment:
+      POSTGRES_USER: kgi
+      POSTGRES_PASSWORD: kgi
+      POSTGRES_DB: kgi
+      POSTGRES_HOST: graph-postgres
+      POSTGRES_PORT: "5432"
+      API_PORT: "4575"
+    command:
+      - npm
+      - run
+      - --prefix
+      - /app
+      - start
+
+  graph-web:
+    build:
+      context: ../kaspa-graph-inspector/web
+    restart: on-failure
+    stop_grace_period: 1m
+    depends_on:
+      - graph-api
+    environment:
+      REACT_APP_API_ADDRESS: umbrel.local:19112/graph-api
+      REACT_APP_EXPLORER_ADDRESS: explorer.kaspa.org
+      REACT_APP_KASPA_LIVE_ADDRESS: kaspa.live
+    command:
+      - serve
+      - --listen=8080
