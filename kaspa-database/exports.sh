@@ -7,8 +7,8 @@ export APP_KASPA_NODE_PORT="${APP_KASPA_NODE_PORT:-17110}"
 
 mkdir -p "${EXPORTS_APP_DIR}/data"
 
-APP_KASPA_DB_USER="kaspa"
-APP_KASPA_DB_PASSWORD="dbpassword"
+export APP_KASPA_DB_USER="kaspa"
+export APP_KASPA_DB_PASSWORD="dbpassword"
 
 export APP_KASPA_NETWORK="mainnet"
 export APP_KASPA_INDEXER_ADDRESS="10.21.24.11"
