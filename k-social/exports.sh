@@ -7,27 +7,14 @@ export APP_K_SOCIAL_PORT="5173"
 export APP_K_SOCIAL_KWEBSERVER_PORT="3001"
 export APP_K_SOCIAL_KWEBSERVER_API_URI="http://${APP_K_SOCIAL_KWEBSERVER_ADDRESS}:${APP_K_SOCIAL_KWEBSERVER_PORT}"
 
-# Kaspa Database connection (reuse kaspa-database exports)
-KASPA_DB_EXPORTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../kaspa-database" && pwd)"
-if [[ -f "${KASPA_DB_EXPORTS_DIR}/exports.sh" ]]; then
-  # shellcheck disable=SC1090
-  source "${KASPA_DB_EXPORTS_DIR}/exports.sh"
-else
-  echo "Missing kaspa-database/exports.sh at ${KASPA_DB_EXPORTS_DIR}" >&2
-fi
+# Static DB credentials (no .env)
+export APP_KASPA_DB_USER="kaspa"
+export APP_KASPA_DB_PASSWORD="dbpassword"
 
-# Load DB credentials from the Umbrel app-data .env if present.
-KASPA_DB_ENV_PATH="${KASPA_DB_ENV_PATH:-/home/umbrel/umbrel/app-data/kaspa-database/.env}"
-if [[ -f "${KASPA_DB_ENV_PATH}" ]]; then
-  # shellcheck disable=SC1090
-  source "${KASPA_DB_ENV_PATH}"
-else
-  echo "Missing kaspa-database .env at ${KASPA_DB_ENV_PATH}" >&2
-fi
-
-# Override DB host for local dev to reach kaspa-database via host.docker.internal.
+# Kaspa Database connection (static, no .env)
 export APP_KASPA_DB_ADDRESS="host.docker.internal"
-export APP_KASPA_DB_PORT="${APP_KASPA_DB_PORT:-5432}"
+export APP_KASPA_DB_PORT="5432"
+export APP_KASPA_DB_NAME="kaspa"
 
 required_vars=(
   APP_KASPA_DB_ADDRESS

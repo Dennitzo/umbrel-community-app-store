@@ -5,15 +5,10 @@ export APP_KASPA_DB_PORT="5432"
 export APP_KASPA_DB_NAME="kaspa"
 export APP_KASPA_NODE_PORT="${APP_KASPA_NODE_PORT:-17110}"
 
-KASPA_DB_ENV="${EXPORTS_APP_DIR}/.env"
 mkdir -p "${EXPORTS_APP_DIR}/data"
 
 APP_KASPA_DB_USER="kaspa"
 APP_KASPA_DB_PASSWORD="dbpassword"
-{
-	echo "export APP_KASPA_DB_USER='${APP_KASPA_DB_USER}'"
-	echo "export APP_KASPA_DB_PASSWORD='${APP_KASPA_DB_PASSWORD}'"
-} > "${KASPA_DB_ENV}"
 
 . "${KASPA_DB_ENV}"
 
