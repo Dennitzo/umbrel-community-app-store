@@ -10,12 +10,12 @@ if [ ! -f "${CONFIG_PATH}" ]; then
 kaspad_address: "${APP_KASPA_STRATUM_KASPAD_ADDRESS}"
 web_port: "${APP_KASPA_STRATUM_WEB_PORT}"
 print_stats: true
-log_to_file: true
 
 instances:
   - stratum_port: ":5555"
-    min_share_diff: 4096
+    min_share_diff: 512
     prom_port: ":2114"
-    log_to_file: true
+    log_to_file: false
+    var_diff: true
 CONFIG
 fi
