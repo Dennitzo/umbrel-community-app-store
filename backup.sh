@@ -2,10 +2,10 @@
 set -euo pipefail
 
 KASPA_SOURCE="/home/umbrel/umbrel/app-data/kaspa-node/kaspa-mainnet"
-KASPA_DEST="/home/umbrel/Kaspa/backup/kaspa-mainnet/current"
+KASPA_DEST="/home/umbrel/Kaspa/backup/kaspa-mainnet"
 
 GRAPH_SOURCE="/home/umbrel/umbrel/app-data/kaspa-node/graph-postgres"
-GRAPH_DEST="/home/umbrel/Kaspa/backup/graph-postgres/current"
+GRAPH_DEST="/home/umbrel/Kaspa/backup/graph-postgres"
 
 docker stop kaspa-node_kaspad_1 || true
 docker stop kaspa-node_graph-postgres_1 || true
