@@ -12,6 +12,7 @@ class KaspaDatabaseDashboard {
     cacheElements() {
         return {
             dbSizeValue: document.getElementById('dbSizeValue'),
+            kaspadVersion: document.getElementById('kaspadVersion'),
             tableCountValue: document.getElementById('tableCountValue'),
             largestTableValue: document.getElementById('largestTableValue'),
             uptimeValue: document.getElementById('uptimeValue'),
@@ -88,8 +89,12 @@ class KaspaDatabaseDashboard {
         const appDir = payload.appDir || '/app/data';
         const appDirSizeBytes = Number(payload.appDirSizeBytes ?? 0);
         const utxoIndexEnabled = payload.utxoIndexEnabled;
+        const kaspadVersion = payload.kaspadVersion;
 
         this.elements.dbSizeValue.textContent = nodeStatus;
+        if (this.elements.kaspadVersion && kaspadVersion) {
+            this.elements.kaspadVersion.textContent = kaspadVersion;
+        }
         this.elements.largestTableValue.textContent = image;
         if (this.elements.uptimeValue) {
             this.elements.uptimeValue.textContent = this.formatDuration(uptimeSeconds);
@@ -162,6 +167,9 @@ class KaspaDatabaseDashboard {
             this.elements.statusLabel.textContent = 'Waiting for API response';
             this.elements.statusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
             this.elements.dbSizeValue.textContent = '--';
+            if (this.elements.kaspadVersion) {
+                this.elements.kaspadVersion.textContent = '1.0.2';
+            }
             if (this.elements.tableCountValue) {
                 this.elements.tableCountValue.textContent = '--';
             }

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from datetime import datetime, timezone
 
 import docker
@@ -103,6 +104,12 @@ def status():
             _parse_log_line(line.strip()) for line in log_tail_raw.splitlines() if line.strip()
         ]
         log_tail.reverse()
+        kaspad_version = None
+        for line in reversed(log_tail_raw.splitlines()):
+            match = re.search(r"\bkaspad\s+v([^\s]+)", line)
+            if match:
+                kaspad_version = match.group(1)
+                break
         payload = {
             "status": state.get("Status", "unknown"),
             "image": config.get("Image", "unknown"),
@@ -111,6 +118,7 @@ def status():
             "appDirSizeBytes": _container_appdir_bytes(container),
             "utxoIndexEnabled": "--utxoindex" in cmd,
             "logTail": log_tail,
+            "kaspadVersion": kaspad_version,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         return jsonify(payload)
