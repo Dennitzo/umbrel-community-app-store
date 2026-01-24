@@ -13,8 +13,7 @@ WORKDIR /app
 
 # ---------------------------------------- Planner image ----------------------------------------
 FROM chef AS planner
-COPY Cargo.toml ./Cargo.toml
-COPY bridge ./bridge
+COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
 # ---------------------------------------- Builder image ----------------------------------------
@@ -27,8 +26,7 @@ ENV RUSTFLAGS="-C target-feature=-crt-static" \
 # Build dependencies - this is the caching Docker layer
 RUN cargo chef cook --release --recipe-path recipe.json -p kaspa-stratum-bridge --features rkstratum_cpu_miner --bin stratum-bridge
 
-COPY Cargo.toml ./Cargo.toml
-COPY bridge ./bridge
+COPY . .
 RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=cargo-git,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=cache,id=cargo-target,target=/app/target,sharing=locked \
