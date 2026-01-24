@@ -12,6 +12,7 @@ class KaspaDatabaseDashboard {
     cacheElements() {
         return {
             dbSizeValue: document.getElementById('dbSizeValue'),
+            nodeStatusDot: document.getElementById('nodeStatusDot'),
             kaspadVersion: document.getElementById('kaspadVersion'),
             tableCountValue: document.getElementById('tableCountValue'),
             largestTableValue: document.getElementById('largestTableValue'),
@@ -98,7 +99,7 @@ class KaspaDatabaseDashboard {
         const utxoIndexEnabled = payload.utxoIndexEnabled;
         const kaspadVersion = payload.kaspadVersion;
 
-        this.elements.dbSizeValue.textContent = nodeStatus;
+        this.elements.dbSizeValue.textContent = this.formatStatus(nodeStatus);
         if (this.elements.kaspadVersion && kaspadVersion) {
             this.elements.kaspadVersion.textContent = kaspadVersion;
         }
@@ -167,6 +168,9 @@ class KaspaDatabaseDashboard {
             this.elements.statusBadge.style.backgroundColor = 'rgba(20, 184, 166, 0.15)';
             this.elements.statusLabel.textContent = label;
             this.elements.statusDot.className = 'w-3 h-3 rounded-full bg-teal-400 animate-pulse';
+            if (this.elements.nodeStatusDot) {
+                this.elements.nodeStatusDot.className = 'w-3 h-3 rounded-full bg-teal-400 animate-pulse';
+            }
         } else {
             this.elements.statusBadge.textContent = 'Offline';
             this.elements.statusBadge.style.borderColor = 'rgba(248, 113, 113, 0.7)';
@@ -174,6 +178,9 @@ class KaspaDatabaseDashboard {
             this.elements.statusLabel.textContent = 'Waiting for API response';
             this.elements.statusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
             this.elements.dbSizeValue.textContent = '--';
+            if (this.elements.nodeStatusDot) {
+                this.elements.nodeStatusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
+            }
             if (this.elements.kaspadVersion) {
                 this.elements.kaspadVersion.textContent = '1.0.2';
             }
@@ -243,6 +250,16 @@ class KaspaDatabaseDashboard {
             return `${hours}h ${minutes}m`;
         }
         return `${minutes}m`;
+    }
+
+    formatStatus(value) {
+        if (!value) {
+            return '--';
+        }
+        if (value.toLowerCase() === 'running') {
+            return 'Running';
+        }
+        return value.charAt(0).toUpperCase() + value.slice(1);
     }
 }
 
