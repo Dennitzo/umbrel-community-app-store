@@ -10,7 +10,7 @@ import { updateTheme } from './dag/EdgeSprite';
 const target = document.getElementById('kgi-root') as HTMLDivElement | null;
 if (target) {
     console.log(target.dataset);
-    const defaultParams = { interactive: true, scale: 0.4, theme: ThemeTypeConst.LIGHT };
+    const defaultParams = { interactive: true, scale: 0.4, theme: ThemeTypeConst.DARK };
     const params = getParams(target, defaultParams);
     setTheme(params.theme);
     updateTheme();
