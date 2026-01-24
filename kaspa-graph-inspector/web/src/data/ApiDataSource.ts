@@ -50,8 +50,12 @@ export default class ApiDataSource implements DataSource {
 
             const contentType = response.headers.get("content-type") || "";
             if (!contentType.includes("application/json")) {
-                const errorText = await response.text();
-                throw new Error(`Expected JSON, got: ${errorText || "non-JSON response"}`);
+                const rawText = await response.text();
+                try {
+                    return JSON.parse(rawText) as T;
+                } catch (parseError) {
+                    throw new Error(`Expected JSON, got: ${rawText || "non-JSON response"}`);
+                }
             }
 
             return response.json();
