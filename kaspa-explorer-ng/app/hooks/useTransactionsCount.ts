@@ -7,8 +7,17 @@ export const useTransactionsCount = () =>
   useQuery({
     queryKey: ["transactionsCount"],
     queryFn: async () => {
-      const { data } = await axios.get(apiUrl("/transactions/count/"));
-      return data as TransactionCount;
+      try {
+        const { data } = await axios.get(apiUrl("/transactions/count/"));
+        return data as TransactionCount;
+      } catch {
+        return {
+          timestamp: 0,
+          dateTime: "",
+          coinbase: 0,
+          regular: 0,
+        } satisfies TransactionCount;
+      }
     },
   });
 

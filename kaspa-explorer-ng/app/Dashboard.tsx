@@ -34,12 +34,16 @@ const Dashboard = () => {
   const { data: transactionsCount, isLoading: isLoadingTxCount } = useTransactionsCount();
   const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
+  const safeTransactionsCount = transactionsCount ?? {
+    regular: 0,
+    coinbase: 0,
+  };
   const totalTxCount = isLoadingTxCount
     ? ""
-    : Math.floor((transactionsCount!.regular + transactionsCount!.coinbase) / 1_000_000).toString();
+    : Math.floor((safeTransactionsCount.regular + safeTransactionsCount.coinbase) / 1_000_000).toString();
 
   const getAddressCountAbove1KAS = () => {
-    if (!addressDistribution) return;
+    if (!addressDistribution || addressDistribution.length === 0) return;
     return addressDistribution[0].tiers?.reduce((acc, curr) => acc + (curr.tier > 0 ? curr.count : 0), 0);
   };
 

@@ -7,8 +7,15 @@ export const useTopAddresses = () =>
   useQuery({
     queryKey: ["topAddresses"],
     queryFn: async () => {
-      const { data } = await axios.get(apiUrl("/addresses/top"));
-      return data[0] as TopAddresses;
+      try {
+        const { data } = await axios.get(apiUrl("/addresses/top"));
+        return data[0] as TopAddresses;
+      } catch {
+        return {
+          timestamp: 0,
+          ranking: [],
+        } satisfies TopAddresses;
+      }
     },
   });
 

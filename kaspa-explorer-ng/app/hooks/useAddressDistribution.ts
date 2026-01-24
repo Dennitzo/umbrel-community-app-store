@@ -7,8 +7,12 @@ export const useAddressDistribution = () =>
   useQuery({
     queryKey: ["addressDistribution"],
     queryFn: async () => {
-      const { data } = await axios.get(apiUrl("/addresses/distribution"));
-      return data as AddressDistribution[];
+      try {
+        const { data } = await axios.get(apiUrl("/addresses/distribution"));
+        return data as AddressDistribution[];
+      } catch {
+        return [];
+      }
     },
   });
 
