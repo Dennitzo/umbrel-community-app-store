@@ -25,7 +25,7 @@ developer: Kaspa Community
 website: https://github.com/kaspanet/rusty-kaspa
 repo: https://github.com/kaspanet/rusty-kaspa
 support: https://github.com/Dennitzo/umbrel-community-app-store/pulls
-port: 4321
+port: 19112
 path: ""
 gallery: []
 submitter: Luke Dunshea
