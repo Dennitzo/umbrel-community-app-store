@@ -31,7 +31,7 @@
                     <img src="kaspa_icon.svg" alt="Kaspa Node" width="72" height="72" class="rounded-2xl border border-white/10 shadow-2xl" />
                     <div>
                         <p class="text-sm uppercase tracking-[0.3em] text-zinc-400">Kaspa Node</p>
-                        <h1 class="text-3xl font-semibold text-white">Full node status & logs</h1>
+                        <h1 class="text-3xl font-semibold text-white">Rusty Kaspad v1.0.2</h1>
                         <p class="mt-2 text-sm text-zinc-400">
                             Track your Rusty Kaspad instance, confirm sync health, and inspect logs without leaving Umbrel.
                         </p>
@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <div class="grid gap-6 lg:grid-cols-2">
+            <div class="grid gap-6 lg:grid-cols-1">
                 <section class="table-card">
                     <div class="flex items-center justify-between">
                         <h2 class="text-xl font-semibold text-white">Latest Log Lines</h2>
@@ -91,54 +91,18 @@
                 </section>
 
                 <section class="stat-card space-y-4">
-                    <h2 class="text-xl font-semibold text-white">Node Stack</h2>
+                    <h2 class="text-xl font-semibold text-white">Node Logs</h2>
                     <p class="text-sm text-zinc-400">
-                        These containers keep your Kaspa node online and the dashboard responsive.
+                        Click the log button to stream kaspad output in real time.
                     </p>
-                    <ul class="stack-list">
-                        <li>
-                            <div>
-                                <button
-                                    class="stack-link text-sm font-semibold text-white"
-                                    type="button"
-                                    data-log-service="kaspad"
-                                    data-log-label="kaspanet/rusty-kaspad"
-                                >
-                                    kaspanet/rusty-kaspad
-                                </button>
-                                <p class="text-xs text-zinc-500">Kaspa full node</p>
-                            </div>
-                            <span class="stack-badge">Node</span>
-                        </li>
-                        <li>
-                            <div>
-                                <button
-                                    class="stack-link text-sm font-semibold text-white"
-                                    type="button"
-                                    data-log-service="kaspa-api"
-                                    data-log-label="kaspa-node-api"
-                                >
-                                    kaspa-node-api
-                                </button>
-                                <p class="text-xs text-zinc-500">Dashboard API</p>
-                            </div>
-                            <span class="stack-badge">API</span>
-                        </li>
-                        <li>
-                            <div>
-                                <button
-                                    class="stack-link text-sm font-semibold text-white"
-                                    type="button"
-                                    data-log-service="frontend"
-                                    data-log-label="kaspa-node-ui"
-                                >
-                                    kaspa-node-ui
-                                </button>
-                                <p class="text-xs text-zinc-500">Static UI</p>
-                            </div>
-                            <span class="stack-badge">UI</span>
-                        </li>
-                    </ul>
+                    <button
+                        class="stack-link text-sm font-semibold text-white"
+                        type="button"
+                        data-log-service="kaspad"
+                        data-log-label="kaspanet/rusty-kaspad"
+                    >
+                        Open kaspad logs
+                    </button>
                 </section>
             </div>
 
