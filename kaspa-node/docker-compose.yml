@@ -5,8 +5,6 @@ services:
     stop_grace_period: 1m
     depends_on:
       - kaspa-api
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "19112:19112"
   
@@ -21,8 +19,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - kaspad
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   kaspad:
     image: supertypo/rusty-kaspad:48f4d03
@@ -31,8 +27,6 @@ services:
     volumes:
       - ${APP_DATA_DIR}:/app/data
       - ${APP_DATA_DIR}/logs:/logs
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - 16110:16110  # GRPC
       - 16111:16111  # P2P

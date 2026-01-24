@@ -8,8 +8,8 @@ APP_DATA_BASE="/home/umbrel/umbrel/app-data"
 
 docker login
 
-# k-social
-cd "${ROOT_DIR}/k-social"
+# kaspa-k-social
+cd "${ROOT_DIR}/kaspa-k-social"
 git pull
 
 cd "${ROOT_DIR}"

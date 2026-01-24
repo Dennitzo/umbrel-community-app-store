@@ -4,8 +4,6 @@ services:
     restart: on-failure
     stop_grace_period: 1m
     shm_size: 4G
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - ${APP_DATA_DIR}/data/db:/var/lib/postgresql/data
     environment:
@@ -23,7 +21,7 @@ services:
       - "host.docker.internal:host-gateway"
     command: >
       -u
-      -s ws://${APP_KASPA_NODE_ADDRESS:-host.docker.internal}:${APP_KASPA_NODE_PORT:-17110}
+      -s ws://${APP_KASPA_NODE_ADDRESS}:${APP_KASPA_NODE_PORT:-17110}
       -d postgresql://${APP_KASPA_DB_USER}:${APP_KASPA_DB_PASSWORD}@${APP_KASPA_DB_ADDRESS}:${APP_KASPA_DB_PORT}/${APP_KASPA_DB_NAME}
       --prune-db
       --retention=7d
@@ -35,8 +33,6 @@ services:
     image: thesheepcat/k-transaction-processor:latest
     restart: on-failure
     stop_grace_period: 1m
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     command: >
       --upgrade-db
       --network ${APP_KASPA_NETWORK}
@@ -56,8 +52,6 @@ services:
     stop_grace_period: 1m
     depends_on:
       - kaspa_db
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
       APP_KASPA_DB_ADDRESS: ${APP_KASPA_DB_ADDRESS}
       APP_KASPA_DB_PORT: ${APP_KASPA_DB_PORT}
@@ -74,7 +68,5 @@ services:
     stop_grace_period: 1m
     depends_on:
       - indexer-ui-api
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "19111:19111"
