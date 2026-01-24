@@ -61,10 +61,7 @@ services:
       - ${APP_DATA_DIR}/graph-postgres:/var/lib/postgresql/data
 
   graph-processing:
-    build:
-      context: ../kaspa-graph-inspector/processing
-      args:
-        KASPAD_VERSION: v0.12.22
+    image: dennitzo/kaspa-graph-inspector-processing:latest
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
@@ -83,8 +80,7 @@ services:
       --rpcserver=kaspad:16110
 
   graph-api:
-    build:
-      context: ../kaspa-graph-inspector/api
+    image: dennitzo/kaspa-graph-inspector-api:latest
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
@@ -104,8 +100,7 @@ services:
       - start
 
   graph-web:
-    build:
-      context: ../kaspa-graph-inspector/web
+    image: dennitzo/kaspa-graph-inspector-web:latest
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
