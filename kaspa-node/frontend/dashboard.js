@@ -5,10 +5,6 @@ class KaspaDatabaseDashboard {
         this.apiTimeout = 30000;
         this.apiBase = this.resolveApiBase();
         this.elements = this.cacheElements();
-        this.logStream = null;
-        this.logBuffer = [];
-        this.logPollTimer = null;
-        this.activeLogService = null;
         this.pollTimer = null;
         this.init();
     }
@@ -24,16 +20,12 @@ class KaspaDatabaseDashboard {
             statusBadge: document.getElementById('statusBadge'),
             statusLabel: document.getElementById('statusLabel'),
             statusDot: document.getElementById('statusDot'),
-            logModal: document.getElementById('logModal'),
-            logOutput: document.getElementById('logOutput'),
-            logServiceLabel: document.getElementById('logServiceLabel'),
             lastUpdated: document.getElementById('lastUpdated'),
         };
     }
 
     init() {
         this.fetchData();
-        this.bindLogLinks();
     }
 
     async fetchData() {
@@ -88,127 +80,29 @@ class KaspaDatabaseDashboard {
         this.pollTimer = setTimeout(() => this.fetchData(), delayMs);
     }
 
-    bindLogLinks() {
-        const logLinks = document.querySelectorAll('[data-log-service]');
-        const closeTargets = document.querySelectorAll('[data-log-close]');
-
-        logLinks.forEach((link) => {
-            link.addEventListener('click', (event) => {
-                event.preventDefault();
-                const service = link.getAttribute('data-log-service');
-                const label = link.getAttribute('data-log-label') || link.textContent.trim();
-                if (service) {
-                    this.openLogStream(service, label);
-                }
-            });
-        });
-
-        closeTargets.forEach((button) => {
-            button.addEventListener('click', () => this.closeLogStream());
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                this.closeLogStream();
-            }
-        });
-    }
-
-    openLogStream(service, label) {
-        if (!this.elements.logModal || !this.elements.logOutput) {
-            return;
-        }
-
-        this.closeLogStream();
-        this.logBuffer = [];
-        this.activeLogService = service;
-        this.elements.logServiceLabel.textContent = label;
-        this.elements.logOutput.textContent = 'Connecting to live logs...';
-        this.elements.logModal.classList.add('is-open');
-        this.elements.logModal.setAttribute('aria-hidden', 'false');
-
-        this.fetchLogs();
-    }
-
-    closeLogStream() {
-        if (this.logStream) {
-            this.logStream.close();
-            this.logStream = null;
-        }
-        if (this.logPollTimer) {
-            clearTimeout(this.logPollTimer);
-            this.logPollTimer = null;
-        }
-        this.activeLogService = null;
-        if (this.elements.logModal) {
-            this.elements.logModal.classList.remove('is-open');
-            this.elements.logModal.setAttribute('aria-hidden', 'true');
-        }
-    }
-
-    async fetchLogs() {
-        if (!this.activeLogService) {
-            return;
-        }
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
-            const response = await fetch(
-                this.buildApiUrl(`/api/logs/${encodeURIComponent(this.activeLogService)}?tail=200`),
-                { signal: controller.signal }
-            );
-            clearTimeout(timeoutId);
-            if (!response.ok) {
-                throw new Error('Log fetch failed');
-            }
-            const text = await response.text();
-            this.logBuffer = text ? text.split('\n') : [];
-            this.elements.logOutput.textContent = this.logBuffer.join('\n') || 'No logs available yet.';
-            this.elements.logOutput.scrollTop = this.elements.logOutput.scrollHeight;
-        } catch (error) {
-            console.error(error);
-            this.elements.logOutput.textContent = 'Unable to load logs right now.';
-        } finally {
-            if (this.activeLogService) {
-                this.logPollTimer = setTimeout(() => this.fetchLogs(), 3000);
-            }
-        }
-    }
-
-    appendLogLine(line) {
-        if (!this.elements.logOutput) {
-            return;
-        }
-        this.logBuffer.push(line);
-        if (this.logBuffer.length > 400) {
-            this.logBuffer.shift();
-        }
-        this.elements.logOutput.textContent = this.logBuffer.join('\n');
-        this.elements.logOutput.scrollTop = this.elements.logOutput.scrollHeight;
-    }
-
     render(payload) {
         const nodeStatus = payload.status || 'unknown';
         const image = payload.image || '—';
         const uptimeSeconds = Number(payload.uptimeSeconds ?? 0);
         const appDir = payload.appDir || '/app/data';
-        const utxoIndexEnabled = payload.utxoIndexEnabled ? '--utxoindex' : '';
+        const utxoIndexEnabled = payload.utxoIndexEnabled ? 'utxoindex' : '';
 
         this.elements.dbSizeValue.textContent = nodeStatus;
         this.elements.connectedClientsValue.textContent = this.formatDuration(uptimeSeconds);
-        this.elements.tableCountValue.textContent = '--appdir=/app/data';
+        this.elements.tableCountValue.textContent = '--';
         this.elements.largestTableValue.textContent = image;
         this.elements.rowSummary.textContent = [
-            '--yes',
-            '--nologfiles',
-            '--disable-upnp',
+            'appdir=/app/data',
+            'yes',
+            'nologfiles',
+            'disable-upnp',
             utxoIndexEnabled,
-            '--rpclisten=0.0.0.0:16110',
-            '--rpclisten-borsh=0.0.0.0:17110',
-            '--rpclisten-json=0.0.0.0:18110',
+            'rpclisten=0.0.0.0:16110',
+            'rpclisten-borsh=0.0.0.0:17110',
+            'rpclisten-json=0.0.0.0:18110',
         ]
             .filter(Boolean)
-            .join(' ');
+            .join('\n');
 
         this.populateTableStats(payload.logTail || []);
 

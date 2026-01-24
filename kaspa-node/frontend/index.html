@@ -60,7 +60,7 @@
                 <div class="stat-card">
                     <p class="stat-label">Rusty Kaspad commands</p>
                     <p class="stat-value" id="tableCountValue">--</p>
-                    <p class="stat-sub" id="rowSummary">--</p>
+                    <pre class="stat-sub" id="rowSummary">--</pre>
                 </div>
             </div>
 
@@ -89,40 +89,12 @@
                     </table>
                 </section>
 
-                <section class="stat-card space-y-4">
-                    <h2 class="text-xl font-semibold text-white">Node Logs</h2>
-                    <p class="text-sm text-zinc-400">
-                        Click the log button to stream kaspad output in real time.
-                    </p>
-                    <button
-                        class="stack-link text-sm font-semibold text-white"
-                        type="button"
-                        data-log-service="kaspad"
-                        data-log-label="kaspanet/rusty-kaspad"
-                    >
-                        Open kaspad logs
-                    </button>
-                </section>
             </div>
 
             <div class="last-updated">
                 Last updated: <span id="lastUpdated">--</span>
             </div>
         </main>
-    </div>
-
-    <div id="logModal" class="log-modal" aria-hidden="true">
-        <div class="log-modal__backdrop" data-log-close></div>
-        <div class="log-modal__panel" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
-            <div class="log-modal__header">
-                <div>
-                    <p class="log-modal__title" id="logModalTitle">Live logs</p>
-                    <p class="log-modal__subtitle" id="logServiceLabel">Service</p>
-                </div>
-                <button class="log-modal__close" type="button" data-log-close>Close</button>
-            </div>
-            <pre id="logOutput" class="log-modal__output">Select a service to stream logs.</pre>
-        </div>
     </div>
 
     <script src="dashboard.js?v=1.0.0"></script>
