@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import re
 from datetime import datetime, timezone
 
 import docker
@@ -103,12 +102,7 @@ def status():
         log_tail = [
             _parse_log_line(line.strip()) for line in log_tail_raw.splitlines() if line.strip()
         ]
-        sync_percent = None
-        for line in reversed(log_tail_raw.splitlines()):
-            match = re.search(r"\bIBD:.*\((\d+(?:\.\d+)?)%\)", line)
-            if match:
-                sync_percent = float(match.group(1))
-                break
+        log_tail.reverse()
         payload = {
             "status": state.get("Status", "unknown"),
             "image": config.get("Image", "unknown"),
@@ -116,7 +110,6 @@ def status():
             "appDir": "/app/data",
             "appDirSizeBytes": _container_appdir_bytes(container),
             "utxoIndexEnabled": "--utxoindex" in cmd,
-            "syncPercent": sync_percent,
             "logTail": log_tail,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }

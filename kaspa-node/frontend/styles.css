@@ -73,6 +73,10 @@ body {
     margin-top: 0.5rem;
 }
 
+.stat-card .stat-value + .stat-value {
+    margin-top: 0.25rem;
+}
+
 .stat-sub {
     color: var(--text-muted);
     font-size: 0.9rem;
