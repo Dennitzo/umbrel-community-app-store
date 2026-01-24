@@ -49,7 +49,15 @@ export default class Database {
         }
     }
 
+    private assertFiniteHeight = (value: number, name: string) => {
+        if (!Number.isFinite(value)) {
+            throw new Error(`invalid ${name}: ${value}`);
+        }
+    }
+
     getBlocksAndEdgesAndHeightGroups = async (client: pg.PoolClient, startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups> => {
+        this.assertFiniteHeight(startHeight, "startHeight");
+        this.assertFiniteHeight(endHeight, "endHeight");
         const blocks = await this.getBlocks(client, startHeight, endHeight);
         const edges = await this.getEdges(client, startHeight, endHeight);
 
