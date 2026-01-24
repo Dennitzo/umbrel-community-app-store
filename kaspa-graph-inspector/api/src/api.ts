@@ -29,6 +29,17 @@ const database = new Database();
 const server = express();
 server.use(cors());
 
+const parseIntParam = (value: unknown, name: string): number => {
+    if (typeof value !== "string") {
+        throw new Error(`missing parameter: ${name}`);
+    }
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed)) {
+        throw new Error(`invalid parameter: ${name}`);
+    }
+    return parsed;
+};
+
 server.get('/blocksBetweenHeights', async (request, response) => {
     if (!request.query.startHeight) {
         response.status(400).send("missing parameter: startHeight");
@@ -41,8 +52,8 @@ server.get('/blocksBetweenHeights', async (request, response) => {
 
     try {
         await database.withClient(async client => {
-            const startHeight = parseInt(request.query.startHeight as string);
-            const endHeight = parseInt(request.query.endHeight as string);
+            const startHeight = parseIntParam(request.query.startHeight, "startHeight");
+            const endHeight = parseIntParam(request.query.endHeight, "endHeight");
             const blocksAndEdges = await database.getBlocksAndEdgesAndHeightGroups(client, startHeight, endHeight);
             response.send(JSON.stringify(blocksAndEdges));
         });
@@ -61,7 +72,7 @@ server.get('/head', async (request, response) => {
 
     try {
         await database.withClient(async client => {
-            const heightDifference = parseInt(request.query.heightDifference as string);
+            const heightDifference = parseIntParam(request.query.heightDifference, "heightDifference");
             const endHeight = await database.getMaxHeight(client);
             let startHeight = endHeight - heightDifference;
             if (startHeight < 0) {
@@ -91,7 +102,7 @@ server.get('/blockHash', async (request, response) => {
         await database.withClient(async client => {
             const blockHash = (request.query.blockHash as string).toLowerCase();
             const height = await database.getBlockHeight(client, blockHash);
-            const heightDifference = parseInt(request.query.heightDifference as string);
+            const heightDifference = parseIntParam(request.query.heightDifference, "heightDifference");
             let startHeight = height - heightDifference;
             if (startHeight < 0) {
                 startHeight = 0;
@@ -119,8 +130,8 @@ server.get('/blockDAAScore', async (request, response) => {
 
     try {
         await database.withClient(async client => {
-            const blockDAAScore = parseInt(request.query.blockDAAScore as string)
-            const heightDifference = parseInt(request.query.heightDifference as string);
+            const blockDAAScore = parseIntParam(request.query.blockDAAScore, "blockDAAScore");
+            const heightDifference = parseIntParam(request.query.heightDifference, "heightDifference");
             const height = await database.getBlockDAAScoreHeight(client, blockDAAScore);
             let startHeight = height - heightDifference;
             if (startHeight < 0) {
@@ -147,7 +158,7 @@ server.get('/blockHashesByIds', async (request, response) =>{
         await database.withClient(async client => {
             const blockIdsString = request.query.blockIds as string;
             const blockIdStrings = blockIdsString.split(",");
-            const blockIds = blockIdStrings.map(id => parseInt(id));
+            const blockIds = blockIdStrings.map(id => parseIntParam(id, "blockIds"));
             const hashesByIds = await database.getBlockHashesByIds(client, blockIds);
 
             response.send(JSON.stringify(hashesByIds));
