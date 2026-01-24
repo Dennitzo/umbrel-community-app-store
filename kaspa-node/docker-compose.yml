@@ -1,15 +1,12 @@
 services:
-  app_proxy:
-    environment:
-      APP_HOST: frontend
-      APP_PORT: 4321
-
   frontend:
     image: dennitzo/kaspa-node-ui:latest
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
       - kaspa-api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   
   kaspa-api:
     image: dennitzo/kaspa-node-api:latest
@@ -22,6 +19,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - kaspad
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   kaspad:
     image: supertypo/rusty-kaspad:48f4d03
@@ -30,6 +29,8 @@ services:
     volumes:
       - ${APP_DATA_DIR}:/app/data
       - ${APP_DATA_DIR}/logs:/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - 16110:16110  # GRPC
       - 16111:16111  # P2P
