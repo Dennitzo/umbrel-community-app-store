@@ -15,11 +15,7 @@ description: |
   This package uses the Docker container maintained by [supertypo](https://hub.docker.com/r/kaspanet/rusty-kaspad), based on [Rusty Kaspa](https://github.com/kaspanet/rusty-kaspa).
 
 releaseNotes: |
-  ENSURE RUSTY KASPAD IS STOPPED PRIOR TO UPDATING.
-
-  ONCE UPDATED, RUSTY KASPAD WILL AUTOMATICALLY START.
-
-  Updated dashboard and embedded DAG visualizer.
+  Added --utxoindex and app directory arguments. Updated dashboard and embedded DAG visualizer.
 developer: Kaspa Community
 website: https://github.com/kaspanet/rusty-kaspa
 repo: https://github.com/kaspanet/rusty-kaspa
