@@ -1,7 +1,7 @@
 services:
   app_proxy:
     environment:
-      APP_HOST: kaspa-explorer_web_1
+      APP_HOST: kaspa-explorer_web_proxy_1
       APP_PORT: 8080
 
   kaspa_rest_server:
@@ -40,3 +40,14 @@ services:
     depends_on:
       - kaspa_rest_server
       - simply_kaspa_socket_server
+
+  web_proxy:
+    image: nginx:1.27.4-alpine
+    restart: on-failure
+    stop_grace_period: 1m
+    depends_on:
+      - web
+      - kaspa_rest_server
+      - simply_kaspa_socket_server
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
