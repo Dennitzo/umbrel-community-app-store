@@ -13,7 +13,7 @@ cd "${ROOT_DIR}/k-social"
 git pull
 
 cd "${ROOT_DIR}"
-docker build -t dennitzo/k-social-web:latest -f k-social/Dockerfile k-social
+docker build -t dennitzo/k-social-web:latest -f k/Dockerfile k
 docker push dennitzo/k-social-web:latest
 
 # kaspa-database
