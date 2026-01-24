@@ -2,6 +2,7 @@ manifestVersion: 1
 id: kaspa-k-social
 category: social
 name: K-Social
+icon: https://raw.githubusercontent.com/Dennitzo/umbrel-community-app-store/master/kaspa_icon.svg
 version: "0.1.1"
 tagline: Social hub for Kaspa built on the K web experience
 description: >-
