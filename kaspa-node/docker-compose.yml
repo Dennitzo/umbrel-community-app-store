@@ -64,7 +64,7 @@ services:
     build:
       context: ../kaspa-graph-inspector/processing
       args:
-        KASPAD_VERSION: v1.0.2
+        KASPAD_VERSION: v0.12.22
     restart: on-failure
     stop_grace_period: 1m
     depends_on:
