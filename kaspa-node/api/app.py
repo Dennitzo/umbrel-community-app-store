@@ -45,6 +45,23 @@ def _container_uptime_seconds(container) -> int:
     return int((datetime.now(timezone.utc) - started).total_seconds())
 
 
+def _container_appdir_bytes(container, app_dir: str = "/app/data") -> int:
+    try:
+        result = container.exec_run(["du", "-sb", app_dir], stdout=True, stderr=True)
+    except Exception:
+        return 0
+    if result.exit_code != 0:
+        return 0
+    output = result.output.decode("utf-8", errors="replace").strip()
+    if not output:
+        return 0
+    size_str = output.split()[0]
+    try:
+        return int(size_str)
+    except ValueError:
+        return 0
+
+
 def _parse_log_line(line: str) -> dict:
     if not line:
         return {"message": "", "level": "--", "timestamp": "--", "source": "--"}
@@ -85,12 +102,25 @@ def status():
         log_tail = [
             _parse_log_line(line.strip()) for line in log_tail_raw.splitlines() if line.strip()
         ]
+        sync_percent = None
+        for line in reversed(log_tail_raw.splitlines()):
+            if "%" in line:
+                parts = line.split("%", 1)[0].split()
+                if parts:
+                    candidate = parts[-1]
+                    try:
+                        sync_percent = float(candidate)
+                        break
+                    except ValueError:
+                        continue
         payload = {
             "status": state.get("Status", "unknown"),
             "image": config.get("Image", "unknown"),
             "uptimeSeconds": _container_uptime_seconds(container),
             "appDir": "/app/data",
+            "appDirSizeBytes": _container_appdir_bytes(container),
             "utxoIndexEnabled": "--utxoindex" in cmd,
+            "syncPercent": sync_percent,
             "logTail": log_tail,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }

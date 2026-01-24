@@ -15,6 +15,8 @@ class KaspaDatabaseDashboard {
             connectedClientsValue: document.getElementById('connectedClientsValue'),
             tableCountValue: document.getElementById('tableCountValue'),
             largestTableValue: document.getElementById('largestTableValue'),
+            syncPercentValue: document.getElementById('syncPercentValue'),
+            statusStorageValue: document.getElementById('statusStorageValue'),
             rowSummary: document.getElementById('rowSummary'),
             tableStatsBody: document.getElementById('tableStatsBody'),
             statusBadge: document.getElementById('statusBadge'),
@@ -85,11 +87,19 @@ class KaspaDatabaseDashboard {
         const image = payload.image || '—';
         const uptimeSeconds = Number(payload.uptimeSeconds ?? 0);
         const appDir = payload.appDir || '/app/data';
+        const appDirSizeBytes = Number(payload.appDirSizeBytes ?? 0);
         const utxoIndexEnabled = payload.utxoIndexEnabled;
+        const syncPercent = Number(payload.syncPercent);
 
         this.elements.dbSizeValue.textContent = nodeStatus;
         this.elements.connectedClientsValue.textContent = this.formatDuration(uptimeSeconds);
         this.elements.largestTableValue.textContent = image;
+        if (this.elements.syncPercentValue) {
+            this.elements.syncPercentValue.textContent = this.formatPercent(syncPercent);
+        }
+        if (this.elements.statusStorageValue) {
+            this.elements.statusStorageValue.textContent = this.formatBytes(appDirSizeBytes);
+        }
         this.elements.rowSummary.textContent = [
             `--appdir=${appDir}`,
             '--yes',
@@ -156,7 +166,15 @@ class KaspaDatabaseDashboard {
             this.elements.statusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
             this.elements.dbSizeValue.textContent = '--';
             this.elements.connectedClientsValue.textContent = '--';
-            this.elements.tableCountValue.textContent = '--';
+            if (this.elements.tableCountValue) {
+                this.elements.tableCountValue.textContent = '--';
+            }
+            if (this.elements.syncPercentValue) {
+                this.elements.syncPercentValue.textContent = '--';
+            }
+            if (this.elements.statusStorageValue) {
+                this.elements.statusStorageValue.textContent = '--';
+            }
             this.elements.rowSummary.textContent = 'Waiting for connection...';
             this.elements.largestTableValue.textContent = '—';
             this.elements.tableStatsBody.innerHTML = `
@@ -197,6 +215,15 @@ class KaspaDatabaseDashboard {
             return `${(num / 1_000).toFixed(1)}k`;
         }
         return num.toLocaleString();
+    }
+
+    formatPercent(value) {
+        if (!Number.isFinite(value)) {
+            return '--';
+        }
+        const rounded = Math.max(0, Math.min(value, 100));
+        const display = rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2);
+        return `${display}%`;
     }
 
     formatDuration(seconds) {
