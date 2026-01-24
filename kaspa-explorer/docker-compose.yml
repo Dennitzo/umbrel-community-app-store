@@ -1,8 +1,10 @@
 services:
   app_proxy:
     image: getumbrel/app-proxy:1.0.0
+    depends_on:
+      - web
     environment:
-      APP_HOST: kaspa-explorer_web_1
+      APP_HOST: web
       APP_PORT: 8080
 
   kaspa_rest_server:
@@ -36,6 +38,11 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8080
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     depends_on:
       - kaspa_rest_server
       - simply_kaspa_socket_server
