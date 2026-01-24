@@ -15,8 +15,6 @@ services:
       --db-user ${APP_KASPA_DB_USER}
       --db-password ${APP_KASPA_DB_PASSWORD}
       --bind-address 0.0.0.0:${APP_K_SOCIAL_KWEBSERVER_PORT:-3001}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "${APP_K_SOCIAL_KWEBSERVER_PORT:-3001}:${APP_K_SOCIAL_KWEBSERVER_PORT:-3001}"
 
@@ -29,8 +27,6 @@ services:
     environment:
       APP_K_SOCIAL_PORT: 5173
       APP_K_SOCIAL_KWEBSERVER_API_URI: http://k-webserver:${APP_K_SOCIAL_KWEBSERVER_PORT:-3001}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "5173:5173"
     volumes:
