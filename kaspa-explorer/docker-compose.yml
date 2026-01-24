@@ -1,10 +1,7 @@
 services:
   app_proxy:
-    image: getumbrel/app-proxy:1.0.0
-    restart: on-failure
-    stop_grace_period: 1m
     environment:
-      APP_HOST: web_proxy
+      APP_HOST: kaspa-explorer_web_1
       APP_PORT: 8080
 
   kaspa_rest_server:
@@ -43,21 +40,3 @@ services:
     depends_on:
       - kaspa_rest_server
       - simply_kaspa_socket_server
-
-  web_proxy:
-    image: nginx:1.27.4-alpine
-    restart: on-failure
-    stop_grace_period: 1m
-    depends_on:
-      - web
-      - kaspa_rest_server
-      - simply_kaspa_socket_server
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    ports:
-      - "19113:8080"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ >/dev/null 2>&1 || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
