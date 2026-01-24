@@ -25,7 +25,7 @@ services:
       - kaspad
 
   kaspad:
-    image: kaspanet/rusty-kaspad:v1.0.1@sha256:5bc3195c2cd2d171885781ed55ead9485d93c7bd7b784d46e9e393c96757fe22
+    image: supertypo/rusty-kaspad:48f4d03
     restart: on-failure
     stop_grace_period: 1m
     volumes:
