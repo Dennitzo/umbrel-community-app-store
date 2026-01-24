@@ -1,7 +1,7 @@
 services:
   app_proxy:
     environment:
-      APP_HOST: kaspa-explorer_web_proxy_1
+      APP_HOST: web_proxy
       APP_PORT: 8080
 
   kaspa_rest_server:
