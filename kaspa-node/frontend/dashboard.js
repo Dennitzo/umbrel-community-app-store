@@ -85,21 +85,20 @@ class KaspaDatabaseDashboard {
         const image = payload.image || '—';
         const uptimeSeconds = Number(payload.uptimeSeconds ?? 0);
         const appDir = payload.appDir || '/app/data';
-        const utxoIndexEnabled = payload.utxoIndexEnabled ? 'utxoindex' : '';
+        const utxoIndexEnabled = payload.utxoIndexEnabled;
 
         this.elements.dbSizeValue.textContent = nodeStatus;
         this.elements.connectedClientsValue.textContent = this.formatDuration(uptimeSeconds);
-        this.elements.tableCountValue.textContent = '--';
         this.elements.largestTableValue.textContent = image;
         this.elements.rowSummary.textContent = [
-            'appdir=/app/data',
-            'yes',
-            'nologfiles',
-            'disable-upnp',
-            utxoIndexEnabled,
-            'rpclisten=0.0.0.0:16110',
-            'rpclisten-borsh=0.0.0.0:17110',
-            'rpclisten-json=0.0.0.0:18110',
+            `--appdir=${appDir}`,
+            '--yes',
+            '--nologfiles',
+            '--disable-upnp',
+            utxoIndexEnabled ? '--utxoindex' : '--utxoindex (disabled)',
+            '--rpclisten=0.0.0.0:16110',
+            '--rpclisten-borsh=0.0.0.0:17110',
+            '--rpclisten-json=0.0.0.0:18110',
         ]
             .filter(Boolean)
             .join('\n');
