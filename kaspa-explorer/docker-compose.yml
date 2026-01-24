@@ -9,6 +9,8 @@ services:
     image: kaspanet/kaspa-rest-server:latest
     restart: on-failure
     stop_grace_period: 1m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8091:8000"
     environment:
@@ -21,6 +23,8 @@ services:
     image: supertypo/simply-kaspa-socket-server:unstable
     restart: on-failure
     stop_grace_period: 1m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8092:8000"
     command: -x 20 -s ws://${APP_KASPA_NODE_ADDRESS}:${APP_KASPA_NODE_PORT}
