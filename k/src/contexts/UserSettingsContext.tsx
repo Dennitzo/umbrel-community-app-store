@@ -52,10 +52,10 @@ const SETTINGS_STORAGE_KEY = 'kaspa_user_settings';
 
 export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ children }) => {
   const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>(DEFAULT_NETWORK);
-  const [indexerType, setIndexerTypeState] = useState<IndexerType>('public');
-  const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>('');
-  const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
-  const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
+  const [indexerType, setIndexerTypeState] = useState<IndexerType>('custom');
+  const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>('http://umbrel.local:3001');
+  const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('custom-node');
+  const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('ws://umbrel.local:17110');
   const [theme, setThemeState] = useState<Theme>('light');
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
 
