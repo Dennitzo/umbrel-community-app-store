@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Kaspa Stratum Bridge Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="static/assets/kaspa.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/site.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "kaspa-teal": "#14b8a6",
+            "kaspa-purple": "#c084fc"
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body>
+  <div id="appRoot" class="min-h-screen px-4 py-8 sm:px-6 lg:px-12">
+    <main class="mx-auto max-w-6xl space-y-6">
+      <div class="backdrop-panel">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <img src="static/assets/kaspa.svg" alt="Kaspa Stratum Bridge" width="72" height="72" class="rounded-2xl border border-white/10 shadow-2xl" />
+          <div>
+            <p class="text-sm uppercase tracking-[0.3em] text-zinc-400">Kaspa Stratum Bridge</p>
+            <h1 class="text-3xl font-semibold text-white">Real-time mining coordination</h1>
+            <p class="mt-2 text-sm text-zinc-400">
+              Aggregate miner performance, share health, and network stats from your local RK-Bridge deployment.
+            </p>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <span class="glow-pill" id="statusBadge">Loading status</span>
+              <div class="flex items-center gap-1 text-sm">
+                <span class="w-3 h-3 rounded-full bg-teal-400 animate-pulse" id="statusDot"></span>
+                <span id="statusLabel" class="text-zinc-400">Connecting...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div class="stat-card">
+          <p class="stat-label">Total Blocks</p>
+          <p class="stat-value" id="totalBlocksValue">--</p>
+          <p class="stat-sub">Accepted blocks mined through the bridge</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Shares</p>
+          <p class="stat-value" id="totalSharesValue">--</p>
+          <p class="stat-sub">Shares submitted by connected workers</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Active Workers</p>
+          <p class="stat-value" id="activeWorkersValue">--</p>
+          <p class="stat-sub">Current workers reporting hashrate</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Network Hashrate</p>
+          <p class="stat-value" id="networkHashrateValue">--</p>
+          <p class="stat-sub">Estimated network hashrate (H/s)</p>
+        </div>
+        <div class="stat-card" id="internalCpuHashrateCard">
+          <p class="stat-label">Internal CPU Hashrate</p>
+          <p class="stat-value" id="internalCpuHashrateValue">--</p>
+          <p class="stat-sub">Bridge internal CPU miner output</p>
+        </div>
+        <div class="stat-card" id="internalCpuBlocksCard">
+          <p class="stat-label">Internal CPU Blocks</p>
+          <p class="stat-value" id="internalCpuBlocksValue">--</p>
+          <p class="stat-sub">Blocks submitted by internal miner</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Network Difficulty</p>
+          <p class="stat-value" id="networkDifficultyValue">--</p>
+          <p class="stat-sub">Difficulty snapshot from node</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Network Height</p>
+          <p class="stat-value" id="networkBlockCountValue">--</p>
+          <p class="stat-sub">Current block height (approx.)</p>
+        </div>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <section class="table-card">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-white">Bridge Status</h2>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Live configuration</span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-400">
+            Configuration pulled from the bridge status endpoint.
+          </p>
+          <div class="mt-4 space-y-2 text-sm text-zinc-300">
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Kaspad Address</span>
+              <span id="kaspadAddressValue">--</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Kaspad Version</span>
+              <span id="kaspadVersionValue">--</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Instances</span>
+              <span id="instancesValue">--</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Web Bind</span>
+              <span id="webBindValue">--</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="table-card">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-white">Latest Blocks</h2>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Recent shares</span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-400">Most recent accepted blocks reported by miners.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Instance</th>
+                <th>Worker</th>
+                <th>Wallet</th>
+                <th>Timestamp</th>
+                <th>Hash</th>
+              </tr>
+            </thead>
+            <tbody id="blocksTableBody">
+              <tr>
+                <td colspan="5" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+
+      <section class="table-card">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-white">Workers</h2>
+          <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Live hashrate</span>
+        </div>
+        <p class="mt-2 text-sm text-zinc-400">Active worker stats aggregated by instance.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Instance</th>
+              <th>Worker</th>
+              <th>Wallet</th>
+              <th>Hashrate</th>
+              <th>Shares</th>
+              <th>Stale</th>
+              <th>Invalid</th>
+              <th>Blocks</th>
+            </tr>
+          </thead>
+          <tbody id="workersTableBody">
+            <tr>
+              <td colspan="8" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="last-updated">Last updated: <span id="lastUpdated">--</span></div>
+    </main>
+  </div>
+
+  <script src="static/js/dashboard.js"></script>
+</body>
+</html>

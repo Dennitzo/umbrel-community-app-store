@@ -141,18 +141,6 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
         <div className="grid grid-cols-1 gap-x-14 gap-y-2 sm:grid-cols-[auto_1fr]">
           <FieldName name="Address" infoText="A unique Kaspa address used to send and receive funds." />
           <FieldValue value={<KasLink linkType="address" copy qr to={loaderData.address} />} />
-          {addressNames && addressNames[loaderData.address] && (
-            <>
-              <FieldName name="Address Label" infoText="A label assigned to this address." />
-              <FieldValue
-                value={
-                  <span className="bg-accent-yellow rounded-full px-2 min-h-5 py-0.5 text-center text-nowrap text-alert">
-                    {addressNames[loaderData.address]}
-                  </span>
-                }
-              />
-            </>
-          )}
           <FieldName name="Transactions" infoText="Total number of transactions involving this address." />
           <FieldValue value={!isLoadingTxCount ? numeral(txCount!.total).format("0,") : <LoadingSpinner />} />
           <FieldName name="UTXOs" infoText="Unspent, available outputs available at this address." />

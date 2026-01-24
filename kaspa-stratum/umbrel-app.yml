@@ -1,0 +1,23 @@
+manifestVersion: 1
+id: kaspa-stratum
+category: crypto
+name: Kaspa Stratum Bridge
+icon: https://raw.githubusercontent.com/Dennitzo/umbrel-community-app-store/master/kaspa_icon.svg
+version: "v0.1.0"
+tagline: Connect miners to your Kaspa node with RK-Stratum
+
+description: >-
+  Kaspa Stratum Bridge aggregates mining workers and shares, providing real-time
+  dashboards and metrics for your local Kaspa node. Use it to coordinate miners,
+  monitor hashrate, and verify share health from a single Umbrel-hosted view.
+
+releaseNotes: ""
+developer: Kaspa Community
+website: https://github.com/kaspanet
+repo: https://github.com/kaspanet
+support: https://github.com/Dennitzo/umbrel-community-app-store
+
+port: 19114
+path: ""
+gallery: []
+submitter: Dennitzo
