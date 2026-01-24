@@ -76,5 +76,3 @@ services:
       - "19111:19111"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
