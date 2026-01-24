@@ -12,7 +12,7 @@ export APP_KASPA_DB_USER="kaspa"
 export APP_KASPA_DB_PASSWORD="dbpassword"
 
 # Kaspa Database connection (static, no .env)
-export APP_KASPA_DB_ADDRESS="kaspa_db"
+export APP_KASPA_DB_ADDRESS="host.docker.internal"
 export APP_KASPA_DB_PORT="5432"
 export APP_KASPA_DB_NAME="kaspa"
 

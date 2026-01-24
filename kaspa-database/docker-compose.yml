@@ -4,6 +4,8 @@ services:
     restart: on-failure
     stop_grace_period: 1m
     shm_size: 4G
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ${APP_DATA_DIR}/data/db:/var/lib/postgresql/data
     environment:
@@ -33,6 +35,8 @@ services:
     image: thesheepcat/k-transaction-processor:latest
     restart: on-failure
     stop_grace_period: 1m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       --upgrade-db
       --network ${APP_KASPA_NETWORK}
@@ -70,3 +74,7 @@ services:
       - indexer-ui-api
     ports:
       - "19111:19111"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

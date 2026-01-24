@@ -5,6 +5,8 @@ services:
     stop_grace_period: 1m
     depends_on:
       - kaspa-api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "19112:19112"
   
@@ -19,6 +21,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - kaspad
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   kaspad:
     image: supertypo/rusty-kaspad:48f4d03
@@ -27,6 +31,8 @@ services:
     volumes:
       - ${APP_DATA_DIR}:/app/data
       - ${APP_DATA_DIR}/logs:/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - 16110:16110  # GRPC
       - 16111:16111  # P2P
@@ -53,6 +59,8 @@ services:
       POSTGRES_DB: kgi
     volumes:
       - ${APP_DATA_DIR}/graph-postgres:/var/lib/postgresql/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   graph-processing:
     image: dennitzo/kaspa-graph-inspector-processing:latest
@@ -72,6 +80,8 @@ services:
       /app/processing
       --connection-string=postgres://kgi:kgi@graph-postgres:5432/kgi?sslmode=disable
       --rpcserver=kaspad:16110
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   graph-api:
     image: dennitzo/kaspa-graph-inspector-api:latest
@@ -92,6 +102,8 @@ services:
       - --prefix
       - /app
       - start
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   graph-web:
     image: dennitzo/kaspa-graph-inspector-web:latest
@@ -106,3 +118,5 @@ services:
     command:
       - serve
       - --listen=8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
