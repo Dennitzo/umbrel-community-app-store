@@ -49,17 +49,17 @@ const KasLink = ({ to, linkType, copy, qr, link, shorten, resolveName, mono }: K
     ? to.substring(0, splitAt) + "…" + to.substring(to.length - 8)
     : to;
 
-  if (!isLoading && linkType === "address" && addressNames![to] && resolveName) {
+  if (!isLoading && linkType === "address" && resolveName && addressNames && addressNames[to]) {
     displayValue = (
       <>
         <span className="hidden md:inline">
           <Tooltip message={to} display={TooltipDisplayMode.Hover}>
             {/*<div className="bg-accent-yellow inline-block text-alert rounded-full px-2 h-5 content-center text-center text-nowrap">*/}
-            {addressNames![to]}
+            {addressNames[to]}
             {/*</div>*/}
           </Tooltip>
         </span>
-        <span className="md:hidden">{addressNames![to]}</span>
+        <span className="md:hidden">{addressNames[to]}</span>
       </>
     );
   }
