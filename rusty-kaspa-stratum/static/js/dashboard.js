@@ -6,8 +6,8 @@ class StratumBridgeDashboard {
     this.lastStatus = null;
     this.sharesPieSegments = [];
     this.blocksPieSegments = [];
-    this.hideWallets = false;
-    this.hideBlockWallets = false;
+    this.hideWallets = true;
+    this.hideBlockWallets = true;
     this.lastStats = null;
     this.init();
   }
@@ -15,7 +15,24 @@ class StratumBridgeDashboard {
   init() {
     this.bindWalletToggle();
     this.bindBlocksWalletToggle();
+    this.syncWalletToggles();
     this.fetchData();
+  }
+
+  syncWalletToggles() {
+    const walletToggle = document.getElementById('walletToggle');
+    if (walletToggle) {
+      walletToggle.classList.toggle('is-hidden', this.hideWallets);
+      walletToggle.setAttribute('aria-pressed', this.hideWallets ? 'true' : 'false');
+      walletToggle.setAttribute('aria-label', this.hideWallets ? 'Show wallets' : 'Hide wallets');
+    }
+
+    const blocksToggle = document.getElementById('blocksWalletToggle');
+    if (blocksToggle) {
+      blocksToggle.classList.toggle('is-hidden', this.hideBlockWallets);
+      blocksToggle.setAttribute('aria-pressed', this.hideBlockWallets ? 'true' : 'false');
+      blocksToggle.setAttribute('aria-label', this.hideBlockWallets ? 'Show wallets' : 'Hide wallets');
+    }
   }
 
   async fetchData() {
