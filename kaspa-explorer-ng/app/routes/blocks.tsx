@@ -5,7 +5,6 @@ import { useBlockdagInfo } from "../hooks/useBlockDagInfo";
 import { useBlockReward } from "../hooks/useBlockReward";
 import { type Block, useIncomingBlocks } from "../hooks/useIncomingBlocks";
 import { useSocketCommand } from "../hooks/useSocketCommand";
-import { useTransactionsCount } from "../hooks/useTransactionsCount";
 import Card from "../layout/Card";
 import CardContainer from "../layout/CardContainer";
 import FooterHelper from "../layout/FooterHelper";
@@ -38,7 +37,6 @@ export function meta() {
 export default function Blocks() {
   const { data: blockDagInfo, isLoading: isLoadingBlockDagInfo } = useBlockdagInfo();
   const { data: blockReward, isLoading: isLoadingBlockReward } = useBlockReward();
-  const { data: transactionsCount, isLoading: isLoadingTxCount } = useTransactionsCount();
 
   const [blocks, setBlocks] = useState<Block[]>([]);
 
@@ -55,17 +53,6 @@ export default function Blocks() {
     },
   });
 
-  const safeTransactionsCount = transactionsCount ?? {
-    regular: 0,
-    coinbase: 0,
-  };
-  const hasTxCounts = transactionsCount !== null;
-  const totalTxCount = isLoadingTxCount
-    ? ""
-    : hasTxCounts
-      ? Math.floor((safeTransactionsCount.regular + safeTransactionsCount.coinbase) / 1_000_000).toString()
-      : "N/A";
-
   return (
     <>
       <MainBox>
@@ -75,7 +62,6 @@ export default function Blocks() {
             title="Total blocks"
             value={`${numeral(blockDagInfo?.virtualDaaScore).format("0,0")}`}
           />
-          <Card loading={isLoadingTxCount} title="Total transactions" value={`> ${totalTxCount} M `} />
           <Card title="Average block time" value={`${numeral(avgBlockTime).format("0.0")} bps`} />
           <Card
             loading={isLoadingBlockReward}
