@@ -80,10 +80,8 @@ services:
       PGDATABASE: ${APP_KASPA_DB_NAME}
     command: >
       sh -lc '
-        psql -v ON_ERROR_STOP=1 -c "DROP MATERIALIZED VIEW IF EXISTS addresses_transactions_count;"
-        psql -v ON_ERROR_STOP=1 -c "DROP MATERIALIZED VIEW IF EXISTS scripts_transactions_count;"
-        psql -v ON_ERROR_STOP=1 -c "DROP VIEW IF EXISTS addresses_transactions_count;"
-        psql -v ON_ERROR_STOP=1 -c "DROP VIEW IF EXISTS scripts_transactions_count;"
+        psql -v ON_ERROR_STOP=1 -c "DROP TABLE IF EXISTS addresses_transactions_count;"
+        psql -v ON_ERROR_STOP=1 -c "DROP TABLE IF EXISTS scripts_transactions_count;"
         psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS addresses_transactions_count (address text PRIMARY KEY, count bigint NOT NULL);"
         psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS scripts_transactions_count (script_public_key bytea PRIMARY KEY, count bigint NOT NULL);"
         psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS transactions_counts (timestamp bigint PRIMARY KEY, coinbase int NOT NULL, regular int NOT NULL);"
