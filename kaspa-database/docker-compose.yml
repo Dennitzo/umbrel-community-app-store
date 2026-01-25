@@ -80,30 +80,11 @@ services:
       PGDATABASE: ${APP_KASPA_DB_NAME}
     command: >
       sh -lc '
-        psql -v ON_ERROR_STOP=1 << "SQL"
-        CREATE TABLE IF NOT EXISTS addresses_transactions_count (
-          address text PRIMARY KEY,
-          count bigint NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS scripts_transactions_count (
-          script_public_key bytea PRIMARY KEY,
-          count bigint NOT NULL
-        );
-        SQL
+        psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS addresses_transactions_count (address text PRIMARY KEY, count bigint NOT NULL);"
+        psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS scripts_transactions_count (script_public_key bytea PRIMARY KEY, count bigint NOT NULL);"
         while true; do
-          psql -v ON_ERROR_STOP=1 << "SQL"
-          TRUNCATE addresses_transactions_count;
-          INSERT INTO addresses_transactions_count (address, count)
-          SELECT address, COUNT(*)::bigint
-          FROM addresses_transactions
-          GROUP BY address;
-
-          TRUNCATE scripts_transactions_count;
-          INSERT INTO scripts_transactions_count (script_public_key, count)
-          SELECT script_public_key, COUNT(*)::bigint
-          FROM scripts_transactions
-          GROUP BY script_public_key;
-          SQL
+          psql -v ON_ERROR_STOP=1 -c "TRUNCATE addresses_transactions_count; INSERT INTO addresses_transactions_count (address, count) SELECT address, COUNT(*)::bigint FROM addresses_transactions GROUP BY address;"
+          psql -v ON_ERROR_STOP=1 -c "TRUNCATE scripts_transactions_count; INSERT INTO scripts_transactions_count (script_public_key, count) SELECT script_public_key, COUNT(*)::bigint FROM scripts_transactions GROUP BY script_public_key;"
           sleep 300;
         done
       '
