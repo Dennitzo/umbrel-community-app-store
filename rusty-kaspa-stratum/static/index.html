@@ -125,49 +125,6 @@
         </div>
       </div>
 
-      <div class="grid gap-6">
-        <section class="table-card">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <h2 class="text-xl font-semibold text-white">Latest Blocks</h2>
-              <button id="blocksWalletToggle" class="eye-toggle" type="button" aria-pressed="false" aria-label="Hide wallets">
-                <span class="eye-open" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
-                    <circle cx="12" cy="12" r="3.5"></circle>
-                  </svg>
-                </span>
-                <span class="eye-closed" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M3 5l18 14"></path>
-                    <path d="M2.5 12s3.5-6 9.5-6c2.2 0 4.1.7 5.6 1.7"></path>
-                    <path d="M21.5 12s-3.5 6-9.5 6c-2.2 0-4.1-.7-5.6-1.7"></path>
-                    <circle cx="12" cy="12" r="3.5"></circle>
-                  </svg>
-                </span>
-              </button>
-            </div>
-            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Recent shares</span>
-          </div>
-          <p class="mt-2 text-sm text-zinc-400">Most recent accepted blocks reported by miners.</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Worker</th>
-                <th>Wallet</th>
-                <th>Timestamp</th>
-                <th>Hash</th>
-              </tr>
-            </thead>
-            <tbody id="blocksTableBody">
-              <tr>
-                <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </div>
-
       <section class="table-card">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -211,6 +168,49 @@
           </tbody>
         </table>
       </section>
+
+      <div class="grid gap-6">
+        <section class="table-card">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <h2 class="text-xl font-semibold text-white">Latest Blocks</h2>
+              <button id="blocksWalletToggle" class="eye-toggle" type="button" aria-pressed="false" aria-label="Hide wallets">
+                <span class="eye-open" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                    <circle cx="12" cy="12" r="3.5"></circle>
+                  </svg>
+                </span>
+                <span class="eye-closed" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M3 5l18 14"></path>
+                    <path d="M2.5 12s3.5-6 9.5-6c2.2 0 4.1.7 5.6 1.7"></path>
+                    <path d="M21.5 12s-3.5 6-9.5 6c-2.2 0-4.1-.7-5.6-1.7"></path>
+                    <circle cx="12" cy="12" r="3.5"></circle>
+                  </svg>
+                </span>
+              </button>
+            </div>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Recent shares</span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-400">Most recent accepted blocks reported by miners.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Worker</th>
+                <th>Wallet</th>
+                <th>Timestamp</th>
+                <th>Hash</th>
+              </tr>
+            </thead>
+            <tbody id="blocksTableBody">
+              <tr>
+                <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
 
       <div class="grid gap-6 lg:grid-cols-2">
         <section class="table-card">
