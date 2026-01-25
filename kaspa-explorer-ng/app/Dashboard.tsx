@@ -35,16 +35,20 @@ const Dashboard = () => {
   const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
   const formatHashrate = (value?: number | null) => {
-    const num = Number(value || 0);
-    if (!Number.isFinite(num) || num <= 0) {
+    const phsInput = Number(value || 0);
+    if (!Number.isFinite(phsInput) || phsInput <= 0) {
       return { value: "--", unit: "" };
     }
-    const units = ["H/s", "kH/s", "MH/s", "GH/s", "TH/s", "PH/s", "EH/s"];
-    let v = num;
-    let i = 0;
+    const units = ["kH/s", "MH/s", "GH/s", "TH/s", "PH/s", "EH/s", "ZH/s"];
+    let v = phsInput;
+    let i = 4;
     while (v >= 1000 && i < units.length - 1) {
       v /= 1000;
       i += 1;
+    }
+    while (v < 1 && i > 0) {
+      v *= 1000;
+      i -= 1;
     }
     return { value: numeral(v).format("0,0.00"), unit: units[i] };
   };
