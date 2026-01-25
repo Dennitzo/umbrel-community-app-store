@@ -438,6 +438,8 @@ struct StatsResponse {
     totalBlocks: u64,
     totalShares: u64,
     networkHashrate: u64,
+    networkDifficulty: f64,
+    networkBlockCount: u64,
     activeWorkers: usize,
     blocks: Vec<BlockInfo>,
     workers: Vec<WorkerInfo>,
@@ -472,6 +474,8 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
         totalBlocks: 0,
         totalShares: 0,
         networkHashrate: 0,
+        networkDifficulty: 0.0,
+        networkBlockCount: 0,
         activeWorkers: 0,
         blocks: Vec::new(),
         workers: Vec::new(),
@@ -669,9 +673,21 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
         }
 
         // Parse network hashrate
-        if name == "ks_estimated_network_hashrate" {
+        if name == "ks_estimated_network_hashrate_gauge" {
             if let Some(metric) = family.get_metric().first() {
                 stats.networkHashrate = metric.get_gauge().get_value() as u64;
+            }
+        }
+
+        if name == "ks_network_difficulty_gauge" {
+            if let Some(metric) = family.get_metric().first() {
+                stats.networkDifficulty = metric.get_gauge().get_value();
+            }
+        }
+
+        if name == "ks_network_block_count" {
+            if let Some(metric) = family.get_metric().first() {
+                stats.networkBlockCount = metric.get_gauge().get_value() as u64;
             }
         }
 
