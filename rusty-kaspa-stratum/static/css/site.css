@@ -140,7 +140,7 @@ body {
 }
 
 .last-updated {
-  text-align: right;
+  text-align: center;
   color: var(--text-muted);
   font-size: 0.85rem;
 }
@@ -173,6 +173,17 @@ body {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+
+.chart-legend.empty {
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  text-align: center;
+}
+
+.chart-legend.empty li {
+  justify-content: center;
 }
 
 .endpoint-list {

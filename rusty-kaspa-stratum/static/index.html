@@ -92,6 +92,32 @@
         </div>
       </div>
 
+      <div class="grid gap-6 lg:grid-cols-4">
+        <section class="table-card lg:col-start-3 lg:col-span-2">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-white">Latest Blocks</h2>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Recent shares</span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-400">Most recent accepted blocks reported by miners.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Instance</th>
+                <th>Worker</th>
+                <th>Wallet</th>
+                <th>Timestamp</th>
+                <th>Hash</th>
+              </tr>
+            </thead>
+            <tbody id="blocksTableBody">
+              <tr>
+                <td colspan="5" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+
       <div class="grid gap-6 lg:grid-cols-2">
         <section class="table-card">
           <div class="flex items-center justify-between">
@@ -123,41 +149,17 @@
 
         <section class="table-card">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-white">Latest Blocks</h2>
-            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Recent shares</span>
+            <h2 class="text-xl font-semibold text-white">Stratum Endpoints</h2>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Connect miners</span>
           </div>
-          <p class="mt-2 text-sm text-zinc-400">Most recent accepted blocks reported by miners.</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Instance</th>
-                <th>Worker</th>
-                <th>Wallet</th>
-                <th>Timestamp</th>
-                <th>Hash</th>
-              </tr>
-            </thead>
-            <tbody id="blocksTableBody">
-              <tr>
-                <td colspan="5" class="py-6 text-center text-zinc-500">Waiting for data...</td>
-              </tr>
-            </tbody>
-          </table>
+          <p class="mt-2 text-sm text-zinc-400">
+            Use the local IP of your Umbrel device with the port shown below.
+          </p>
+          <ul class="endpoint-list" id="stratumEndpoints">
+            <li class="text-zinc-500 text-sm">Waiting for data...</li>
+          </ul>
         </section>
       </div>
-
-      <section class="table-card">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-white">Stratum Endpoints</h2>
-          <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Connect miners</span>
-        </div>
-        <p class="mt-2 text-sm text-zinc-400">
-          Use the local IP of your Umbrel device with the port shown below.
-        </p>
-        <ul class="endpoint-list" id="stratumEndpoints">
-          <li class="text-zinc-500 text-sm">Waiting for data...</li>
-        </ul>
-      </section>
 
       <section class="table-card">
         <div class="flex items-center justify-between">
