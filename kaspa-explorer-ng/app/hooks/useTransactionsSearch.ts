@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
 import { apiUrl } from "../api/urls";
 
 export const useTransactionsSearch = (
@@ -14,7 +13,7 @@ export const useTransactionsSearch = (
     queryKey: ["transactions", { fields, transactionIds }],
     queryFn: async () => {
       const { data } = await axios.post(
-        apiUrl("/transactions/search"),
+        apiUrl("transactions/search"),
         {
           transactionIds,
         },

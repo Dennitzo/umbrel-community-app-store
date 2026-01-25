@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
 import { apiUrl } from "../api/urls";
 
 export const useTransactions = (
@@ -14,7 +13,7 @@ export const useTransactions = (
   useQuery({
     queryKey: ["transaction", { address, before, after, limit, fields, resolve_previous_outpoints }],
     queryFn: async () => {
-      const response = await axios.get(apiUrl(`/addresses/${address}/full-transactions-page`), {
+      const response = await axios.get(apiUrl(`addresses/${address}/full-transactions-page`), {
         params: {
           limit,
           before,

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-
 import { SOCKET_URL } from "./urls";
 export const socket = io(SOCKET_URL, {
   path: "/ws/socket.io",

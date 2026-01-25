@@ -3,6 +3,7 @@ import Tooltip, { TooltipDisplayMode } from "./Tooltip";
 import Copy from "./assets/copy.svg";
 import CopyCheck from "./assets/copycheck.svg";
 import QrCode from "./assets/qr_code.svg";
+import { useAddressNames } from "./hooks/useAddressNames";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -31,6 +32,7 @@ const KasLink = ({ to, linkType, copy, qr, link, shorten, resolveName, mono }: K
   const [showQr, setShowQr] = useState(false);
   const linkHref = linkTypeToAddress[linkType] + to;
 
+  const { data: addressNames, isLoading: isLoading } = useAddressNames();
 
   const handleClick = () => {
     navigator.clipboard.writeText(to);
@@ -47,15 +49,17 @@ const KasLink = ({ to, linkType, copy, qr, link, shorten, resolveName, mono }: K
     ? to.substring(0, splitAt) + "…" + to.substring(to.length - 8)
     : to;
 
-  if (linkType === "address" && resolveName) {
+  if (!isLoading && linkType === "address" && addressNames![to] && resolveName) {
     displayValue = (
       <>
         <span className="hidden md:inline">
           <Tooltip message={to} display={TooltipDisplayMode.Hover}>
-            {to}
+            {/*<div className="bg-accent-yellow inline-block text-alert rounded-full px-2 h-5 content-center text-center text-nowrap">*/}
+            {addressNames![to]}
+            {/*</div>*/}
           </Tooltip>
         </span>
-        <span className="md:hidden">{to}</span>
+        <span className="md:hidden">{addressNames![to]}</span>
       </>
     );
   }

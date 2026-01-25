@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
 import { apiUrl } from "../api/urls";
 
 interface BlockRewardInfo {
@@ -12,7 +11,7 @@ export const useBlockReward = () =>
     staleTime: 60000,
     queryKey: ["blockReward"],
     queryFn: async () => {
-      const { data } = await axios.get(apiUrl("/info/blockreward"));
+      const { data } = await axios.get(apiUrl("info/blockreward"));
       return data as BlockRewardInfo;
     },
   });

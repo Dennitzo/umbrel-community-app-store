@@ -1,5 +1,4 @@
-const DEFAULT_HOST =
-  typeof window === "undefined" ? "umbrel.local" : window.location.hostname;
+const DEFAULT_HOST = typeof window === "undefined" ? "umbrel.local" : window.location.hostname;
 
 const DEFAULT_API_BASE = `http://${DEFAULT_HOST}:8091`;
 const DEFAULT_SOCKET_URL = `ws://${DEFAULT_HOST}:8092`;

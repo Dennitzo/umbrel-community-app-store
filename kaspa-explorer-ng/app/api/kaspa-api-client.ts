@@ -1,4 +1,4 @@
-import { apiUrl } from "./urls";
+import { API_BASE } from "./urls";
 
 const DEFAULT_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +6,7 @@ const DEFAULT_HEADERS = {
 };
 
 export async function getMarketData() {
-  const res = await fetch(apiUrl("/info/market-data"), {
+  const res = await fetch(`${API_BASE}/info/market-data`, {
     headers: DEFAULT_HEADERS,
   })
     .then((response) => response.json())

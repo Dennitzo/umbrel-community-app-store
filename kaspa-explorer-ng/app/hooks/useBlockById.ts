@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
 import { apiUrl } from "../api/urls";
 
 export const useBlockById = (blockId: string) =>
   useQuery({
     queryKey: ["block", { blockId }],
     queryFn: async () => {
-      const { data } = await axios.get(apiUrl(`/blocks/${blockId}?includeColor=true`));
+      const { data } = await axios.get(apiUrl(`blocks/${blockId}?includeColor=true`));
       return data as BlockData;
     },
     enabled: !!blockId,

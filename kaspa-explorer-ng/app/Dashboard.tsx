@@ -1,4 +1,5 @@
 import Spinner from "./Spinner";
+import AccountBalanceWallet from "./assets/account_balance_wallet.svg";
 import BackToTab from "./assets/back_to_tab.svg";
 import Box from "./assets/box.svg";
 import Coins from "./assets/coins.svg";
@@ -12,11 +13,12 @@ import Time from "./assets/time.svg";
 import Trophy from "./assets/trophy.svg";
 import VerifiedUser from "./assets/verified_user.svg";
 import SearchBox from "./header/SearchBox";
+import { useAddressDistribution } from "./hooks/useAddressDistribution";
 import { useBlockdagInfo } from "./hooks/useBlockDagInfo";
 import { useBlockReward } from "./hooks/useBlockReward";
 import { useCoinSupply } from "./hooks/useCoinSupply";
 import { useHalving } from "./hooks/useHalving";
-import { useNetworkHashrate } from "./hooks/useNetworkHashrate";
+import { useTransactionsCount } from "./hooks/useTransactionsCount";
 import numeral from "numeral";
 import { useState } from "react";
 
@@ -29,30 +31,21 @@ const Dashboard = () => {
   const { data: coinSupply, isLoading: isLoadingCoinSupply } = useCoinSupply();
   const { data: blockReward, isLoading: isLoadingBlockReward } = useBlockReward();
   const { data: halving, isLoading: isLoadingHalving } = useHalving();
-  const { data: networkHashrate, isLoading: isLoadingHashrate } = useNetworkHashrate();
+  const { data: transactionsCount, isLoading: isLoadingTxCount } = useTransactionsCount();
+  const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
-  const formatHashrate = (value?: number | null) => {
-    const thsInput = Number(value || 0);
-    if (!Number.isFinite(thsInput) || thsInput <= 0) {
-      return { value: "--", unit: "" };
-    }
-    const units = ["kH/s", "MH/s", "GH/s", "TH/s", "PH/s", "EH/s", "ZH/s"];
-    let v = thsInput / 1000;
-    let i = 4;
-    while (v >= 1000 && i < units.length - 1) {
-      v /= 1000;
-      i += 1;
-    }
-    while (v < 1 && i > 0) {
-      v *= 1000;
-      i -= 1;
-    }
-    return { value: numeral(v).format("0,0.00"), unit: units[i] };
+  const totalTxCount = isLoadingTxCount
+    ? ""
+    : Math.floor((transactionsCount!.regular + transactionsCount!.coinbase) / 1_000_000).toString();
+
+  const getAddressCountAbove1KAS = () => {
+    if (!addressDistribution) return;
+    return addressDistribution[0].tiers?.reduce((acc, curr) => acc + (curr.tier > 0 ? curr.count : 0), 0);
   };
 
   return (
     <>
-      <div className="my-13 grid grid-cols-1 md:grid-cols-[6fr_5fr] rounded-4xl bg-white px-4 py-12 sm:px-8 sm:py-10 md:ps-20 md:py-20 lg:ps-24 xl:ps-36">
+      <div className="grid grid-cols-1 md:grid-cols-[6fr_5fr] rounded-4xl bg-white px-4 py-12 sm:px-8 sm:py-10 md:ps-20 md:py-20 lg:ps-24 xl:ps-36">
         <div className="flex w-full flex-col gap-y-3 justify-center">
           <span className="text-3xl lg:text-[54px]">Kaspa Explorer</span>
           <span className="mb-6 text-lg">
@@ -66,11 +59,9 @@ const Dashboard = () => {
         <span className="mb-7 text-black text-3xl md:text-4xl lg:text-5xl">Kaspa by the numbers</span>
         <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
           <DashboardBox
-            description="Network hashrate"
-            value={formatHashrate(networkHashrate).value}
-            unit={formatHashrate(networkHashrate).unit}
-            icon={<FlashOn className="w-5" />}
-            loading={isLoadingHashrate}
+            description="Total transactions"
+            value={`> ${totalTxCount} M`}
+            icon={<Swap className="w-5" />}
           />
           <DashboardBox
             description="Total blocks"
@@ -93,7 +84,12 @@ const Dashboard = () => {
             loading={isLoadingCoinSupply}
           />
           <DashboardBox description="Average block time" value={"0.1"} unit="s" icon={<Time className="w-5" />} />
-          <DashboardBox description=" " value=" " icon={<span />} />
+          <DashboardBox
+            description="Wallet addresses"
+            value={`${numeral(getAddressCountAbove1KAS()).format("0,")}`}
+            icon={<AccountBalanceWallet className="w-5" />}
+            loading={isLoadingDistribution}
+          />
           <DashboardBox
             description="Block reward"
             value={(blockReward?.blockreward || 0).toFixed(3)}

@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
 import { apiUrl } from "../api/urls";
 
 export const useAddressTxCount = (address: string) =>
   useQuery({
     queryKey: ["txCount", { address }],
     queryFn: async () => {
-      const { data } = await axios.get(apiUrl(`/addresses/${address}/transactions-count`));
+      const { data } = await axios.get(apiUrl(`addresses/${address}/transactions-count`));
       return data as TxCount;
     },
   });

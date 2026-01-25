@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
 import { apiUrl } from "../api/urls";
 
 export const useTransactionById = (transactionId: string) =>
@@ -8,7 +7,7 @@ export const useTransactionById = (transactionId: string) =>
     queryKey: ["transaction", { transactionId }],
     queryFn: async () => {
       const { data } = await axios.get(
-        apiUrl(`/transactions/${transactionId}?resolve_previous_outpoints=light`),
+        apiUrl(`transactions/${transactionId}?resolve_previous_outpoints=light`),
       );
       return data as TransactionData;
     },
