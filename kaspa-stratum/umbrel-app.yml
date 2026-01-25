@@ -3,7 +3,7 @@ id: kaspa-stratum
 category: crypto
 name: Kaspa Stratum Bridge
 icon: https://raw.githubusercontent.com/Dennitzo/umbrel-community-app-store/master/kaspa_icon.svg
-version: "v0.1.0"
+version: "v0.1.1"
 tagline: Connect miners to your Kaspa node with RK-Stratum
 
 description: >-
