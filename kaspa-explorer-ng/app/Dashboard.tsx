@@ -18,7 +18,7 @@ import { useBlockdagInfo } from "./hooks/useBlockDagInfo";
 import { useBlockReward } from "./hooks/useBlockReward";
 import { useCoinSupply } from "./hooks/useCoinSupply";
 import { useHalving } from "./hooks/useHalving";
-import { useTransactionsCount } from "./hooks/useTransactionsCount";
+import { useNetworkHashrate } from "./hooks/useNetworkHashrate";
 import numeral from "numeral";
 import { useState } from "react";
 
@@ -31,19 +31,23 @@ const Dashboard = () => {
   const { data: coinSupply, isLoading: isLoadingCoinSupply } = useCoinSupply();
   const { data: blockReward, isLoading: isLoadingBlockReward } = useBlockReward();
   const { data: halving, isLoading: isLoadingHalving } = useHalving();
-  const { data: transactionsCount, isLoading: isLoadingTxCount } = useTransactionsCount();
+  const { data: networkHashrate, isLoading: isLoadingHashrate } = useNetworkHashrate();
   const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
-  const safeTransactionsCount = transactionsCount ?? {
-    regular: 0,
-    coinbase: 0,
+  const formatHashrate = (value?: number | null) => {
+    const num = Number(value || 0);
+    if (!Number.isFinite(num) || num <= 0) {
+      return { value: "--", unit: "" };
+    }
+    const units = ["H/s", "kH/s", "MH/s", "GH/s", "TH/s", "PH/s", "EH/s"];
+    let v = num;
+    let i = 0;
+    while (v >= 1000 && i < units.length - 1) {
+      v /= 1000;
+      i += 1;
+    }
+    return { value: numeral(v).format("0,0"), unit: units[i] };
   };
-  const hasTxCounts = transactionsCount !== null;
-  const totalTxCount = isLoadingTxCount
-    ? ""
-    : hasTxCounts
-      ? Math.floor((safeTransactionsCount.regular + safeTransactionsCount.coinbase) / 1_000_000).toString()
-      : "N/A";
 
   const getAddressCountAbove1KAS = () => {
     if (!addressDistribution || addressDistribution.length === 0) return;
@@ -66,9 +70,11 @@ const Dashboard = () => {
         <span className="mb-7 text-black text-3xl md:text-4xl lg:text-5xl">Kaspa by the numbers</span>
         <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
           <DashboardBox
-            description="Total transactions"
-            value={`> ${totalTxCount} M`}
-            icon={<Swap className="w-5" />}
+            description="Network hashrate"
+            value={formatHashrate(networkHashrate).value}
+            unit={formatHashrate(networkHashrate).unit}
+            icon={<FlashOn className="w-5" />}
+            loading={isLoadingHashrate}
           />
           <DashboardBox
             description="Total blocks"
