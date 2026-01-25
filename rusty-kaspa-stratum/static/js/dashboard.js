@@ -214,7 +214,7 @@ class StratumBridgeDashboard {
     const data = Array.isArray(workers)
       ? workers
           .map((worker) => ({
-            label: `${worker.worker || 'Unknown'} (${worker.instance || '1'})`,
+            label: `${worker.worker || 'Unknown'}`,
             value: Number(worker.shares || 0),
           }))
           .filter((item) => Number.isFinite(item.value) && item.value > 0)
@@ -350,9 +350,7 @@ class StratumBridgeDashboard {
     const counts = new Map();
     if (Array.isArray(blocks)) {
       blocks.forEach((block) => {
-        const worker = block.worker || 'Unknown';
-        const instance = block.instance || '1';
-        const label = `${worker} (Instance: ${instance})`;
+        const label = block.worker || 'Unknown';
         counts.set(label, (counts.get(label) || 0) + 1);
       });
     }
