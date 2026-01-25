@@ -43,9 +43,6 @@ const Footer = () => {
         <Link to={"/transactions"} className="link-container">
           Transactions
         </Link>
-        <Link to={"/addresses"} className="link-container">
-          Addresses
-        </Link>
         <span className="ms-auto hidden sm:block">
           <Link to={"/donate"} className="link-container">
             Donate

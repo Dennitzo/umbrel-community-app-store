@@ -1,5 +1,4 @@
 import Spinner from "./Spinner";
-import AccountBalanceWallet from "./assets/account_balance_wallet.svg";
 import BackToTab from "./assets/back_to_tab.svg";
 import Box from "./assets/box.svg";
 import Coins from "./assets/coins.svg";
@@ -13,7 +12,6 @@ import Time from "./assets/time.svg";
 import Trophy from "./assets/trophy.svg";
 import VerifiedUser from "./assets/verified_user.svg";
 import SearchBox from "./header/SearchBox";
-import { useAddressDistribution } from "./hooks/useAddressDistribution";
 import { useBlockdagInfo } from "./hooks/useBlockDagInfo";
 import { useBlockReward } from "./hooks/useBlockReward";
 import { useCoinSupply } from "./hooks/useCoinSupply";
@@ -32,7 +30,6 @@ const Dashboard = () => {
   const { data: blockReward, isLoading: isLoadingBlockReward } = useBlockReward();
   const { data: halving, isLoading: isLoadingHalving } = useHalving();
   const { data: networkHashrate, isLoading: isLoadingHashrate } = useNetworkHashrate();
-  const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
   const formatHashrate = (value?: number | null) => {
     const thsInput = Number(value || 0);
@@ -51,11 +48,6 @@ const Dashboard = () => {
       i -= 1;
     }
     return { value: numeral(v).format("0,0.00"), unit: units[i] };
-  };
-
-  const getAddressCountAbove1KAS = () => {
-    if (!addressDistribution || addressDistribution.length === 0) return;
-    return addressDistribution[0].tiers?.reduce((acc, curr) => acc + (curr.tier > 0 ? curr.count : 0), 0);
   };
 
   return (
@@ -101,12 +93,7 @@ const Dashboard = () => {
             loading={isLoadingCoinSupply}
           />
           <DashboardBox description="Average block time" value={"0.1"} unit="s" icon={<Time className="w-5" />} />
-          <DashboardBox
-            description="Wallet addresses"
-            value={`${numeral(getAddressCountAbove1KAS()).format("0,")}`}
-            icon={<AccountBalanceWallet className="w-5" />}
-            loading={isLoadingDistribution}
-          />
+          <DashboardBox description=" " value=" " icon={<span />} />
           <DashboardBox
             description="Block reward"
             value={(blockReward?.blockreward || 0).toFixed(3)}
