@@ -30,7 +30,7 @@ export default function Addresses() {
   const { data: addressNames } = useAddressNames();
   const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
-  if (isLoading || isLoadingSupply) {
+  if (isLoading || isLoadingSupply || !topAddresses || !coinSupply) {
     return <LoadingMessage>Loading addresses</LoadingMessage>;
   }
 
@@ -39,7 +39,7 @@ export default function Addresses() {
     return addressDistribution[0].tiers?.reduce((acc, curr) => acc + (curr.tier > 0 ? curr.count : 0), 0);
   };
 
-  const calculateSum = (top: number) => topAddresses!.ranking.slice(0, top).reduce((acc, curr) => acc + curr.amount, 0);
+  const calculateSum = (top: number) => topAddresses.ranking.slice(0, top).reduce((acc, curr) => acc + curr.amount, 0);
 
   return (
     <>
@@ -76,7 +76,7 @@ export default function Addresses() {
         <PageTable
           className="text-black"
           headers={["Rank", "Address", "Label", "Balance", "Percentage"]}
-          rows={topAddresses!.ranking.slice(0, 100).map((addressInfo) => [
+          rows={topAddresses.ranking.slice(0, 100).map((addressInfo) => [
             addressInfo.rank + 1,
             <KasLink linkType="address" link to={addressInfo.address} mono />,
             addressNames && addressNames[addressInfo.address] && (
