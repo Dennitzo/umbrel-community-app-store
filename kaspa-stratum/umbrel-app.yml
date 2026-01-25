@@ -16,6 +16,8 @@ developer: Kaspa Community
 website: https://github.com/kaspanet
 repo: https://github.com/kaspanet
 support: https://github.com/Dennitzo/umbrel-community-app-store
+dependencies:
+  - kaspa-node
 
 port: 19114
 path: ""
