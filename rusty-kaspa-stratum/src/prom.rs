@@ -440,6 +440,7 @@ struct StatsResponse {
     networkHashrate: u64,
     networkDifficulty: f64,
     networkBlockCount: u64,
+    kaspadVersion: String,
     activeWorkers: usize,
     blocks: Vec<BlockInfo>,
     workers: Vec<WorkerInfo>,
@@ -476,10 +477,19 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
         networkHashrate: 0,
         networkDifficulty: 0.0,
         networkBlockCount: 0,
+        kaspadVersion: String::new(),
         activeWorkers: 0,
         blocks: Vec::new(),
         workers: Vec::new(),
     };
+
+    if let Some(version) = crate::kaspaapi::NODE_STATUS
+        .lock()
+        .server_version
+        .clone()
+    {
+        stats.kaspadVersion = version;
+    }
 
     let mut worker_stats: HashMap<String, WorkerInfo> = HashMap::new();
     let mut worker_hash_values: HashMap<String, f64> = HashMap::new(); // Store hash values for hashrate calculation
@@ -790,6 +800,19 @@ async fn get_config_json() -> String {
                         serde_json::Value::String(port.to_string()),
                     );
                 }
+                if let Some(instances) = doc["instances"].as_vec() {
+                    let ports: Vec<serde_json::Value> = instances
+                        .iter()
+                        .filter_map(|instance| {
+                            instance["stratum_port"]
+                                .as_str()
+                                .map(|port| serde_json::Value::String(port.to_string()))
+                        })
+                        .collect();
+                    if !ports.is_empty() {
+                        config.insert("stratum_ports".to_string(), serde_json::Value::Array(ports));
+                    }
+                }
                 if let Some(addr) = doc["kaspad_address"].as_str() {
                     config.insert(
                         "kaspad_address".to_string(),
@@ -801,6 +824,15 @@ async fn get_config_json() -> String {
                         "prom_port".to_string(),
                         serde_json::Value::String(port.to_string()),
                     );
+                } else if let Some(instances) = doc["instances"].as_vec() {
+                    if let Some(first) = instances.first() {
+                        if let Some(port) = first["prom_port"].as_str() {
+                            config.insert(
+                                "prom_port".to_string(),
+                                serde_json::Value::String(port.to_string()),
+                            );
+                        }
+                    }
                 }
                 if let Some(stats) = doc["print_stats"].as_bool() {
                     config.insert("print_stats".to_string(), serde_json::Value::Bool(stats));

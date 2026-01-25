@@ -25,11 +25,11 @@ class StratumBridgeDashboard {
       const stats = await statsRes.json();
 
       this.renderStatus(status);
-      this.renderStats(stats);
-      this.updateStatus(true, 'Live');
-      this.setLastUpdated();
-      this.scheduleNext(this.updateInterval);
-    } catch (error) {
+    this.renderStats(stats);
+    this.updateStatus(true, 'Live');
+    this.setLastUpdated();
+    this.scheduleNext(this.updateInterval);
+  } catch (error) {
       console.error(error);
       this.updateStatus(false, 'Offline');
       this.scheduleNext(this.retryInterval);
@@ -66,6 +66,7 @@ class StratumBridgeDashboard {
     this.setText('kaspadVersionValue', status?.kaspad_version || '—');
     this.setText('instancesValue', status?.instances || 1);
     this.setText('webBindValue', status?.prom_port || status?.health_check_port || '—');
+    this.renderEndpoints(status);
   }
 
   renderStats(stats) {
@@ -75,6 +76,7 @@ class StratumBridgeDashboard {
     this.setText('networkHashrateValue', this.formatHashrateHs(Number(stats?.networkHashrate || 0)));
     this.setText('networkDifficultyValue', this.formatDifficulty(stats?.networkDifficulty));
     this.setText('networkBlockCountValue', this.formatNumber(stats?.networkBlockCount));
+    this.setText('kaspadVersionValue', stats?.kaspadVersion);
 
     const internalCpu = stats?.internalCpu || null;
     const cpuHashrateCard = document.getElementById('internalCpuHashrateCard');
@@ -92,6 +94,8 @@ class StratumBridgeDashboard {
 
     this.renderWorkers(stats?.workers || []);
     this.renderBlocks(stats?.blocks || []);
+    this.renderSharesPie(stats?.workers || []);
+    this.renderBlocksPie(stats?.blocks || []);
   }
 
   renderWorkers(workers) {
@@ -150,10 +154,181 @@ class StratumBridgeDashboard {
       .join('');
   }
 
+  renderSharesPie(workers) {
+    const canvas = document.getElementById('sharesPieChart');
+    const legend = document.getElementById('sharesPieLegend');
+    if (!canvas || !legend) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const data = Array.isArray(workers)
+      ? workers
+          .map((worker) => ({
+            label: `${worker.worker || 'Unknown'} (${worker.instance || '1'})`,
+            value: Number(worker.shares || 0),
+          }))
+          .filter((item) => Number.isFinite(item.value) && item.value > 0)
+      : [];
+
+    if (!data.length) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      legend.innerHTML = '<li class="text-zinc-500 text-sm">No shares reported yet.</li>';
+      return;
+    }
+
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    const palette = [
+      '#14b8a6',
+      '#22d3ee',
+      '#60a5fa',
+      '#a78bfa',
+      '#f472b6',
+      '#f97316',
+      '#facc15',
+      '#4ade80',
+    ];
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 8;
+    let startAngle = -Math.PI / 2;
+
+    data.forEach((item, index) => {
+      const slice = (item.value / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, startAngle + slice);
+      ctx.closePath();
+      ctx.fillStyle = palette[index % palette.length];
+      ctx.fill();
+      startAngle += slice;
+    });
+
+    legend.innerHTML = data
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8)
+      .map((item, index) => {
+        const percent = ((item.value / total) * 100).toFixed(1);
+        const color = palette[index % palette.length];
+        return `
+          <li>
+            <span class="chart-swatch" style="background:${color}"></span>
+            <span>${this.escape(item.label)} — ${this.formatNumber(item.value)} shares (${percent}%)</span>
+          </li>
+        `;
+      })
+      .join('');
+  }
+
+  renderBlocksPie(blocks) {
+    const canvas = document.getElementById('blocksPieChart');
+    const legend = document.getElementById('blocksPieLegend');
+    if (!canvas || !legend) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const counts = new Map();
+    if (Array.isArray(blocks)) {
+      blocks.forEach((block) => {
+        const wallet = block.wallet || 'Unknown';
+        counts.set(wallet, (counts.get(wallet) || 0) + 1);
+      });
+    }
+
+    const data = Array.from(counts.entries()).map(([label, value]) => ({ label, value }));
+
+    if (!data.length) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      legend.innerHTML = '<li class="text-zinc-500 text-sm">No blocks reported yet.</li>';
+      return;
+    }
+
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    const palette = [
+      '#38bdf8',
+      '#22d3ee',
+      '#14b8a6',
+      '#a78bfa',
+      '#f59e0b',
+      '#f472b6',
+      '#4ade80',
+      '#e879f9',
+    ];
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 8;
+    let startAngle = -Math.PI / 2;
+
+    data.forEach((item, index) => {
+      const slice = (item.value / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, startAngle + slice);
+      ctx.closePath();
+      ctx.fillStyle = palette[index % palette.length];
+      ctx.fill();
+      startAngle += slice;
+    });
+
+    legend.innerHTML = data
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8)
+      .map((item, index) => {
+        const percent = ((item.value / total) * 100).toFixed(1);
+        const color = palette[index % palette.length];
+        return `
+          <li>
+            <span class="chart-swatch" style="background:${color}"></span>
+            <span>${this.escape(item.label)} — ${this.formatNumber(item.value)} blocks (${percent}%)</span>
+          </li>
+        `;
+      })
+      .join('');
+  }
+
   setText(id, value) {
     const el = document.getElementById(id);
     if (!el) return;
     el.textContent = value == null || value === '' ? '--' : String(value);
+  }
+
+  renderEndpoints(status) {
+    const list = document.getElementById('stratumEndpoints');
+    if (!list) return;
+
+    const ports = Array.isArray(status?.stratum_ports) && status.stratum_ports.length
+      ? status.stratum_ports
+      : status?.stratum_port
+        ? [status.stratum_port]
+        : [':5555'];
+
+    const host = window.location.hostname || 'localhost';
+    const entries = ports.map((rawPort, index) => {
+      const port = this.normalizePort(String(rawPort));
+      const endpoint = `stratum+tcp://${host}${port}`;
+      return `
+        <li class="endpoint-item">
+          <span class="endpoint-label">Instance ${index + 1}</span>
+          <span class="endpoint-value">${this.escape(endpoint)}</span>
+        </li>
+      `;
+    });
+
+    list.innerHTML = entries.join('');
+  }
+
+  normalizePort(value) {
+    if (!value) return ':5555';
+    if (value.startsWith(':')) return value;
+    if (/^\d+$/.test(value)) return `:${value}`;
+    const match = value.match(/:(\d+)$/);
+    if (match) return `:${match[1]}`;
+    return `:${value}`;
   }
 
   setLastUpdated() {
