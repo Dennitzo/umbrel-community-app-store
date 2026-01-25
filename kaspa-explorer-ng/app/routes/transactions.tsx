@@ -37,7 +37,7 @@ export default function Transactions() {
 
   const totalTxCount = isLoadingTxCountTotal
     ? ""
-    : Math.floor((transactionsCountTotal!.regular + transactionsCountTotal!.coinbase) / 1_000_000).toString();
+    : Math.floor(((transactionsCountTotal?.regular ?? 0) + (transactionsCountTotal?.coinbase ?? 0)) / 1_000_000).toString();
 
   const txCount =
     transactionCount && transactionCount.length > 0

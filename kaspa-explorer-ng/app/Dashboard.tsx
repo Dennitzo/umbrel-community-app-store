@@ -36,7 +36,7 @@ const Dashboard = () => {
 
   const totalTxCount = isLoadingTxCount
     ? ""
-    : Math.floor((transactionsCount!.regular + transactionsCount!.coinbase) / 1_000_000).toString();
+    : Math.floor(((transactionsCount?.regular ?? 0) + (transactionsCount?.coinbase ?? 0)) / 1_000_000).toString();
 
   const getAddressCountAbove1KAS = () => {
     if (!addressDistribution) return;
