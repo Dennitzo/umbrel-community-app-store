@@ -93,6 +93,7 @@ body {
 .table-card table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
     margin-top: 1rem;
     font-size: 0.9rem;
     color: #e2e8f0;
@@ -112,6 +113,17 @@ body {
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--text-muted);
+}
+
+.table-card th:first-child,
+.table-card td:first-child {
+    width: 70%;
+}
+
+.table-card th:last-child,
+.table-card td:last-child {
+    width: 30%;
+    white-space: nowrap;
 }
 
 .table-card tbody tr:hover {

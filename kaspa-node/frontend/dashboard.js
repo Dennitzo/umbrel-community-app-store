@@ -148,7 +148,7 @@ class KaspaDatabaseDashboard {
         if (!Array.isArray(stats) || stats.length === 0) {
             container.innerHTML = `
                 <tr>
-                    <td colspan="4" class="py-6 text-center text-zinc-500">No log data available yet.</td>
+                    <td colspan="2" class="py-6 text-center text-zinc-500">No log data available yet.</td>
                 </tr>
             `;
             return;
@@ -158,7 +158,6 @@ class KaspaDatabaseDashboard {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td class="font-medium text-sm leading-tight">${entry.message}</td>
-                <td>${entry.level}</td>
                 <td>${this.formatLogTime(entry.timestamp)}</td>
             `;
             container.appendChild(row);
@@ -201,13 +200,13 @@ class KaspaDatabaseDashboard {
             this.elements.largestTableValue.textContent = '—';
             this.elements.tableStatsBody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+                    <td colspan="2" class="py-6 text-center text-zinc-500">Waiting for data...</td>
                 </tr>
             `;
             if (this.elements.graphLogBody) {
                 this.elements.graphLogBody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+                        <td colspan="2" class="py-6 text-center text-zinc-500">Waiting for data...</td>
                     </tr>
                 `;
             }
