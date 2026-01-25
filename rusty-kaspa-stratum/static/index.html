@@ -49,6 +49,49 @@
         </div>
       </div>
 
+      <div class="grid gap-6 lg:grid-cols-2">
+        <section class="table-card">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-white">Bridge Status</h2>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Live configuration</span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-400">
+            Configuration pulled from the bridge status endpoint.
+          </p>
+          <div class="mt-4 space-y-2 text-sm text-zinc-300">
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Kaspad Address</span>
+              <span id="kaspadAddressValue">--</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Kaspad Version</span>
+              <span id="kaspadVersionValue">--</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Web Bind</span>
+              <span id="webBindValue">--</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">Version</span>
+              <span id="bridgeVersionValue">--</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="table-card">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-white">Stratum Endpoints</h2>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Connect miners</span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-400">
+            Use the endpoints below to connect your miners.
+          </p>
+          <ul class="endpoint-list" id="stratumEndpoints">
+            <li class="text-zinc-500 text-sm">Waiting for data...</li>
+          </ul>
+        </section>
+      </div>
+
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div class="stat-card">
           <p class="stat-label">Total Blocks</p>
@@ -80,16 +123,6 @@
           <p class="stat-value" id="internalCpuBlocksValue">--</p>
           <p class="stat-sub">Blocks submitted by internal miner</p>
         </div>
-        <div class="stat-card">
-          <p class="stat-label">Network Difficulty</p>
-          <p class="stat-value" id="networkDifficultyValue">--</p>
-          <p class="stat-sub">Difficulty snapshot from node</p>
-        </div>
-        <div class="stat-card">
-          <p class="stat-label">Network Height</p>
-          <p class="stat-value" id="networkBlockCountValue">--</p>
-          <p class="stat-sub">Current block height (approx.)</p>
-        </div>
       </div>
 
       <div class="grid gap-6">
@@ -115,49 +148,6 @@
               </tr>
             </tbody>
           </table>
-        </section>
-      </div>
-
-      <div class="grid gap-6 lg:grid-cols-2">
-        <section class="table-card">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-white">Bridge Status</h2>
-            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Live configuration</span>
-          </div>
-          <p class="mt-2 text-sm text-zinc-400">
-            Configuration pulled from the bridge status endpoint.
-          </p>
-          <div class="mt-4 space-y-2 text-sm text-zinc-300">
-            <div class="flex items-center justify-between">
-              <span class="text-zinc-400">Kaspad Address</span>
-              <span id="kaspadAddressValue">--</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-zinc-400">Kaspad Version</span>
-              <span id="kaspadVersionValue">--</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-zinc-400">Instances</span>
-              <span id="instancesValue">--</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-zinc-400">Web Bind</span>
-              <span id="webBindValue">--</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="table-card">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-white">Stratum Endpoints</h2>
-            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Connect miners</span>
-          </div>
-          <p class="mt-2 text-sm text-zinc-400">
-            Use the local IP of your Umbrel device with the port shown below.
-          </p>
-          <ul class="endpoint-list" id="stratumEndpoints">
-            <li class="text-zinc-500 text-sm">Waiting for data...</li>
-          </ul>
         </section>
       </div>
 
