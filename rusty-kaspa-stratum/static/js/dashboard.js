@@ -308,7 +308,7 @@ class StratumBridgeDashboard {
   formatWebBind(status) {
     const rawPort = status?.prom_port || status?.health_check_port;
     if (!rawPort) return '—';
-    const host = status?.local_ip || this.localIp || window.location.hostname || 'localhost';
+    const host = status?.public_host || status?.local_ip || this.localIp || window.location.hostname || 'localhost';
     const port = this.normalizePort(String(rawPort));
     return `http://${host}${port}`;
   }
@@ -323,7 +323,7 @@ class StratumBridgeDashboard {
         ? [status.stratum_port]
         : [':5555'];
 
-    const host = status?.local_ip || this.localIp || window.location.hostname || 'localhost';
+    const host = status?.public_host || status?.local_ip || this.localIp || window.location.hostname || 'localhost';
     const entries = ports.map((rawPort, index) => {
       const port = this.normalizePort(String(rawPort));
       const endpoint = `stratum+tcp://${host}${port}`;

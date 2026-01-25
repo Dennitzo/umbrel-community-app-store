@@ -12,6 +12,8 @@ services:
       - /app/config.yaml
       - --node-mode
       - external
+    environment:
+      STRATUM_PUBLIC_HOST: ${APP_KASPA_STRATUM_PUBLIC_HOST}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

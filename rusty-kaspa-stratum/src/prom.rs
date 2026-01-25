@@ -787,6 +787,7 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
 async fn get_config_json() -> String {
     use std::fs;
     use std::net::IpAddr;
+    use std::env;
     use yaml_rust::YamlLoader;
 
     let config_path = "config.yaml";
@@ -886,6 +887,14 @@ async fn get_config_json() -> String {
                         config.insert(
                             "local_ip".to_string(),
                             serde_json::Value::String(v4.to_string()),
+                        );
+                    }
+                }
+                if let Ok(public_host) = env::var("STRATUM_PUBLIC_HOST") {
+                    if !public_host.trim().is_empty() {
+                        config.insert(
+                            "public_host".to_string(),
+                            serde_json::Value::String(public_host),
                         );
                     }
                 }

@@ -1,5 +1,6 @@
 # Kaspa Stratum Bridge export variables
 APP_KASPA_STRATUM_KASPAD_ADDRESS="${APP_KASPA_STRATUM_KASPAD_ADDRESS:-host.docker.internal:16110}"
+APP_KASPA_STRATUM_PUBLIC_HOST="${APP_KASPA_STRATUM_PUBLIC_HOST:-$(hostname -I 2>/dev/null | awk '{print $1}')}"
 
 mkdir -p "${EXPORTS_APP_DIR}" "${EXPORTS_APP_DIR}/bridge-data"
 chmod -R 777 "${EXPORTS_APP_DIR}/bridge-data"
