@@ -117,13 +117,13 @@ body {
 
 .table-card th:first-child,
 .table-card td:first-child {
-    width: 70%;
+    width: 82%;
 }
 
 .table-card th:last-child,
 .table-card td:last-child {
-    width: 30%;
-    text-align: right;
+    width: 18%;
+    text-align: left;
     white-space: nowrap;
 }
 
