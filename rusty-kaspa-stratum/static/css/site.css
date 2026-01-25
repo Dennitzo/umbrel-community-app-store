@@ -247,6 +247,16 @@ body {
   opacity: 1;
 }
 
+.break-all {
+  word-break: break-all;
+}
+
+.table-card table th,
+.table-card table td {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .eye-toggle {
   display: inline-flex;
   align-items: center;

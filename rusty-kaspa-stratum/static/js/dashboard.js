@@ -195,7 +195,7 @@ class StratumBridgeDashboard {
           <tr>
             <td>${this.escape(block.worker)}</td>
             <td class="truncate">${wallet}</td>
-            <td>${hash}</td>
+            <td class="break-all">${hash}</td>
           </tr>
         `;
       })
