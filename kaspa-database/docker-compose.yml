@@ -86,9 +86,11 @@ services:
         psql -v ON_ERROR_STOP=1 -c "DROP VIEW IF EXISTS scripts_transactions_count;"
         psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS addresses_transactions_count (address text PRIMARY KEY, count bigint NOT NULL);"
         psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS scripts_transactions_count (script_public_key bytea PRIMARY KEY, count bigint NOT NULL);"
+        psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS transactions_counts (timestamp bigint PRIMARY KEY, coinbase int NOT NULL, regular int NOT NULL);"
         while true; do
           psql -v ON_ERROR_STOP=1 -c "TRUNCATE addresses_transactions_count; INSERT INTO addresses_transactions_count (address, count) SELECT address, COUNT(*)::bigint FROM addresses_transactions GROUP BY address;"
           psql -v ON_ERROR_STOP=1 -c "TRUNCATE scripts_transactions_count; INSERT INTO scripts_transactions_count (script_public_key, count) SELECT script_public_key, COUNT(*)::bigint FROM scripts_transactions GROUP BY script_public_key;"
+          psql -v ON_ERROR_STOP=1 -c "TRUNCATE transactions_counts; INSERT INTO transactions_counts (timestamp, coinbase, regular) SELECT (t.block_time / 86400000)::bigint * 86400000 AS timestamp, SUM(CASE WHEN sn.subnetwork_id = '0100000000000000000000000000000000000000' THEN 1 ELSE 0 END)::int AS coinbase, SUM(CASE WHEN sn.subnetwork_id = '0000000000000000000000000000000000000000' THEN 1 ELSE 0 END)::int AS regular FROM transactions t LEFT JOIN subnetworks sn ON sn.id = t.subnetwork_id WHERE t.block_time IS NOT NULL GROUP BY 1 ORDER BY 1;"
           sleep 300;
         done
       '
