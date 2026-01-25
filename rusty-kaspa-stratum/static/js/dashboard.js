@@ -3,10 +3,13 @@ class StratumBridgeDashboard {
     this.updateInterval = 10000;
     this.retryInterval = 5000;
     this.pollTimer = null;
+    this.localIp = null;
+    this.lastStatus = null;
     this.init();
   }
 
   init() {
+    this.resolveLocalIp();
     this.fetchData();
   }
 
@@ -62,10 +65,11 @@ class StratumBridgeDashboard {
   }
 
   renderStatus(status) {
+    this.lastStatus = status || null;
     this.setText('kaspadAddressValue', status?.kaspad_address);
     this.setText('kaspadVersionValue', status?.kaspad_version || '—');
     this.setText('instancesValue', status?.instances || 1);
-    this.setText('webBindValue', status?.prom_port || status?.health_check_port || '—');
+    this.setText('webBindValue', this.formatWebBind(status));
     this.renderEndpoints(status);
   }
 
@@ -297,6 +301,14 @@ class StratumBridgeDashboard {
     el.textContent = value == null || value === '' ? '--' : String(value);
   }
 
+  formatWebBind(status) {
+    const rawPort = status?.prom_port || status?.health_check_port;
+    if (!rawPort) return '—';
+    const host = this.localIp || window.location.hostname || 'localhost';
+    const port = this.normalizePort(String(rawPort));
+    return `http://${host}${port}`;
+  }
+
   renderEndpoints(status) {
     const list = document.getElementById('stratumEndpoints');
     if (!list) return;
@@ -307,7 +319,7 @@ class StratumBridgeDashboard {
         ? [status.stratum_port]
         : [':5555'];
 
-    const host = window.location.hostname || 'localhost';
+    const host = this.localIp || window.location.hostname || 'localhost';
     const entries = ports.map((rawPort, index) => {
       const port = this.normalizePort(String(rawPort));
       const endpoint = `stratum+tcp://${host}${port}`;
@@ -320,6 +332,63 @@ class StratumBridgeDashboard {
     });
 
     list.innerHTML = entries.join('');
+  }
+
+  async resolveLocalIp() {
+    try {
+      const ip = await this.getLocalIpFromWebRTC();
+      if (ip) {
+        this.localIp = ip;
+        if (this.lastStatus) {
+          this.renderEndpoints(this.lastStatus);
+        }
+      }
+    } catch (error) {
+      console.warn('Unable to resolve local IP', error);
+    }
+  }
+
+  getLocalIpFromWebRTC() {
+    return new Promise((resolve, reject) => {
+      if (!window.RTCPeerConnection) {
+        resolve(null);
+        return;
+      }
+
+      const peer = new RTCPeerConnection({ iceServers: [] });
+      peer.createDataChannel('ip');
+      peer.createOffer()
+        .then((offer) => peer.setLocalDescription(offer))
+        .catch(reject);
+
+      peer.onicecandidate = (event) => {
+        if (!event?.candidate?.candidate) {
+          peer.close();
+          resolve(null);
+          return;
+        }
+
+        const match = event.candidate.candidate.match(
+          /([0-9]{1,3}(?:\.[0-9]{1,3}){3})/
+        );
+        if (match) {
+          const ip = match[1];
+          if (this.isPrivateIp(ip)) {
+            peer.onicecandidate = null;
+            peer.close();
+            resolve(ip);
+          }
+        }
+      };
+    });
+  }
+
+  isPrivateIp(ip) {
+    return (
+      ip.startsWith('10.') ||
+      ip.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip)
+    );
   }
 
   normalizePort(value) {
@@ -353,7 +422,7 @@ class StratumBridgeDashboard {
       v /= 1000;
       i += 1;
     }
-    return `${v.toFixed(2)} ${units[i]}`;
+    return `${Math.round(v)} ${units[i]}`;
   }
 
   formatDifficulty(value) {

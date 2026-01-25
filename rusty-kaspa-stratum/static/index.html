@@ -68,7 +68,7 @@
         <div class="stat-card">
           <p class="stat-label">Network Hashrate</p>
           <p class="stat-value" id="networkHashrateValue">--</p>
-          <p class="stat-sub">Estimated network hashrate (H/s)</p>
+          <p class="stat-sub">Estimated network hashrate</p>
         </div>
         <div class="stat-card" id="internalCpuHashrateCard">
           <p class="stat-label">Internal CPU Hashrate</p>
@@ -123,19 +123,6 @@
 
         <section class="table-card">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-white">Stratum Endpoints</h2>
-            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Connect miners</span>
-          </div>
-          <p class="mt-2 text-sm text-zinc-400">
-            Use the local IP of your Umbrel device with the port shown below.
-          </p>
-          <ul class="endpoint-list" id="stratumEndpoints">
-            <li class="text-zinc-500 text-sm">Waiting for data...</li>
-          </ul>
-        </section>
-
-        <section class="table-card">
-          <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold text-white">Latest Blocks</h2>
             <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Recent shares</span>
           </div>
@@ -158,6 +145,19 @@
           </table>
         </section>
       </div>
+
+      <section class="table-card">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-white">Stratum Endpoints</h2>
+          <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Connect miners</span>
+        </div>
+        <p class="mt-2 text-sm text-zinc-400">
+          Use the local IP of your Umbrel device with the port shown below.
+        </p>
+        <ul class="endpoint-list" id="stratumEndpoints">
+          <li class="text-zinc-500 text-sm">Waiting for data...</li>
+        </ul>
+      </section>
 
       <section class="table-card">
         <div class="flex items-center justify-between">
@@ -186,33 +186,35 @@
         </table>
       </section>
 
-      <section class="table-card">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-white">Shares by Worker</h2>
-          <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Last update</span>
-        </div>
-        <p class="mt-2 text-sm text-zinc-400">Distribution of valid shares per worker.</p>
-        <div class="chart-wrap">
-          <canvas id="sharesPieChart" width="320" height="320" aria-label="Shares per worker chart"></canvas>
-          <ul id="sharesPieLegend" class="chart-legend">
-            <li class="text-zinc-500 text-sm">Waiting for data...</li>
-          </ul>
-        </div>
-      </section>
+      <div class="grid gap-6 lg:grid-cols-2">
+        <section class="table-card">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-white">Shares by Worker</h2>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Last update</span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-400">Distribution of valid shares per worker.</p>
+          <div class="chart-wrap compact">
+            <canvas id="sharesPieChart" width="260" height="260" aria-label="Shares per worker chart"></canvas>
+            <ul id="sharesPieLegend" class="chart-legend">
+              <li class="text-zinc-500 text-sm">Waiting for data...</li>
+            </ul>
+          </div>
+        </section>
 
-      <section class="table-card">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-white">Accepted Blocks by Miner</h2>
-          <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Reported blocks</span>
-        </div>
-        <p class="mt-2 text-sm text-zinc-400">Accepted blocks reported per miner wallet.</p>
-        <div class="chart-wrap">
-          <canvas id="blocksPieChart" width="320" height="320" aria-label="Blocks per miner chart"></canvas>
-          <ul id="blocksPieLegend" class="chart-legend">
-            <li class="text-zinc-500 text-sm">Waiting for data...</li>
-          </ul>
-        </div>
-      </section>
+        <section class="table-card">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-white">Accepted Blocks by Miner</h2>
+            <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Reported blocks</span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-400">Accepted blocks reported per miner wallet.</p>
+          <div class="chart-wrap compact">
+            <canvas id="blocksPieChart" width="260" height="260" aria-label="Blocks per miner chart"></canvas>
+            <ul id="blocksPieLegend" class="chart-legend">
+              <li class="text-zinc-500 text-sm">Waiting for data...</li>
+            </ul>
+          </div>
+        </section>
+      </div>
 
       <div class="last-updated">Last updated: <span id="lastUpdated">--</span></div>
     </main>

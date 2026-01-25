@@ -153,6 +153,11 @@ body {
   align-items: center;
 }
 
+.chart-wrap.compact {
+  grid-template-columns: minmax(180px, 260px) minmax(140px, 1fr);
+  gap: 1.1rem;
+}
+
 .chart-legend {
   list-style: none;
   padding: 0;
