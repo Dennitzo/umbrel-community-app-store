@@ -3,6 +3,7 @@ APP_KASPA_STRATUM_KASPAD_ADDRESS="${APP_KASPA_STRATUM_KASPAD_ADDRESS:-host.docke
 APP_KASPA_STRATUM_WEB_PORT=":3030"
 
 mkdir -p "${EXPORTS_APP_DIR}" "${EXPORTS_APP_DIR}/bridge-data"
+chmod -R 777 "${EXPORTS_APP_DIR}/bridge-data"
 
 CONFIG_PATH="${EXPORTS_APP_DIR}/config.yaml"
 if [ ! -f "${CONFIG_PATH}" ]; then
