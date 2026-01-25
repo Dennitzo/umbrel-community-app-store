@@ -123,8 +123,12 @@ body {
 .table-card th:last-child,
 .table-card td:last-child {
     width: 15%;
-    text-align: left;
+    text-align: right;
     white-space: nowrap;
+}
+
+.table-card th:last-child {
+    text-align: left;
 }
 
 .table-card tbody tr:hover {
