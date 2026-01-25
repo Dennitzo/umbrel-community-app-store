@@ -125,7 +125,7 @@ class KaspaDatabaseDashboard {
             .join('\n');
 
         this.populateTableStats(payload.logTail || [], this.elements.tableStatsBody);
-        this.populateTableStats(payload.graphLogTail || [], this.elements.graphLogBody);
+        this.populateTableStats((payload.graphLogTail || []).slice(0, 1), this.elements.graphLogBody);
 
         if (this.elements.lastUpdated) {
             if (payload.timestamp) {
