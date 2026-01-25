@@ -29,9 +29,18 @@ COPY src ./src
 
 RUN cargo build --release --bin stratum-bridge
 
-FROM alpine:latest
+FROM debian:bookworm-slim
 
 WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    tini \
+  && rm -rf /var/lib/apt/lists/* \
+  && useradd -r -u 10001 -g users -d /home/kaspa -s /usr/sbin/nologin kaspa \
+  && mkdir -p /home/kaspa /app \
+  && chown -R kaspa:kaspa /home/kaspa /app
 
 LABEL org.opencontainers.image.title="Kaspa Rust Stratum Bridge" \
     org.opencontainers.image.description="A high-performance Rust implementation of the Kaspa Stratum Bridge, providing seamless mining pool connectivity for Kaspa ASIC miners." \
@@ -59,4 +68,5 @@ EXPOSE 2116
 EXPOSE 2117
 
 # Set the entrypoint to run the bridge
-ENTRYPOINT ["./stratum-bridge", "--config", "/app/config.yaml", "--node-mode", "external"]
+USER kaspa
+ENTRYPOINT ["/usr/bin/tini", "--", "./stratum-bridge", "--config", "/app/config.yaml", "--node-mode", "external"]
