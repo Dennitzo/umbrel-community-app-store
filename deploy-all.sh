@@ -31,6 +31,14 @@ cd "${ROOT_DIR}"
 docker build -t dennitzo/kaspa-explorer-ng:latest -f kaspa-explorer-ng/Dockerfile kaspa-explorer-ng
 docker push dennitzo/kaspa-explorer-ng:latest
 
+# kaspa-rest-server
+cd "${ROOT_DIR}/kaspa-rest-server"
+git pull
+
+cd "${ROOT_DIR}"
+docker build -t dennitzo/kaspa-rest-server:latest -f kaspa-rest-server/Dockerfile kaspa-rest-server
+docker push dennitzo/kaspa-rest-server:latest
+
 # kaspa-node (incl. graph-inspector images)
 cd "${ROOT_DIR}"
 git pull
