@@ -163,10 +163,15 @@ class StratumBridgeDashboard {
   maskWallet(value) {
     if (!value) return '--';
     const safe = String(value);
+    return '*'.repeat(safe.length);
+  }
+
+  maskHash(value) {
+    if (!value) return '--';
+    const safe = String(value);
     const suffix = safe.slice(-4);
-    const prefix = safe.startsWith('kaspa:') ? 'kaspa:' : '';
-    const maskedLength = Math.max(0, safe.length - prefix.length - suffix.length);
-    return `${prefix}${'*'.repeat(maskedLength)}${suffix}`;
+    const maskedLength = Math.max(0, safe.length - suffix.length);
+    return `${'*'.repeat(maskedLength)}${suffix}`;
   }
 
   renderBlocks(blocks) {
@@ -186,12 +191,15 @@ class StratumBridgeDashboard {
         const wallet = this.hideBlockWallets
           ? this.maskWallet(block.wallet)
           : this.escape(block.wallet);
+        const hash = this.hideBlockWallets
+          ? this.maskHash(block.hash)
+          : this.escape(this.shortHash(block.hash));
         return `
           <tr>
             <td>${this.escape(block.worker)}</td>
             <td class="truncate">${wallet}</td>
             <td>${this.formatUnixSeconds(block.timestamp)}</td>
-            <td class="truncate">${this.escape(this.shortHash(block.hash))}</td>
+            <td class="truncate">${hash}</td>
           </tr>
         `;
       })
