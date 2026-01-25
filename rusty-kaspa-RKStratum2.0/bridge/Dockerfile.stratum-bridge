@@ -17,11 +17,12 @@ FROM chef AS planner
 ARG RUSTY_KASPA_REPO=https://github.com/kaspanet/rusty-kaspa
 ARG RUSTY_KASPA_REF=master
 RUN git clone --depth 1 --branch "${RUSTY_KASPA_REF}" "${RUSTY_KASPA_REPO}" .
-RUN if ! grep -q "^\\[workspace.lints\\]" Cargo.toml; then \
-      if grep -q "^\\[workspace.lints.clippy\\]" Cargo.toml || grep -q "^\\[workspace.lints.rust\\]" Cargo.toml; then \
-        awk 'BEGIN{added=0} /^\\[workspace.lints\\.(clippy|rust)\\]/{if(!added){print \"[workspace.lints]\"; print \"\"; added=1}} {print}' Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml; \
+RUN if ! grep -q "^[[]workspace.lints[]]" Cargo.toml; then \
+      first_line="$(grep -n -m1 -E '^[[]workspace[.]lints[.](clippy|rust)[]]' Cargo.toml | cut -d: -f1)"; \
+      if [ -n "$first_line" ]; then \
+        sed -i "${first_line}i\\[workspace.lints]\\\n" Cargo.toml; \
       else \
-        printf '\\n[workspace.lints]\\n\\n[workspace.lints.rust]\\nunsafe_code = \"warn\"\\n\\n[workspace.lints.clippy]\\nall = \"warn\"\\n' >> Cargo.toml; \
+        printf '\n[workspace.lints]\n\n[workspace.lints.rust]\nunsafe_code = "warn"\n\n[workspace.lints.clippy]\nall = "warn"\n' >> Cargo.toml; \
       fi; \
     fi
 COPY . ./bridge
@@ -32,11 +33,12 @@ FROM chef AS builder
 ARG RUSTY_KASPA_REPO=https://github.com/kaspanet/rusty-kaspa
 ARG RUSTY_KASPA_REF=master
 RUN git clone --depth 1 --branch "${RUSTY_KASPA_REF}" "${RUSTY_KASPA_REPO}" .
-RUN if ! grep -q "^\\[workspace.lints\\]" Cargo.toml; then \
-      if grep -q "^\\[workspace.lints.clippy\\]" Cargo.toml || grep -q "^\\[workspace.lints.rust\\]" Cargo.toml; then \
-        awk 'BEGIN{added=0} /^\\[workspace.lints\\.(clippy|rust)\\]/{if(!added){print \"[workspace.lints]\"; print \"\"; added=1}} {print}' Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml; \
+RUN if ! grep -q "^[[]workspace.lints[]]" Cargo.toml; then \
+      first_line="$(grep -n -m1 -E '^[[]workspace[.]lints[.](clippy|rust)[]]' Cargo.toml | cut -d: -f1)"; \
+      if [ -n "$first_line" ]; then \
+        sed -i "${first_line}i\\[workspace.lints]\\\n" Cargo.toml; \
       else \
-        printf '\\n[workspace.lints]\\n\\n[workspace.lints.rust]\\nunsafe_code = \"warn\"\\n\\n[workspace.lints.clippy]\\nall = \"warn\"\\n' >> Cargo.toml; \
+        printf '\n[workspace.lints]\n\n[workspace.lints.rust]\nunsafe_code = "warn"\n\n[workspace.lints.clippy]\nall = "warn"\n' >> Cargo.toml; \
       fi; \
     fi
 COPY --from=planner /app/recipe.json /app/recipe.json
