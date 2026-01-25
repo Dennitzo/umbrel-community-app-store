@@ -17,6 +17,7 @@ FROM chef AS planner
 ARG RUSTY_KASPA_REPO=https://github.com/kaspanet/rusty-kaspa
 ARG RUSTY_KASPA_REF=master
 RUN git clone --depth 1 --branch "${RUSTY_KASPA_REF}" "${RUSTY_KASPA_REPO}" .
+RUN if ! grep -q "\\[workspace.lints\\]" Cargo.toml; then \\\n+      printf '\\n[workspace.lints.rust]\\nunsafe_code = \"warn\"\\n\\n[workspace.lints.clippy]\\nall = \"warn\"\\n' >> Cargo.toml; \\\n+    fi
 COPY . ./bridge
 RUN cargo chef prepare --recipe-path recipe.json
 
@@ -25,6 +26,7 @@ FROM chef AS builder
 ARG RUSTY_KASPA_REPO=https://github.com/kaspanet/rusty-kaspa
 ARG RUSTY_KASPA_REF=master
 RUN git clone --depth 1 --branch "${RUSTY_KASPA_REF}" "${RUSTY_KASPA_REPO}" .
+RUN if ! grep -q "\\[workspace.lints\\]" Cargo.toml; then \\\n+      printf '\\n[workspace.lints.rust]\\nunsafe_code = \"warn\"\\n\\n[workspace.lints.clippy]\\nall = \"warn\"\\n' >> Cargo.toml; \\\n+    fi
 COPY --from=planner /app/recipe.json /app/recipe.json
 
 ENV RUSTFLAGS="-C target-feature=-crt-static" \
