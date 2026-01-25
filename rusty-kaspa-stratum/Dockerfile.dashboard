@@ -1,6 +1,9 @@
 FROM nginx:1.27.4-alpine
 
-COPY static /usr/share/nginx/html
+COPY static/index.html /usr/share/nginx/html/index.html
+COPY static/assets /usr/share/nginx/html/static/assets
+COPY static/css /usr/share/nginx/html/static/css
+COPY static/js /usr/share/nginx/html/static/js
 COPY nginx.dashboard.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
