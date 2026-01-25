@@ -46,7 +46,7 @@ const Dashboard = () => {
       v /= 1000;
       i += 1;
     }
-    return { value: numeral(v).format("0,0"), unit: units[i] };
+    return { value: numeral(v).format("0,0.00"), unit: units[i] };
   };
 
   const getAddressCountAbove1KAS = () => {
