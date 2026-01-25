@@ -10,6 +10,8 @@ services:
       - /app/stratum-bridge
       - --config
       - /app/config.yaml
+      - --node-mode
+      - external
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

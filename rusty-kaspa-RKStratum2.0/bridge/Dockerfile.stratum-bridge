@@ -7,18 +7,25 @@ RUN apk --no-cache add \
   clang15-dev \
   linux-headers \
   wasm-pack \
-  openssl-dev
+  openssl-dev \
+  git
 RUN cargo install cargo-chef --locked
 WORKDIR /app
 
 # ---------------------------------------- Planner image ----------------------------------------
 FROM chef AS planner
-COPY . .
+ARG RUSTY_KASPA_REPO=https://github.com/kaspanet/rusty-kaspa
+ARG RUSTY_KASPA_REF=master
+RUN git clone --depth 1 --branch "${RUSTY_KASPA_REF}" "${RUSTY_KASPA_REPO}" .
+COPY . ./bridge
 RUN cargo chef prepare --recipe-path recipe.json
 
 # ---------------------------------------- Builder image ----------------------------------------
 FROM chef AS builder
-COPY --from=planner /app/recipe.json recipe.json
+ARG RUSTY_KASPA_REPO=https://github.com/kaspanet/rusty-kaspa
+ARG RUSTY_KASPA_REF=master
+RUN git clone --depth 1 --branch "${RUSTY_KASPA_REF}" "${RUSTY_KASPA_REPO}" .
+COPY --from=planner /app/recipe.json /app/recipe.json
 
 ENV RUSTFLAGS="-C target-feature=-crt-static" \
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse"
@@ -26,7 +33,7 @@ ENV RUSTFLAGS="-C target-feature=-crt-static" \
 # Build dependencies - this is the caching Docker layer
 RUN cargo chef cook --release --recipe-path recipe.json -p kaspa-stratum-bridge --features rkstratum_cpu_miner --bin stratum-bridge
 
-COPY . .
+COPY . ./bridge
 RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=cargo-git,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=cache,id=cargo-target,target=/app/target,sharing=locked \
@@ -53,4 +60,4 @@ COPY --from=builder --chown=kaspa:kaspa /app/stratum-bridge .
 ENV HOME=/home/kaspa
 USER kaspa
 ENTRYPOINT [ "/sbin/tini", "--" ]
-CMD [ "/app/stratum-bridge" ]
+CMD [ "/app/stratum-bridge", "--node-mode", "external" ]

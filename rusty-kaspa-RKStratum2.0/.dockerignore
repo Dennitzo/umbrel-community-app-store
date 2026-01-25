@@ -1,2 +1,14 @@
 .git
-target
+.github
+**/.git
+**/.DS_Store
+**/target
+**/node_modules
+**/.cache
+**/dist
+**/build
+**/tmp
+**/*.log
+**/.env
+**/.env.*
+docs/
