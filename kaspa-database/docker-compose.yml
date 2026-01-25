@@ -66,6 +66,48 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
+  db_maintenance:
+    image: postgres:17-alpine
+    restart: on-failure
+    stop_grace_period: 1m
+    depends_on:
+      - kaspa_db
+    environment:
+      PGHOST: ${APP_KASPA_DB_ADDRESS}
+      PGPORT: ${APP_KASPA_DB_PORT}
+      PGUSER: ${APP_KASPA_DB_USER}
+      PGPASSWORD: ${APP_KASPA_DB_PASSWORD}
+      PGDATABASE: ${APP_KASPA_DB_NAME}
+    command: >
+      sh -lc '
+        psql -v ON_ERROR_STOP=1 << "SQL"
+        CREATE TABLE IF NOT EXISTS addresses_transactions_count (
+          address text PRIMARY KEY,
+          count bigint NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS scripts_transactions_count (
+          script_public_key bytea PRIMARY KEY,
+          count bigint NOT NULL
+        );
+        SQL
+        while true; do
+          psql -v ON_ERROR_STOP=1 << "SQL"
+          TRUNCATE addresses_transactions_count;
+          INSERT INTO addresses_transactions_count (address, count)
+          SELECT address, COUNT(*)::bigint
+          FROM addresses_transactions
+          GROUP BY address;
+
+          TRUNCATE scripts_transactions_count;
+          INSERT INTO scripts_transactions_count (script_public_key, count)
+          SELECT script_public_key, COUNT(*)::bigint
+          FROM scripts_transactions
+          GROUP BY script_public_key;
+          SQL
+          sleep 300;
+        done
+      '
+
   frontend:
     image: dennitzo/kaspa-database-ui:latest
     restart: on-failure
