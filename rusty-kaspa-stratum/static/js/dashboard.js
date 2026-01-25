@@ -218,7 +218,7 @@ class StratumBridgeDashboard {
     const data = Array.isArray(workers)
       ? workers
           .map((worker) => ({
-            label: `${worker.worker || 'Unknown'} (Instance: ${worker.instance || '1'})`,
+            label: `${worker.worker || 'Unknown'} (${worker.instance || '1'})`,
             value: Number(worker.shares || 0),
           }))
           .filter((item) => Number.isFinite(item.value) && item.value > 0)
