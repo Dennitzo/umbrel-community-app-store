@@ -235,10 +235,32 @@ class KaspaDatabaseDashboard {
                 <td class="font-medium text-sm leading-tight">${table.table_name}</td>
                 <td>${this.formatNumber(table.live_rows)}</td>
                 <td>${this.formatBytes(table.total_size_bytes)}</td>
-                <td>${this.formatNumber(table.seq_scan)}</td>
+                <td class="text-xs uppercase tracking-[0.2em] text-zinc-400">${this.getTableImage(table.table_name)}</td>
             `;
             container.appendChild(row);
         });
+    }
+
+    getTableImage(tableName) {
+        const name = String(tableName || '').toLowerCase();
+        if (
+            name.includes('transaction') ||
+            name.includes('address') ||
+            name.includes('script') ||
+            name.includes('utxo') ||
+            name.includes('block')
+        ) {
+            return 'Indexer';
+        }
+        if (
+            name.includes('processor') ||
+            name.includes('queue') ||
+            name.includes('cleanup') ||
+            name.includes('processed')
+        ) {
+            return 'Processor';
+        }
+        return 'Storage';
     }
 
     updateStatus(healthy, label) {
