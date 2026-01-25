@@ -13,7 +13,7 @@ class StratumBridgeDashboard {
   async fetchData() {
     try {
       const [statusRes, statsRes] = await Promise.all([
-        fetch(`/api/status?t=${Date.now()}`, { cache: 'no-store' }),
+        fetch(`/api/config?t=${Date.now()}`, { cache: 'no-store' }),
         fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' }),
       ]);
 
@@ -63,9 +63,9 @@ class StratumBridgeDashboard {
 
   renderStatus(status) {
     this.setText('kaspadAddressValue', status?.kaspad_address);
-    this.setText('kaspadVersionValue', status?.kaspad_version);
-    this.setText('instancesValue', status?.instances);
-    this.setText('webBindValue', status?.web_bind);
+    this.setText('kaspadVersionValue', status?.kaspad_version || '—');
+    this.setText('instancesValue', status?.instances || 1);
+    this.setText('webBindValue', status?.prom_port || status?.health_check_port || '—');
   }
 
   renderStats(stats) {
