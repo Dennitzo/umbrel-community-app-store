@@ -80,6 +80,9 @@ services:
       PGDATABASE: ${APP_KASPA_DB_NAME}
     command: >
       sh -lc '
+        until pg_isready -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}"; do
+          sleep 2;
+        done;
         psql -v ON_ERROR_STOP=1 -c "DROP TABLE IF EXISTS addresses_transactions_count;"
         psql -v ON_ERROR_STOP=1 -c "DROP TABLE IF EXISTS scripts_transactions_count;"
         psql -v ON_ERROR_STOP=1 -c "CREATE TABLE IF NOT EXISTS addresses_transactions_count (address text PRIMARY KEY, count bigint NOT NULL);"
