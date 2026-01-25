@@ -5,6 +5,7 @@ class StratumBridgeDashboard {
     this.pollTimer = null;
     this.lastStatus = null;
     this.sharesPieSegments = [];
+    this.blocksPieSegments = [];
     this.hideWallets = false;
     this.hideBlockWallets = false;
     this.lastStats = null;
@@ -285,7 +286,7 @@ class StratumBridgeDashboard {
         return `
           <li>
             <span class="chart-swatch" style="background:${color}"></span>
-            <span>${this.escape(item.label)}</span>
+            <span>${this.escape(item.label)} - ${this.formatNumber(item.value)} shares</span>
           </li>
         `;
       })
@@ -345,6 +346,7 @@ class StratumBridgeDashboard {
   renderBlocksPie(blocks) {
     const canvas = document.getElementById('blocksPieChart');
     const legend = document.getElementById('blocksPieLegend');
+    const tooltip = document.getElementById('blocksPieTooltip');
     if (!canvas || !legend) return;
 
     const ctx = canvas.getContext('2d');
@@ -353,8 +355,10 @@ class StratumBridgeDashboard {
     const counts = new Map();
     if (Array.isArray(blocks)) {
       blocks.forEach((block) => {
-        const wallet = block.wallet || 'Unknown';
-        counts.set(wallet, (counts.get(wallet) || 0) + 1);
+        const worker = block.worker || 'Unknown';
+        const instance = block.instance || '1';
+        const label = `${worker} (Instance: ${instance})`;
+        counts.set(label, (counts.get(label) || 0) + 1);
       });
     }
 
@@ -364,53 +368,122 @@ class StratumBridgeDashboard {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       legend.classList.add('empty');
       legend.innerHTML = '<li class="text-zinc-500 text-sm">No blocks reported yet.</li>';
+      this.blocksPieSegments = [];
+      if (tooltip) {
+        tooltip.classList.remove('visible');
+      }
       return;
     }
 
     legend.classList.remove('empty');
     const total = data.reduce((sum, item) => sum + item.value, 0);
     const palette = [
-      '#38bdf8',
-      '#22d3ee',
       '#14b8a6',
+      '#22d3ee',
+      '#60a5fa',
       '#a78bfa',
-      '#f59e0b',
       '#f472b6',
+      '#f97316',
+      '#facc15',
       '#4ade80',
-      '#e879f9',
     ];
+    const sharedColors = new Map(
+      (this.sharesPieSegments || []).map((segment) => [segment.label, segment.color])
+    );
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = Math.min(centerX, centerY) - 8;
     let startAngle = -Math.PI / 2;
+    const segments = [];
 
     data.forEach((item, index) => {
       const slice = (item.value / total) * Math.PI * 2;
+      const color = sharedColors.get(item.label) || palette[index % palette.length];
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
       ctx.arc(centerX, centerY, radius, startAngle, startAngle + slice);
       ctx.closePath();
-      ctx.fillStyle = palette[index % palette.length];
+      ctx.fillStyle = color;
       ctx.fill();
+      segments.push({
+        start: startAngle,
+        end: startAngle + slice,
+        label: item.label,
+        value: item.value,
+        percent: (item.value / total) * 100,
+        color,
+      });
       startAngle += slice;
     });
+
+    this.blocksPieSegments = segments;
+    this.setupBlocksTooltip(canvas, tooltip, centerX, centerY, radius);
 
     legend.innerHTML = data
       .sort((a, b) => b.value - a.value)
       .slice(0, 8)
       .map((item, index) => {
-        const percent = ((item.value / total) * 100).toFixed(1);
-        const color = palette[index % palette.length];
+        const color = sharedColors.get(item.label) || palette[index % palette.length];
         return `
           <li>
             <span class="chart-swatch" style="background:${color}"></span>
-            <span>${this.escape(item.label)} — ${this.formatNumber(item.value)} blocks (${percent}%)</span>
+            <span>${this.escape(item.label)} - ${this.formatNumber(item.value)} blocks</span>
           </li>
         `;
       })
       .join('');
+  }
+
+  setupBlocksTooltip(canvas, tooltip, centerX, centerY, radius) {
+    if (!tooltip || !canvas) return;
+
+    const handleMove = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const dx = x - centerX;
+      const dy = y - centerY;
+      const distance = Math.hypot(dx, dy);
+
+      if (distance > radius) {
+        tooltip.classList.remove('visible');
+        return;
+      }
+
+      let angle = Math.atan2(dy, dx);
+      if (angle < -Math.PI / 2) {
+        angle += Math.PI * 2;
+      }
+      if (angle < -Math.PI / 2) {
+        angle = -Math.PI / 2;
+      }
+
+      const segment = this.blocksPieSegments.find(
+        (item) => angle >= item.start && angle <= item.end
+      );
+
+      if (!segment) {
+        tooltip.classList.remove('visible');
+        return;
+      }
+
+      tooltip.textContent = `${segment.label} — ${this.formatNumber(segment.value)} blocks (${segment.percent.toFixed(1)}%)`;
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y}px`;
+      tooltip.classList.add('visible');
+    };
+
+    const handleLeave = () => {
+      tooltip.classList.remove('visible');
+    };
+
+    if (!canvas.dataset.blocksTooltipBound) {
+      canvas.addEventListener('mousemove', handleMove);
+      canvas.addEventListener('mouseleave', handleLeave);
+      canvas.dataset.blocksTooltipBound = 'true';
+    }
   }
 
   setText(id, value) {
