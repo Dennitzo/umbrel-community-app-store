@@ -40,7 +40,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && useradd -r -u 10001 -g users -d /home/kaspa -s /usr/sbin/nologin kaspa \
   && mkdir -p /home/kaspa /app \
-  && chown -R kaspa:kaspa /home/kaspa /app
+  && chown -R kaspa:users /home/kaspa /app
 
 LABEL org.opencontainers.image.title="Kaspa Rust Stratum Bridge" \
     org.opencontainers.image.description="A high-performance Rust implementation of the Kaspa Stratum Bridge, providing seamless mining pool connectivity for Kaspa ASIC miners." \
