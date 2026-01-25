@@ -151,6 +151,7 @@ body {
   grid-template-columns: minmax(200px, 320px) minmax(160px, 1fr);
   gap: 1.5rem;
   align-items: center;
+  position: relative;
 }
 
 .chart-wrap.compact {
@@ -224,6 +225,61 @@ body {
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+.chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -100%);
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.6rem;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+
+.chart-tooltip.visible {
+  opacity: 1;
+}
+
+.eye-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.4);
+  color: #cbd5f5;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.eye-toggle:hover {
+  border-color: rgba(148, 163, 184, 0.5);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.eye-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.eye-toggle .eye-closed {
+  display: none;
+}
+
+.eye-toggle.is-hidden .eye-open {
+  display: none;
+}
+
+.eye-toggle.is-hidden .eye-closed {
+  display: block;
 }
 
 @media (max-width: 720px) {

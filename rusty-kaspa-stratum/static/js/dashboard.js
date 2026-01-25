@@ -4,10 +4,16 @@ class StratumBridgeDashboard {
     this.retryInterval = 5000;
     this.pollTimer = null;
     this.lastStatus = null;
+    this.sharesPieSegments = [];
+    this.hideWallets = false;
+    this.hideBlockWallets = false;
+    this.lastStats = null;
     this.init();
   }
 
   init() {
+    this.bindWalletToggle();
+    this.bindBlocksWalletToggle();
     this.fetchData();
   }
 
@@ -72,6 +78,7 @@ class StratumBridgeDashboard {
   }
 
   renderStats(stats) {
+    this.lastStats = stats || null;
     this.setText('totalBlocksValue', this.formatNumber(stats?.totalBlocks));
     this.setText('totalSharesValue', this.formatNumber(stats?.totalShares));
     this.setText('activeWorkersValue', this.formatNumber(stats?.activeWorkers));
@@ -103,7 +110,7 @@ class StratumBridgeDashboard {
     if (!body) return;
 
     if (!workers.length) {
-      body.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-zinc-500">No workers reported yet.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-zinc-500">No workers reported yet.</td></tr>';
       return;
     }
 
@@ -111,11 +118,13 @@ class StratumBridgeDashboard {
       .sort((a, b) => (b.hashrate || 0) - (a.hashrate || 0))
       .map((worker) => {
         const hashrateHs = (Number(worker.hashrate) || 0) * 1e9;
+        const wallet = this.hideWallets
+          ? this.maskWallet(worker.wallet)
+          : this.escape(worker.wallet);
         return `
           <tr>
-            <td>${this.escape(worker.instance)}</td>
             <td>${this.escape(worker.worker)}</td>
-            <td class="truncate">${this.escape(worker.wallet)}</td>
+            <td class="truncate">${wallet}</td>
             <td>${this.formatHashrateHs(hashrateHs)}</td>
             <td>${this.formatNumber(worker.shares)}</td>
             <td>${this.formatNumber(worker.stale)}</td>
@@ -127,12 +136,42 @@ class StratumBridgeDashboard {
       .join('');
   }
 
+  bindWalletToggle() {
+    const toggle = document.getElementById('walletToggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+      this.hideWallets = !this.hideWallets;
+      toggle.classList.toggle('is-hidden', this.hideWallets);
+      toggle.setAttribute('aria-pressed', this.hideWallets ? 'true' : 'false');
+      toggle.setAttribute('aria-label', this.hideWallets ? 'Show wallets' : 'Hide wallets');
+      this.renderWorkers(this.lastStats?.workers || []);
+    });
+  }
+
+  bindBlocksWalletToggle() {
+    const toggle = document.getElementById('blocksWalletToggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+      this.hideBlockWallets = !this.hideBlockWallets;
+      toggle.classList.toggle('is-hidden', this.hideBlockWallets);
+      toggle.setAttribute('aria-pressed', this.hideBlockWallets ? 'true' : 'false');
+      toggle.setAttribute('aria-label', this.hideBlockWallets ? 'Show wallets' : 'Hide wallets');
+      this.renderBlocks(this.lastStats?.blocks || []);
+    });
+  }
+
+  maskWallet(value) {
+    if (!value) return '--';
+    const safe = String(value);
+    return safe.replace(/[^\\s]/g, '*');
+  }
+
   renderBlocks(blocks) {
     const body = document.getElementById('blocksTableBody');
     if (!body) return;
 
     if (!blocks.length) {
-      body.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-zinc-500">No blocks reported yet.</td></tr>';
+      body.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-zinc-500">No blocks reported yet.</td></tr>';
       return;
     }
 
@@ -141,11 +180,13 @@ class StratumBridgeDashboard {
     body.innerHTML = sorted
       .slice(0, 12)
       .map((block) => {
+        const wallet = this.hideBlockWallets
+          ? this.maskWallet(block.wallet)
+          : this.escape(block.wallet);
         return `
           <tr>
-            <td>${this.escape(block.instance)}</td>
             <td>${this.escape(block.worker)}</td>
-            <td class="truncate">${this.escape(block.wallet)}</td>
+            <td class="truncate">${wallet}</td>
             <td>${this.formatUnixSeconds(block.timestamp)}</td>
             <td class="truncate">${this.escape(this.shortHash(block.hash))}</td>
           </tr>
@@ -157,6 +198,7 @@ class StratumBridgeDashboard {
   renderSharesPie(workers) {
     const canvas = document.getElementById('sharesPieChart');
     const legend = document.getElementById('sharesPieLegend');
+    const tooltip = document.getElementById('sharesPieTooltip');
     if (!canvas || !legend) return;
 
     const ctx = canvas.getContext('2d');
@@ -175,6 +217,10 @@ class StratumBridgeDashboard {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       legend.classList.add('empty');
       legend.innerHTML = '<li class="text-zinc-500 text-sm">No shares reported yet.</li>';
+      this.sharesPieSegments = [];
+      if (tooltip) {
+        tooltip.classList.remove('visible');
+      }
       return;
     }
 
@@ -196,6 +242,7 @@ class StratumBridgeDashboard {
     const centerY = canvas.height / 2;
     const radius = Math.min(centerX, centerY) - 8;
     let startAngle = -Math.PI / 2;
+    const segments = [];
 
     data.forEach((item, index) => {
       const slice = (item.value / total) * Math.PI * 2;
@@ -205,23 +252,83 @@ class StratumBridgeDashboard {
       ctx.closePath();
       ctx.fillStyle = palette[index % palette.length];
       ctx.fill();
+      segments.push({
+        start: startAngle,
+        end: startAngle + slice,
+        label: item.label,
+        value: item.value,
+        percent: (item.value / total) * 100,
+        color: palette[index % palette.length],
+      });
       startAngle += slice;
     });
+
+    this.sharesPieSegments = segments;
+    this.setupSharesTooltip(canvas, tooltip, centerX, centerY, radius);
 
     legend.innerHTML = data
       .sort((a, b) => b.value - a.value)
       .slice(0, 8)
       .map((item, index) => {
-        const percent = ((item.value / total) * 100).toFixed(1);
         const color = palette[index % palette.length];
         return `
           <li>
             <span class="chart-swatch" style="background:${color}"></span>
-            <span>${this.escape(item.label)} — ${this.formatNumber(item.value)} shares (${percent}%)</span>
+            <span>${this.escape(item.label)}</span>
           </li>
         `;
       })
       .join('');
+  }
+
+  setupSharesTooltip(canvas, tooltip, centerX, centerY, radius) {
+    if (!tooltip || !canvas) return;
+
+    const handleMove = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const dx = x - centerX;
+      const dy = y - centerY;
+      const distance = Math.hypot(dx, dy);
+
+      if (distance > radius) {
+        tooltip.classList.remove('visible');
+        return;
+      }
+
+      let angle = Math.atan2(dy, dx);
+      if (angle < -Math.PI / 2) {
+        angle += Math.PI * 2;
+      }
+      if (angle < -Math.PI / 2) {
+        angle = -Math.PI / 2;
+      }
+
+      const segment = this.sharesPieSegments.find(
+        (item) => angle >= item.start && angle <= item.end
+      );
+
+      if (!segment) {
+        tooltip.classList.remove('visible');
+        return;
+      }
+
+      tooltip.textContent = `${segment.label} — ${this.formatNumber(segment.value)} shares (${segment.percent.toFixed(1)}%)`;
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y}px`;
+      tooltip.classList.add('visible');
+    };
+
+    const handleLeave = () => {
+      tooltip.classList.remove('visible');
+    };
+
+    if (!canvas.dataset.tooltipBound) {
+      canvas.addEventListener('mousemove', handleMove);
+      canvas.addEventListener('mouseleave', handleLeave);
+      canvas.dataset.tooltipBound = 'true';
+    }
   }
 
   renderBlocksPie(blocks) {

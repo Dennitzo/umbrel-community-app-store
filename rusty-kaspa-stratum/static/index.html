@@ -97,14 +97,14 @@
           <p class="stat-sub">Accepted blocks mined through the bridge</p>
         </div>
         <div class="stat-card">
-          <p class="stat-label">Total Shares</p>
-          <p class="stat-value" id="totalSharesValue">--</p>
-          <p class="stat-sub">Shares submitted by connected workers</p>
-        </div>
-        <div class="stat-card">
           <p class="stat-label">Active Workers</p>
           <p class="stat-value" id="activeWorkersValue">--</p>
           <p class="stat-sub">Current workers reporting hashrate</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Shares</p>
+          <p class="stat-value" id="totalSharesValue">--</p>
+          <p class="stat-sub">Shares submitted by connected workers</p>
         </div>
         <div class="stat-card">
           <p class="stat-label">Network Hashrate</p>
@@ -126,14 +126,31 @@
       <div class="grid gap-6">
         <section class="table-card">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-white">Latest Blocks</h2>
+            <div class="flex items-center gap-3">
+              <h2 class="text-xl font-semibold text-white">Latest Blocks</h2>
+              <button id="blocksWalletToggle" class="eye-toggle" type="button" aria-pressed="false" aria-label="Hide wallets">
+                <span class="eye-open" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                    <circle cx="12" cy="12" r="3.5"></circle>
+                  </svg>
+                </span>
+                <span class="eye-closed" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M3 5l18 14"></path>
+                    <path d="M2.5 12s3.5-6 9.5-6c2.2 0 4.1.7 5.6 1.7"></path>
+                    <path d="M21.5 12s-3.5 6-9.5 6c-2.2 0-4.1-.7-5.6-1.7"></path>
+                    <circle cx="12" cy="12" r="3.5"></circle>
+                  </svg>
+                </span>
+              </button>
+            </div>
             <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Recent shares</span>
           </div>
           <p class="mt-2 text-sm text-zinc-400">Most recent accepted blocks reported by miners.</p>
           <table>
             <thead>
               <tr>
-                <th>Instance</th>
                 <th>Worker</th>
                 <th>Wallet</th>
                 <th>Timestamp</th>
@@ -142,7 +159,7 @@
             </thead>
             <tbody id="blocksTableBody">
               <tr>
-                <td colspan="5" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+                <td colspan="4" class="py-6 text-center text-zinc-500">Waiting for data...</td>
               </tr>
             </tbody>
           </table>
@@ -151,14 +168,31 @@
 
       <section class="table-card">
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-white">Workers</h2>
+          <div class="flex items-center gap-3">
+            <h2 class="text-xl font-semibold text-white">Workers</h2>
+            <button id="walletToggle" class="eye-toggle" type="button" aria-pressed="false" aria-label="Hide wallets">
+              <span class="eye-open" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                  <circle cx="12" cy="12" r="3.5"></circle>
+                </svg>
+              </span>
+              <span class="eye-closed" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M3 5l18 14"></path>
+                  <path d="M2.5 12s3.5-6 9.5-6c2.2 0 4.1.7 5.6 1.7"></path>
+                  <path d="M21.5 12s-3.5 6-9.5 6c-2.2 0-4.1-.7-5.6-1.7"></path>
+                  <circle cx="12" cy="12" r="3.5"></circle>
+                </svg>
+              </span>
+            </button>
+          </div>
           <span class="text-xs uppercase tracking-[0.3em] text-zinc-500">Live hashrate</span>
         </div>
-        <p class="mt-2 text-sm text-zinc-400">Active worker stats aggregated by instance.</p>
+        <p class="mt-2 text-sm text-zinc-400">Active worker stats aggregated by miner.</p>
         <table>
           <thead>
             <tr>
-              <th>Instance</th>
               <th>Worker</th>
               <th>Wallet</th>
               <th>Hashrate</th>
@@ -170,7 +204,7 @@
           </thead>
           <tbody id="workersTableBody">
             <tr>
-              <td colspan="8" class="py-6 text-center text-zinc-500">Waiting for data...</td>
+              <td colspan="7" class="py-6 text-center text-zinc-500">Waiting for data...</td>
             </tr>
           </tbody>
         </table>
@@ -185,6 +219,7 @@
           <p class="mt-2 text-sm text-zinc-400">Distribution of valid shares per worker.</p>
           <div class="chart-wrap compact">
             <canvas id="sharesPieChart" width="260" height="260" aria-label="Shares per worker chart"></canvas>
+            <div id="sharesPieTooltip" class="chart-tooltip" aria-hidden="true"></div>
             <ul id="sharesPieLegend" class="chart-legend">
               <li class="text-zinc-500 text-sm">Waiting for data...</li>
             </ul>
