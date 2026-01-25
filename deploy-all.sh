@@ -7,14 +7,14 @@ ROOT_DIR="/home/umbrel/Kaspa/umbrel-community-app-store"
 docker login
 
 # kaspa-stratum
-cd "${ROOT_DIR}/rusty-kaspa-RKStratum2.0"
+cd "${ROOT_DIR}/rusty-kaspa-stratum"
 git pull
 
 cd "${ROOT_DIR}"
-docker build --no-cache -t dennitzo/kaspa-stratum-bridge:latest -f rusty-kaspa-RKStratum2.0/bridge/Dockerfile.stratum-bridge rusty-kaspa-RKStratum2.0/bridge
+docker build --no-cache -t dennitzo/kaspa-stratum-bridge:latest -f rusty-kaspa-stratum/Dockerfile.stratum-bridge rusty-kaspa-stratum
 docker push dennitzo/kaspa-stratum-bridge:latest
 
-docker build -t dennitzo/kaspa-stratum-dashboard:latest -f rusty-kaspa-RKStratum2.0/bridge/Dockerfile.dashboard rusty-kaspa-RKStratum2.0/bridge
+docker build -t dennitzo/kaspa-stratum-dashboard:latest -f rusty-kaspa-stratum/Dockerfile.dashboard rusty-kaspa-stratum
 docker push dennitzo/kaspa-stratum-dashboard:latest
 
 # kaspa-k-social
