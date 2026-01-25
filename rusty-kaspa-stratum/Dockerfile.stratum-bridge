@@ -9,8 +9,8 @@ RUN apt-get update \
     pkg-config \
     git \
   && rm -rf /var/lib/apt/lists/*
-ENV LIBCLANG_PATH=/usr/lib/llvm-19/lib
-ENV BINDGEN_EXTRA_CLANG_ARGS="-I/usr/include -I/usr/lib/llvm-19/lib/clang/19/include"
+ENV LIBCLANG_PATH=/usr/lib/llvm-14/lib
+ENV BINDGEN_EXTRA_CLANG_ARGS="-I/usr/include -I/usr/lib/llvm-14/lib/clang/14/include"
 
 WORKDIR /usr/src/rustbridge
 
