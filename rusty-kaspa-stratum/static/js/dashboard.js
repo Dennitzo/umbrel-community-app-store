@@ -163,7 +163,11 @@ class StratumBridgeDashboard {
   maskWallet(value) {
     if (!value) return '--';
     const safe = String(value);
-    return safe.replace(/[^\\s]/g, '*');
+    const visible = 4;
+    if (safe.length <= visible * 2) {
+      return '*'.repeat(safe.length);
+    }
+    return `${safe.slice(0, visible)}${'*'.repeat(safe.length - visible * 2)}${safe.slice(-visible)}`;
   }
 
   renderBlocks(blocks) {
