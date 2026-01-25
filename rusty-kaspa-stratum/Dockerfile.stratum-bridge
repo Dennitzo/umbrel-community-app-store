@@ -69,4 +69,5 @@ EXPOSE 2117
 
 # Set the entrypoint to run the bridge
 USER kaspa
-ENTRYPOINT ["/usr/bin/tini", "--", "./stratum-bridge", "--config", "/app/config.yaml", "--node-mode", "external"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/app/stratum-bridge", "--config", "/app/config.yaml", "--node-mode", "external"]
