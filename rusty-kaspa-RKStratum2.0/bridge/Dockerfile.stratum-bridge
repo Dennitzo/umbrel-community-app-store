@@ -18,7 +18,11 @@ ARG RUSTY_KASPA_REPO=https://github.com/kaspanet/rusty-kaspa
 ARG RUSTY_KASPA_REF=master
 RUN git clone --depth 1 --branch "${RUSTY_KASPA_REF}" "${RUSTY_KASPA_REPO}" .
 RUN if ! grep -q "^\\[workspace.lints\\]" Cargo.toml; then \
-      printf '\n[workspace.lints]\n\n[workspace.lints.rust]\nunsafe_code = "warn"\n\n[workspace.lints.clippy]\nall = "warn"\n' >> Cargo.toml; \
+      if grep -q "^\\[workspace.lints.clippy\\]" Cargo.toml || grep -q "^\\[workspace.lints.rust\\]" Cargo.toml; then \
+        awk 'BEGIN{added=0} /^\\[workspace.lints\\.(clippy|rust)\\]/{if(!added){print \"[workspace.lints]\"; print \"\"; added=1}} {print}' Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml; \
+      else \
+        printf '\\n[workspace.lints]\\n\\n[workspace.lints.rust]\\nunsafe_code = \"warn\"\\n\\n[workspace.lints.clippy]\\nall = \"warn\"\\n' >> Cargo.toml; \
+      fi; \
     fi
 COPY . ./bridge
 RUN cargo chef prepare --recipe-path recipe.json
@@ -29,7 +33,11 @@ ARG RUSTY_KASPA_REPO=https://github.com/kaspanet/rusty-kaspa
 ARG RUSTY_KASPA_REF=master
 RUN git clone --depth 1 --branch "${RUSTY_KASPA_REF}" "${RUSTY_KASPA_REPO}" .
 RUN if ! grep -q "^\\[workspace.lints\\]" Cargo.toml; then \
-      printf '\n[workspace.lints]\n\n[workspace.lints.rust]\nunsafe_code = "warn"\n\n[workspace.lints.clippy]\nall = "warn"\n' >> Cargo.toml; \
+      if grep -q "^\\[workspace.lints.clippy\\]" Cargo.toml || grep -q "^\\[workspace.lints.rust\\]" Cargo.toml; then \
+        awk 'BEGIN{added=0} /^\\[workspace.lints\\.(clippy|rust)\\]/{if(!added){print \"[workspace.lints]\"; print \"\"; added=1}} {print}' Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml; \
+      else \
+        printf '\\n[workspace.lints]\\n\\n[workspace.lints.rust]\\nunsafe_code = \"warn\"\\n\\n[workspace.lints.clippy]\\nall = \"warn\"\\n' >> Cargo.toml; \
+      fi; \
     fi
 COPY --from=planner /app/recipe.json /app/recipe.json
 
