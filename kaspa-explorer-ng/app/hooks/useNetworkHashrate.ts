@@ -8,13 +8,14 @@ export const useNetworkHashrate = () =>
     queryKey: ["networkHashrate"],
     queryFn: async () => {
       const { data } = await axios.get(apiUrl("/info/hashrate"));
+      const normalizeHashrate = (value: number) => (value < 1e9 ? value * 1e15 : value);
       if (typeof data === "number") {
-        return data;
+        return normalizeHashrate(data);
       }
       if (data && typeof data === "object") {
         const value = (data as { hashrate?: number; networkHashrate?: number }).hashrate ??
           (data as { networkHashrate?: number }).networkHashrate;
-        return typeof value === "number" ? value : null;
+        return typeof value === "number" ? normalizeHashrate(value) : null;
       }
       return null;
     },
