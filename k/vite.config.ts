@@ -23,14 +23,24 @@ export default defineConfig(({ mode }) => ({
         start_url: "/",
         icons: [
           {
-            "src": "ksocial_icon.svg",
-            "sizes": "any",
-            "type": "image/svg+xml"
+            "src": "pwa-64x64.png",
+            "sizes": "64x64",
+            "type": "image/png"
           },
           {
-            "src": "ksocial_icon.svg",
-            "sizes": "any",
-            "type": "image/svg+xml",
+            "src": "pwa-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+          },
+          {
+            "src": "pwa-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+          },
+          {
+            "src": "maskable-icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
             "purpose": "maskable"
           }
         ]
@@ -81,4 +91,5 @@ export default defineConfig(({ mode }) => ({
     exclude: ['buffer']
   }
 }))
+
 
