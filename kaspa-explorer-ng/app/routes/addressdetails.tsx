@@ -59,6 +59,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
   const marketData = useContext(MarketDataContext);
   const [beforeAfter, setBeforeAfter] = useState<number[]>([0, 0]);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [lastUpdated, setLastUpdated] = useState<string>("--");
 
   const [expand, setExpand] = useState<string[]>([]);
 
@@ -107,21 +108,25 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
     return params.get("tab") === tab;
   };
 
-  const txFilter = new URLSearchParams(location.search).get("tx") || "all";
+  const txFilter = new URLSearchParams(location.search).get("tx") || "accepted";
   const filteredTransactions =
     isTabActive("transactions") && txFilter === "accepted"
       ? transactions.filter((transaction) => transaction.is_accepted)
       : transactions;
 
   useEffect(() => {
-    if (txFilter === "accepted") {
-      setBeforeAfter([0, 0]);
-      setCurrentPage(1);
-    }
+    setBeforeAfter([0, 0]);
+    setCurrentPage(1);
   }, [txFilter]);
 
   const balance = numeral((data?.balance || 0) / 1_0000_0000).format("0,0.00[000000]");
   const LoadingSpinner = () => <Spinner className="h-5 w-5" />;
+
+  useEffect(() => {
+    if (!isLoadingAddressBalance && data) {
+      setLastUpdated(new Date().toLocaleString());
+    }
+  }, [isLoadingAddressBalance, data]);
 
   return (
     <>
@@ -159,6 +164,9 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
           <FieldName name="UTXOs" infoText="Unspent, available outputs available at this address." />
           <FieldValue value={!isLoadingUtxoData ? numeral(utxoData!.length).format("0,") : <LoadingSpinner />} />
         </div>
+      </div>
+      <div className="mt-3 text-xs uppercase tracking-wide text-gray-400">
+        Last updated: <span className="text-gray-500">{lastUpdated}</span>
       </div>
 
       <div className="flex w-full flex-col gap-x-18 gap-y-6 rounded-4xl bg-white p-4 text-left text-black sm:p-8">
@@ -298,7 +306,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
                   {!isLoadingTxCount && (
                     <PageSelector
                       currentPage={currentPage}
-                      totalPages={txFilter === "accepted" ? 1 : Math.ceil(txCount!.total / 10)}
+                      totalPages={Math.ceil(txCount!.total / 10)}
                       onPageChange={pageChange}
                     />
                   )}

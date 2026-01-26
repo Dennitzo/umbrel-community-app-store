@@ -65,9 +65,6 @@ export default function Addresses() {
       </MainBox>
 
       <div className="flex w-full flex-col rounded-4xl bg-white p-4 text-left text-gray-500 sm:p-8">
-        <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">
-          Last updated: <span className="text-gray-500">{lastUpdated}</span>
-        </div>
         <PageTable
           className="text-black"
           headers={["Rank", "Address", "Balance", "Percentage"]}
@@ -84,6 +81,9 @@ export default function Addresses() {
             </>,
           ])}
         />
+      </div>
+      <div className="mt-3 text-xs uppercase tracking-wide text-gray-400">
+        Last updated: <span className="text-gray-500">{lastUpdated}</span>
       </div>
       <FooterHelper icon={AccountBalanceWallet}>
         <span className="">
