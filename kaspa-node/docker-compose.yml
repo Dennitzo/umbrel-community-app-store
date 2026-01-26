@@ -25,7 +25,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   kaspad:
-    image: supertypo/rusty-kaspad:48f4d03
+    image: dennitzo/rusty-kaspad:v1.1.0
     restart: on-failure
     stop_grace_period: 1m
     volumes:

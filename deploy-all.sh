@@ -43,6 +43,9 @@ docker push dennitzo/kaspa-rest-server:latest
 cd "${ROOT_DIR}"
 git pull
 
+docker build -t dennitzo/rusty-kaspad:v1.1.0 -f rusty-kaspa/Dockerfile rusty-kaspa
+docker push dennitzo/rusty-kaspad:v1.1.0
+
 docker build -t dennitzo/kaspa-node-ui:latest -f kaspa-node/frontend/Dockerfile kaspa-node/frontend
 docker push dennitzo/kaspa-node-ui:latest
 
