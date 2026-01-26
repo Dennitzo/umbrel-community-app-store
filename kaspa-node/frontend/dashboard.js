@@ -94,6 +94,7 @@ class KaspaDatabaseDashboard {
     render(payload) {
         const nodeStatus = payload.status || 'unknown';
         const image = payload.image || '—';
+        const displayImage = this.formatImageName(image);
         const uptimeSeconds = Number(payload.uptimeSeconds ?? 0);
         const appDir = payload.appDir || '/app/data';
         const appDirSizeBytes = Number(payload.appDirSizeBytes ?? 0);
@@ -104,7 +105,7 @@ class KaspaDatabaseDashboard {
         if (this.elements.kaspadVersion && kaspadVersion) {
             this.elements.kaspadVersion.textContent = kaspadVersion;
         }
-        this.elements.largestTableValue.textContent = image;
+        this.elements.largestTableValue.textContent = displayImage;
         if (this.elements.uptimeValue) {
             this.elements.uptimeValue.textContent = this.formatDuration(uptimeSeconds);
         }
@@ -137,6 +138,20 @@ class KaspaDatabaseDashboard {
                 this.elements.lastUpdated.textContent = new Date().toLocaleString();
             }
         }
+    }
+
+    formatImageName(image) {
+        if (!image || image === '—' || typeof image !== 'string') {
+            return '—';
+        }
+        const trimmed = image.trim();
+        if (!trimmed) {
+            return '—';
+        }
+        if (!trimmed.includes('/')) {
+            return trimmed;
+        }
+        return trimmed.split('/').pop() || trimmed;
     }
 
     populateTableStats(stats, container) {
