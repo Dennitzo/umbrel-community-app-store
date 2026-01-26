@@ -193,10 +193,10 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
         {isTabActive("transactions") && (
           <div className="ml-auto flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1">
             <NavLink
-              to={`/addresses/${loaderData.address}?tab=transactions`}
+              to={`/addresses/${loaderData.address}?tab=transactions&tx=all`}
               preventScrollReset={true}
               className={() =>
-                `rounded-full px-4 py-1.5 hover:cursor-pointer hover:bg-white ${txFilter !== "accepted" ? "bg-white" : ""}`
+                `rounded-full px-4 py-1.5 hover:cursor-pointer hover:bg-white ${txFilter === "all" ? "bg-white" : ""}`
               }
             >
               All
