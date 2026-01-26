@@ -1,13 +1,15 @@
 # ---------------------------------------- Chef image -------------------------------------------
-FROM rust:1.90-alpine AS chef
-RUN apk --no-cache add \
-  musl-dev \
-  protobuf-dev \
-  g++ \
-  clang15-dev \
-  linux-headers \
-  wasm-pack \
-  openssl-dev
+FROM rust:1.92-bookworm AS chef
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    build-essential \
+    clang \
+    libclang-dev \
+    protobuf-compiler \
+    pkg-config \
+    libssl-dev \
+    wasm-pack \
+  && rm -rf /var/lib/apt/lists/*
 RUN cargo install cargo-chef --locked
 WORKDIR /app
 
@@ -35,22 +37,22 @@ RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharin
 
 
 # ---------------------------------------- Runtime image ----------------------------------------
-FROM alpine AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
-RUN apk --no-cache add \
-  libgcc \
-  libstdc++ \
-  tini \
-  ca-certificates \
-  && addgroup -S kaspa \
-  && adduser -S -G kaspa -h /home/kaspa -s /sbin/nologin kaspa \
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    tini \
+    libssl3 \
+  && rm -rf /var/lib/apt/lists/* \
+  && useradd -r -u 10001 -g users -d /home/kaspa -s /usr/sbin/nologin kaspa \
   && mkdir -p /home/kaspa /app \
-  && chown -R kaspa:kaspa /home/kaspa /app
+  && chown -R kaspa:users /home/kaspa /app
 
-COPY --from=builder --chown=kaspa:kaspa /app/kaspad .
+COPY --from=builder --chown=kaspa:users /app/kaspad .
 
 ENV HOME=/home/kaspa
 USER kaspa
-ENTRYPOINT [ "/sbin/tini", "--" ]
+ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD [ "/app/kaspad" ]
