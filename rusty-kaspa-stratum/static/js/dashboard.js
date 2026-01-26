@@ -38,7 +38,7 @@ class StratumBridgeDashboard {
   async fetchData() {
     try {
       const [statusRes, statsRes] = await Promise.all([
-        fetch(`/api/config?t=${Date.now()}`, { cache: 'no-store' }),
+        fetch(`/api/status?t=${Date.now()}`, { cache: 'no-store' }),
         fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' }),
       ]);
 
