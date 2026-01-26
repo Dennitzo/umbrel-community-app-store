@@ -2,7 +2,6 @@ import KasLink from "../KasLink";
 import LoadingMessage from "../LoadingMessage";
 import PageTable from "../PageTable";
 import AccountBalanceWallet from "../assets/account_balance_wallet.svg";
-import { useAddressDistribution } from "../hooks/useAddressDistribution";
 import { useCoinSupply } from "../hooks/useCoinSupply";
 import { useTopAddresses } from "../hooks/useTopAddresses";
 import Card from "../layout/Card";
@@ -26,16 +25,10 @@ export default function Addresses() {
   const { data: topAddresses, isLoading } = useTopAddresses();
   const { data: coinSupply, isLoading: isLoadingSupply } = useCoinSupply();
 
-  const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
   if (isLoading || isLoadingSupply || !topAddresses || !coinSupply) {
     return <LoadingMessage>Loading addresses</LoadingMessage>;
   }
-
-  const getAddressCountAbove1KAS = () => {
-    if (!addressDistribution) return;
-    return addressDistribution[0].tiers?.reduce((acc, curr) => acc + (curr.tier > 0 ? curr.count : 0), 0);
-  };
 
   const calculateSum = (top: number) => topAddresses.ranking.slice(0, top).reduce((acc, curr) => acc + curr.amount, 0);
 
@@ -43,12 +36,6 @@ export default function Addresses() {
     <>
       <MainBox>
         <CardContainer title="Addresses">
-          <Card
-            title="Number of addresses"
-            loading={isLoadingDistribution}
-            value={`${numeral(getAddressCountAbove1KAS()).format("0,")}`}
-            subtext="with at least 1 KAS"
-          />
           <Card
             title="Top 10 addresses"
             loading={isLoadingSupply}
