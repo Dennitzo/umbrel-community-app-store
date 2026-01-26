@@ -107,6 +107,19 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
     return params.get("tab") === tab;
   };
 
+  const txFilter = new URLSearchParams(location.search).get("tx") || "all";
+  const filteredTransactions =
+    isTabActive("transactions") && txFilter === "accepted"
+      ? transactions.filter((transaction) => transaction.is_accepted)
+      : transactions;
+
+  useEffect(() => {
+    if (txFilter === "accepted") {
+      setBeforeAfter([0, 0]);
+      setCurrentPage(1);
+    }
+  }, [txFilter]);
+
   const balance = numeral((data?.balance || 0) / 1_0000_0000).format("0,0.00[000000]");
   const LoadingSpinner = () => <Spinner className="h-5 w-5" />;
 
@@ -169,10 +182,32 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
             UTXOs
           </NavLink>
         </div>
+        {isTabActive("transactions") && (
+          <div className="ml-auto flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1">
+            <NavLink
+              to={`/addresses/${loaderData.address}?tab=transactions`}
+              preventScrollReset={true}
+              className={() =>
+                `rounded-full px-4 py-1.5 hover:cursor-pointer hover:bg-white ${txFilter !== "accepted" ? "bg-white" : ""}`
+              }
+            >
+              All
+            </NavLink>
+            <NavLink
+              to={`/addresses/${loaderData.address}?tab=transactions&tx=accepted`}
+              preventScrollReset={true}
+              className={() =>
+                `rounded-full px-4 py-1.5 hover:cursor-pointer hover:bg-white ${txFilter === "accepted" ? "bg-white" : ""}`
+              }
+            >
+              Accepted
+            </NavLink>
+          </div>
+        )}
 
         {isTabActive("transactions") && (
           <div className="w-full">
-            {transactions && transactions.length > 0 ? (
+            {filteredTransactions && filteredTransactions.length > 0 ? (
               <>
                 <PageTable
                   alignTop
@@ -183,7 +218,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
                     4: "md:w-40 lg:w-50",
                     3: "hidden md:table-cell",
                   }}
-                  rows={(transactions || []).map((transaction) => [
+                  rows={(filteredTransactions || []).map((transaction) => [
                     <Tooltip
                       message={dayjs(transaction.block_time).format("MMM D, YYYY h:mm A")}
                       display={TooltipDisplayMode.Hover}
@@ -263,7 +298,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
                   {!isLoadingTxCount && (
                     <PageSelector
                       currentPage={currentPage}
-                      totalPages={Math.ceil(txCount!.total / 10)}
+                      totalPages={txFilter === "accepted" ? 1 : Math.ceil(txCount!.total / 10)}
                       onPageChange={pageChange}
                     />
                   )}
