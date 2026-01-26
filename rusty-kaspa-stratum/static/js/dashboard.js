@@ -103,7 +103,9 @@ class StratumBridgeDashboard {
     this.setText('totalSharesValue', this.formatNumber(stats?.totalShares));
     this.setText('activeWorkersValue', this.formatNumber(stats?.activeWorkers));
     this.setText('networkHashrateValue', this.formatHashrateHs(Number(stats?.networkHashrate || 0)));
-    this.setText('kaspadVersionValue', stats?.kaspadVersion);
+    if (stats?.kaspadVersion) {
+      this.setText('kaspadVersionValue', stats.kaspadVersion);
+    }
 
     const internalCpu = stats?.internalCpu || null;
     const cpuHashrateCard = document.getElementById('internalCpuHashrateCard');
