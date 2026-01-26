@@ -1,6 +1,5 @@
 use prometheus::proto::MetricFamily;
 use prometheus::{register_counter_vec, register_gauge, register_gauge_vec, CounterVec, Gauge, GaugeVec};
-use serde::Serialize;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
