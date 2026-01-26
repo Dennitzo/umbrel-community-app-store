@@ -99,10 +99,12 @@ class KaspaDatabaseDashboard {
         const appDirSizeBytes = Number(payload.appDirSizeBytes ?? 0);
         const utxoIndexEnabled = payload.utxoIndexEnabled;
         const kaspadVersion = payload.kaspadVersion;
+        const imageVersion = this.versionFromImage(image);
 
         this.elements.dbSizeValue.textContent = this.formatStatus(nodeStatus);
-        if (this.elements.kaspadVersion && kaspadVersion) {
-            this.elements.kaspadVersion.textContent = kaspadVersion;
+        if (this.elements.kaspadVersion) {
+            const versionValue = kaspadVersion || imageVersion || '—';
+            this.elements.kaspadVersion.textContent = versionValue;
         }
         this.elements.largestTableValue.textContent = image;
         if (this.elements.uptimeValue) {
@@ -137,6 +139,21 @@ class KaspaDatabaseDashboard {
                 this.elements.lastUpdated.textContent = new Date().toLocaleString();
             }
         }
+    }
+
+    versionFromImage(image) {
+        if (!image || image === '—' || typeof image !== 'string') {
+            return '';
+        }
+        const trimmed = image.trim();
+        if (!trimmed) {
+            return '';
+        }
+        const tag = trimmed.includes(':') ? trimmed.split(':').pop() : '';
+        if (!tag || tag === 'latest') {
+            return '';
+        }
+        return tag.startsWith('v') ? tag.slice(1) : tag;
     }
 
     populateTableStats(stats, container) {
@@ -185,7 +202,7 @@ class KaspaDatabaseDashboard {
                 this.elements.nodeStatusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
             }
             if (this.elements.kaspadVersion) {
-                this.elements.kaspadVersion.textContent = '1.0.2';
+                this.elements.kaspadVersion.textContent = '—';
             }
             if (this.elements.tableCountValue) {
                 this.elements.tableCountValue.textContent = '--';
