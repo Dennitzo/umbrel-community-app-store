@@ -18,7 +18,7 @@ import { useBlockdagInfo } from "./hooks/useBlockDagInfo";
 import { useBlockReward } from "./hooks/useBlockReward";
 import { useCoinSupply } from "./hooks/useCoinSupply";
 import { useHalving } from "./hooks/useHalving";
-import { useTransactionsCount } from "./hooks/useTransactionsCount";
+import { useHashrate } from "./hooks/useHashrate";
 import numeral from "numeral";
 import { useState } from "react";
 
@@ -31,12 +31,10 @@ const Dashboard = () => {
   const { data: coinSupply, isLoading: isLoadingCoinSupply } = useCoinSupply();
   const { data: blockReward, isLoading: isLoadingBlockReward } = useBlockReward();
   const { data: halving, isLoading: isLoadingHalving } = useHalving();
-  const { data: transactionsCount, isLoading: isLoadingTxCount } = useTransactionsCount();
+  const { data: hashrate, isLoading: isLoadingHashrate } = useHashrate();
   const { data: addressDistribution, isLoading: isLoadingDistribution } = useAddressDistribution();
 
-  const totalTxCount = isLoadingTxCount
-    ? ""
-    : Math.floor(((transactionsCount?.regular ?? 0) + (transactionsCount?.coinbase ?? 0)) / 1_000_000).toString();
+  const hashrateDisplay = isLoadingHashrate ? { value: "", unit: "" } : formatHashrate(hashrate?.hashrate ?? 0);
 
   const getAddressCountAbove1KAS = () => {
     if (!addressDistribution) return;
@@ -59,9 +57,11 @@ const Dashboard = () => {
         <span className="mb-7 text-black text-3xl md:text-4xl lg:text-5xl">Kaspa by the numbers</span>
         <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
           <DashboardBox
-            description="Total transactions"
-            value={`> ${totalTxCount} M`}
-            icon={<Swap className="w-5" />}
+            description="Network Hashrate"
+            value={hashrateDisplay.value}
+            unit={hashrateDisplay.unit}
+            icon={<FlashOn className="w-5" />}
+            loading={isLoadingHashrate}
           />
           <DashboardBox
             description="Total blocks"
@@ -206,4 +206,18 @@ const DashboardInfoBox = (props: InfoBoxProps) => {
       <span className="text-gray-500">{props.description}</span>
     </div>
   );
+};
+
+const formatHashrate = (hashrateTh: number) => {
+  if (!Number.isFinite(hashrateTh) || hashrateTh <= 0) {
+    return { value: "0", unit: "TH/s" };
+  }
+  const units = ["TH/s", "PH/s", "EH/s", "ZH/s"];
+  let unitIndex = 0;
+  let value = hashrateTh;
+  while (value >= 1000 && unitIndex < units.length - 1) {
+    value /= 1000;
+    unitIndex += 1;
+  }
+  return { value: numeral(value).format("0,0.[00]"), unit: units[unitIndex] };
 };
