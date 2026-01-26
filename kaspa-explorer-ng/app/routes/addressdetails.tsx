@@ -53,7 +53,8 @@ export function meta({ params }: Route.LoaderArgs) {
 
 export default function Addressdetails({ loaderData }: Route.ComponentProps) {
   const location = useLocation();
-  const { data, isLoading: isLoadingAddressBalance } = useAddressBalance(loaderData.address);
+  const { data, isLoading: isLoadingAddressBalance, isFetching: isFetchingAddressBalance } =
+    useAddressBalance(loaderData.address);
   const { data: utxoData, isLoading: isLoadingUtxoData } = useAddressUtxos(loaderData.address);
   const { data: txCount, isLoading: isLoadingTxCount } = useAddressTxCount(loaderData.address);
   const marketData = useContext(MarketDataContext);
@@ -119,10 +120,10 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
   const LoadingSpinner = () => <Spinner className="h-5 w-5" />;
 
   useEffect(() => {
-    if (!isLoadingAddressBalance) {
+    if (!isFetchingAddressBalance && !isLoadingAddressBalance) {
       setLastUpdated(new Date().toLocaleString());
     }
-  }, [isLoadingAddressBalance, data]);
+  }, [isFetchingAddressBalance, isLoadingAddressBalance, data]);
 
   return (
     <>
