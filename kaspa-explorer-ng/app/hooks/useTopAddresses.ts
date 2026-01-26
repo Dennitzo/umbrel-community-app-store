@@ -9,6 +9,7 @@ export const useTopAddresses = () =>
       const { data } = await axios.get(apiUrl("addresses/top"));
       return data[0] as TopAddresses;
     },
+    refetchInterval: 60000,
   });
 
 interface TopAddresses {

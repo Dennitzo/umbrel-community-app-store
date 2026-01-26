@@ -9,6 +9,7 @@ import CardContainer from "../layout/CardContainer";
 import FooterHelper from "../layout/FooterHelper";
 import MainBox from "../layout/MainBox";
 import numeral from "numeral";
+import { useEffect, useState } from "react";
 
 export function meta() {
   return [
@@ -24,7 +25,13 @@ export function meta() {
 export default function Addresses() {
   const { data: topAddresses, isLoading } = useTopAddresses();
   const { data: coinSupply, isLoading: isLoadingSupply } = useCoinSupply();
+  const [lastUpdated, setLastUpdated] = useState<string>("--");
 
+  useEffect(() => {
+    if (!isLoading && !isLoadingSupply && topAddresses && coinSupply) {
+      setLastUpdated(new Date().toLocaleString());
+    }
+  }, [isLoading, isLoadingSupply, topAddresses, coinSupply]);
 
   if (isLoading || isLoadingSupply || !topAddresses || !coinSupply) {
     return <LoadingMessage>Loading addresses</LoadingMessage>;
@@ -58,6 +65,9 @@ export default function Addresses() {
       </MainBox>
 
       <div className="flex w-full flex-col rounded-4xl bg-white p-4 text-left text-gray-500 sm:p-8">
+        <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">
+          Last updated: <span className="text-gray-500">{lastUpdated}</span>
+        </div>
         <PageTable
           className="text-black"
           headers={["Rank", "Address", "Balance", "Percentage"]}
