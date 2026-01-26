@@ -4,7 +4,7 @@ from asyncio import wait_for
 
 from kaspa import RpcClient, Resolver
 
-from constants import KASPAD_WRPC_URL, NETWORK_TYPE
+from constants import KASPAD_WRPC_URL, KASPAD_WRPC_FALLBACK_URL, NETWORK_TYPE
 
 _logger = logging.getLogger(__name__)
 
@@ -31,3 +31,29 @@ async def kaspad_rpc_client() -> RpcClient:
                 logging.warning(f"Connection to Kaspad ({KASPAD_WRPC_URL}) failed.")
 
         return kaspad_rpc_client.client
+
+
+async def kaspad_rpc_fallback_client() -> RpcClient | None:
+    if not KASPAD_WRPC_FALLBACK_URL:
+        return None
+
+    use_resolver = KASPAD_WRPC_FALLBACK_URL == "resolver"
+    if not hasattr(kaspad_rpc_fallback_client, "client"):
+        network_id = "testnet-10" if NETWORK_TYPE == "testnet" else "mainnet"
+        if use_resolver:
+            kaspad_rpc_fallback_client.client = RpcClient(resolver=Resolver(), network_id=network_id)
+        else:
+            kaspad_rpc_fallback_client.client = RpcClient(url=KASPAD_WRPC_FALLBACK_URL)
+
+    if not kaspad_rpc_fallback_client.client.is_connected:
+        try:
+            await wait_for(kaspad_rpc_fallback_client.client.connect(), 10 if use_resolver else 5)
+            if kaspad_rpc_fallback_client.client.is_connected:
+                info = await wait_for(kaspad_rpc_fallback_client.client.get_block_dag_info(), 10)
+                logging.info(f"Successfully connected to Kaspad fallback {info['network']} ({KASPAD_WRPC_FALLBACK_URL})")
+        except Exception:
+            pass
+        if not kaspad_rpc_fallback_client.client.is_connected:
+            logging.warning(f"Connection to Kaspad fallback ({KASPAD_WRPC_FALLBACK_URL}) failed.")
+
+    return kaspad_rpc_fallback_client.client if kaspad_rpc_fallback_client.client.is_connected else None

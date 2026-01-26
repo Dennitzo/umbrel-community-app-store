@@ -9,6 +9,7 @@ services:
       - "8091:8000"
     environment:
       KASPAD_WRPC_URL: ws://${APP_KASPA_NODE_ADDRESS}:${APP_KASPA_NODE_PORT}
+      KASPAD_WRPC_FALLBACK_URL: resolver
       # The kaspa_db exports now come from the kaspa-database app so Explorer and K-webserver stay aligned.
       SQL_URI: postgresql+asyncpg://${APP_KASPA_DB_USER}:${APP_KASPA_DB_PASSWORD}@${APP_KASPA_DB_ADDRESS}:${APP_KASPA_DB_PORT}/${APP_KASPA_DB_NAME}
       USE_SCRIPT_FOR_ADDRESS: "false"

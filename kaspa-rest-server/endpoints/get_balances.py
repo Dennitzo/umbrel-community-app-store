@@ -7,7 +7,7 @@ from kaspa_script_address import to_script
 from pydantic import BaseModel
 
 from constants import ADDRESS_EXAMPLE
-from kaspad.KaspadRpcClient import kaspad_rpc_client
+from kaspad.KaspadRpcClient import kaspad_rpc_client, kaspad_rpc_fallback_client
 from server import app, kaspad_client
 
 
@@ -37,6 +37,18 @@ async def get_balances_from_kaspa_addresses(body: BalanceRequest):
     rpc_client = await kaspad_rpc_client()
     request = {"addresses": body.addresses}
     if rpc_client:
+        try:
+            info = await wait_for(rpc_client.get_info(), 5)
+            is_synced = info.get("isSynced", True)
+        except Exception:
+            is_synced = True
+
+        if not is_synced:
+            fallback_client = await kaspad_rpc_fallback_client()
+            if fallback_client:
+                balances = await wait_for(fallback_client.get_balances_by_addresses(request), 10)
+                return balances["entries"]
+
         balances = await wait_for(rpc_client.get_balances_by_addresses(request), 10)
     else:
         resp = await kaspad_client.request("getBalancesByAddressesRequest", request)

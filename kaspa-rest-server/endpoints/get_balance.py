@@ -24,7 +24,7 @@ from constants import (
 )
 from dbsession import async_session_blocks
 from endpoints import sql_db_only
-from kaspad.KaspadRpcClient import kaspad_rpc_client
+from kaspad.KaspadRpcClient import kaspad_rpc_client, kaspad_rpc_fallback_client
 from models.TopScript import TopScript
 from server import app, kaspad_client
 
@@ -49,6 +49,18 @@ async def get_balance_from_kaspa_address(
     rpc_client = await kaspad_rpc_client()
     request = {"address": kaspaAddress}
     if rpc_client:
+        try:
+            info = await wait_for(rpc_client.get_info(), 5)
+            is_synced = info.get("isSynced", True)
+        except Exception:
+            is_synced = True
+
+        if not is_synced:
+            fallback_client = await kaspad_rpc_fallback_client()
+            if fallback_client:
+                balance = await wait_for(fallback_client.get_balance_by_address(request), 10)
+                return {"address": kaspaAddress, "balance": balance["balance"]}
+
         balance = await wait_for(rpc_client.get_balance_by_address(request), 10)
     else:
         resp = await kaspad_client.request("getBalanceByAddressRequest", request)
