@@ -39,7 +39,7 @@ services:
       - 17110:17110  # WRPC (Borsh)
       - 18110:18110  # WRPC (JSON)
     command: >
-      kaspad
+      /app/kaspad
       --appdir=/app/data
       --yes
       --nologfiles
