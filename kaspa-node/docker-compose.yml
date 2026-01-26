@@ -28,6 +28,7 @@ services:
     image: dennitzo/rusty-kaspad:v1.1.0
     restart: on-failure
     stop_grace_period: 1m
+    user: "0:0"
     volumes:
       - ${APP_DATA_DIR}:/app/data
       - ${APP_DATA_DIR}/logs:/logs
