@@ -91,7 +91,7 @@ class StratumBridgeDashboard {
     this.setText('kaspadAddressValue', status?.kaspad_address);
     this.setText('kaspadVersionValue', status?.kaspad_version || '—');
     this.setText('webBindValue', this.formatWebBind(status));
-    this.setText('bridgeVersionValue', 'LiveLaughLove13/rusty-kaspa-stratum');
+    this.setText('bridgeVersionValue', 'LiveLaughLove13/rusty-kaspa-stratum v1.1.3');
     this.renderEndpoints(status);
   }
 
