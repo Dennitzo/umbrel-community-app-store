@@ -114,10 +114,6 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
       ? transactions.filter((transaction) => transaction.is_accepted)
       : transactions;
 
-  useEffect(() => {
-    setBeforeAfter([0, 0]);
-    setCurrentPage(1);
-  }, [txFilter]);
 
   const balance = numeral((data?.balance || 0) / 1_0000_0000).format("0,0.00[000000]");
   const LoadingSpinner = () => <Spinner className="h-5 w-5" />;
