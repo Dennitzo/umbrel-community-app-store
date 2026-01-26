@@ -65,12 +65,12 @@ docker build -t dennitzo/kaspa-graph-inspector-web:latest -f kaspa-graph-inspect
 docker push dennitzo/kaspa-graph-inspector-web:latest
 
 # kaspa-stratum
-cd "${ROOT_DIR}/rusty-kaspa-stratum"
+cd "${ROOT_DIR}/rusty-kaspa"
 git pull
 
 cd "${ROOT_DIR}"
-docker build --no-cache -t dennitzo/kaspa-stratum-bridge:latest -f rusty-kaspa-stratum/Dockerfile.stratum-bridge rusty-kaspa-stratum
+docker build --no-cache -t dennitzo/kaspa-stratum-bridge:latest -f rusty-kaspa/docker/Dockerfile.stratum-bridge rusty-kaspa
 docker push dennitzo/kaspa-stratum-bridge:latest
 
-docker build -t dennitzo/kaspa-stratum-dashboard:latest -f rusty-kaspa-stratum/Dockerfile.dashboard rusty-kaspa-stratum
+docker build -t dennitzo/kaspa-stratum-dashboard:latest -f rusty-kaspa-bridge-dashboard/Dockerfile rusty-kaspa-bridge-dashboard
 docker push dennitzo/kaspa-stratum-dashboard:latest
