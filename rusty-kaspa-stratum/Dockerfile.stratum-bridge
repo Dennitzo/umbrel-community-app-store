@@ -1,8 +1,16 @@
-FROM rust:1.92-alpine AS builder
+FROM rust:1.92-bookworm AS builder
 
-RUN apk add --no-cache build-base protoc clang llvm15-dev pkgconfig
-ENV LIBCLANG_PATH=/usr/lib/llvm15/lib
-ENV BINDGEN_EXTRA_CLANG_ARGS="-I/usr/include"
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    build-essential \
+    protobuf-compiler \
+    clang \
+    libclang-dev \
+    pkg-config \
+    git \
+  && rm -rf /var/lib/apt/lists/*
+ENV LIBCLANG_PATH=/usr/lib/llvm-14/lib
+ENV BINDGEN_EXTRA_CLANG_ARGS="-I/usr/include -I/usr/lib/llvm-14/lib/clang/14/include"
 
 WORKDIR /usr/src/rustbridge
 
@@ -21,9 +29,18 @@ COPY src ./src
 
 RUN cargo build --release --bin stratum-bridge
 
-FROM alpine:latest
+FROM debian:bookworm-slim
 
 WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    tini \
+  && rm -rf /var/lib/apt/lists/* \
+  && useradd -r -u 10001 -g users -d /home/kaspa -s /usr/sbin/nologin kaspa \
+  && mkdir -p /home/kaspa /app \
+  && chown -R kaspa:users /home/kaspa /app
 
 LABEL org.opencontainers.image.title="Kaspa Rust Stratum Bridge" \
     org.opencontainers.image.description="A high-performance Rust implementation of the Kaspa Stratum Bridge, providing seamless mining pool connectivity for Kaspa ASIC miners." \
@@ -51,5 +68,6 @@ EXPOSE 2116
 EXPOSE 2117
 
 # Set the entrypoint to run the bridge
-ENTRYPOINT ["./stratum-bridge", "--config", "/app/config.yaml", "--node-mode", "external"]
-
+USER kaspa
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/app/stratum-bridge", "--config", "/app/config.yaml", "--node-mode", "external"]
