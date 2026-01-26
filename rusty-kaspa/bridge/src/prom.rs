@@ -1,5 +1,6 @@
 use prometheus::proto::MetricFamily;
 use prometheus::{register_counter_vec, register_gauge, register_gauge_vec, CounterVec, Gauge, GaugeVec};
+use serde::Serialize;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
@@ -823,6 +824,26 @@ pub async fn start_prom_server(port: &str, instance_id: &str) -> Result<(), Box<
                 );
 
                 stream.write_all(response.as_bytes()).await?;
+            } else if request.starts_with("GET /api/status") {
+                let kaspad_version = crate::kaspaapi::NODE_STATUS
+                    .lock()
+                    .server_version
+                    .clone()
+                    .unwrap_or_else(|| "-".to_string());
+                let status = WebStatusResponse {
+                    kaspad_address: get_kaspad_address(),
+                    kaspad_version,
+                    bridge_version: env!("CARGO_PKG_VERSION").to_string(),
+                    instances: 1,
+                    web_bind: addr_str.clone(),
+                };
+                let json = serde_json::to_string(&status).unwrap_or_else(|_| "{}".to_string());
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\n\r\n{}",
+                    json.len(),
+                    json
+                );
+                stream.write_all(response.as_bytes()).await?;
             } else if request.starts_with("GET /api/stats") {
                 // Return JSON stats
                 let stats = get_stats_json(&instance_id).await;
@@ -864,4 +885,30 @@ pub async fn start_prom_server(port: &str, instance_id: &str) -> Result<(), Box<
             }
         }
     }
+}
+
+#[derive(Serialize)]
+struct WebStatusResponse {
+    kaspad_address: String,
+    kaspad_version: String,
+    bridge_version: String,
+    instances: usize,
+    web_bind: String,
+}
+
+fn get_kaspad_address() -> String {
+    use std::fs;
+    use yaml_rust::YamlLoader;
+
+    let config_path = "config.yaml";
+    if let Ok(content) = fs::read_to_string(config_path) {
+        if let Ok(docs) = YamlLoader::load_from_str(&content) {
+            if let Some(doc) = docs.first() {
+                if let Some(addr) = doc["kaspad_address"].as_str() {
+                    return addr.to_string();
+                }
+            }
+        }
+    }
+    "-".to_string()
 }
