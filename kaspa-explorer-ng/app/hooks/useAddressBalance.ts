@@ -9,6 +9,7 @@ export const useAddressBalance = (address: string) =>
       const { data } = await axios.get(apiUrl(`addresses/${address}/balance`));
       return data as AddressBalance;
     },
+    refetchInterval: 60000,
   });
 
 export interface AddressBalance {

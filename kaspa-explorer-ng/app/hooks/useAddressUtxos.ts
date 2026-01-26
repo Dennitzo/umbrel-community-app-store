@@ -11,6 +11,7 @@ export const useAddressUtxos = (address: string) =>
         (a: Utxo, b: Utxo) => Number(b.utxoEntry.blockDaaScore) - Number(a.utxoEntry.blockDaaScore),
       ) as Utxo[];
     },
+    refetchInterval: 60000,
   });
 
 interface Utxo {

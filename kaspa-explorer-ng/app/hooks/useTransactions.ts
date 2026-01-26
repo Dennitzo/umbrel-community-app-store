@@ -30,6 +30,7 @@ export const useTransactions = (
         xPageCount: response.headers["x-page-count"],
       };
     },
+    refetchInterval: 60000,
   });
 
 export interface PreviousOutpointResolved {

@@ -9,6 +9,7 @@ export const useAddressTxCount = (address: string) =>
       const { data } = await axios.get(apiUrl(`addresses/${address}/transactions-count`));
       return data as TxCount;
     },
+    refetchInterval: 60000,
   });
 
 interface TxCount {

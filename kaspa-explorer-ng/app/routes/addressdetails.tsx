@@ -123,7 +123,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
   const LoadingSpinner = () => <Spinner className="h-5 w-5" />;
 
   useEffect(() => {
-    if (!isLoadingAddressBalance && data) {
+    if (!isLoadingAddressBalance) {
       setLastUpdated(new Date().toLocaleString());
     }
   }, [isLoadingAddressBalance, data]);
