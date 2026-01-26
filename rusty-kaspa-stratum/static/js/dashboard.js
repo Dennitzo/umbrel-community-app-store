@@ -507,6 +507,8 @@ class StratumBridgeDashboard {
   }
 
   formatWebBind(status) {
+    const webBind = status?.web_bind || status?.webBind;
+    if (webBind) return webBind;
     const rawPort = status?.prom_port || status?.health_check_port;
     if (!rawPort) return '—';
     const host = 'umbrel.local';
