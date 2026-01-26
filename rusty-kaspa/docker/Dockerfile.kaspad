@@ -8,7 +8,6 @@ RUN apt-get update \
     protobuf-compiler \
     pkg-config \
     libssl-dev \
-    wasm-pack \
   && rm -rf /var/lib/apt/lists/*
 RUN cargo install cargo-chef --locked
 WORKDIR /app
@@ -29,6 +28,7 @@ ENV RUSTFLAGS="-C target-feature=-crt-static" \
 RUN cargo chef cook --release --recipe-path recipe.json -p kaspad --bin kaspad
 
 COPY . .
+COPY kaspa-wasm32-sdk ./kaspa-wasm32-sdk
 RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=cargo-git,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=cache,id=cargo-target,target=/app/target,sharing=locked \

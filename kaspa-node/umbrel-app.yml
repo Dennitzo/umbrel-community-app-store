@@ -3,7 +3,7 @@ id: kaspa-node
 icon: https://raw.githubusercontent.com/Dennitzo/umbrel-community-app-store/master/kaspa_icon.svg
 category: crypto
 name: Kaspa Node
-version: "v0.2.8"
+version: "v0.2.9"
 tagline: A Rust implementation of a Kaspa full node
 description: |
   Rusty Kaspad is a Rust implementation of a Kaspa full node. This node software provides essential Kaspa network services including peer-to-peer networking and RPC functionality.

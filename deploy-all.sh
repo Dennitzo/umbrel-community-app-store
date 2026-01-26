@@ -43,6 +43,9 @@ docker push dennitzo/kaspa-rest-server:latest
 cd "${ROOT_DIR}"
 git pull
 
+rm -rf rusty-kaspa/kaspa-wasm32-sdk
+cp -a kaspa-wasm32-sdk rusty-kaspa/kaspa-wasm32-sdk
+
 docker build -t dennitzo/rusty-kaspad:v1.1.0 -f rusty-kaspa/docker/Dockerfile.kaspad rusty-kaspa
 docker push dennitzo/rusty-kaspad:v1.1.0
 
