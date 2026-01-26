@@ -26,6 +26,7 @@ RUN cargo build --release --bin stratum-bridge
 # Dependencies are now cached, we can remove the dummy source and build the real one
 RUN rm -f target/release/deps/stratum_bridge* target/release/deps/kaspa_stratum_bridge*
 COPY src ./src
+COPY static ./static
 
 RUN cargo build --release --bin stratum-bridge
 
