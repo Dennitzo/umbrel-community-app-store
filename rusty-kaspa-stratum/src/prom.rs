@@ -360,7 +360,7 @@ async fn handle_http_request(
         };
 
         let status =
-            WebStatusResponse { kaspad_address: status_cfg.kaspad_address, kaspad_version, instances: status_cfg.instances, web_bind };
+            WebStatusResponse { kaspad_address: status_cfg.kaspad_address, kaspad_version, bridge_version: env!("CARGO_PKG_VERSION").to_string(), instances: status_cfg.instances, web_bind };
         let json = serde_json::to_string(&status).unwrap_or_else(|_| "{}".to_string());
         let response = format!(
             "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\n\r\n{}",
@@ -594,6 +594,7 @@ pub fn record_network_stats(hashrate: u64, block_count: u64, difficulty: f64) {
 struct WebStatusResponse {
     kaspad_address: String,
     kaspad_version: String,
+    bridge_version: String,
     instances: usize,
     web_bind: String,
 }
