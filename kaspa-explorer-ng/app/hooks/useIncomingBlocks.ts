@@ -10,6 +10,7 @@ export interface Block {
   txs: {
     txId: string;
     outputs: [string, string][];
+    timestamp?: string;
   }[];
 }
 
@@ -46,11 +47,11 @@ export const useIncomingBlocks = () => {
     }
   }, [blockCount, startTime, txCount]);
 
-  const txs = [];
+  const txs: { txId: string; outputs: [string, string][]; timestamp?: string }[] = [];
 
   for (const block of blocks) {
     for (const tx of block.txs) {
-      txs.push(tx);
+      txs.push({ ...tx, timestamp: block.timestamp });
       if (txs.length > 20) break;
     }
     if (txs.length > 20) break;

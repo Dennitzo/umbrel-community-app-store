@@ -24,5 +24,7 @@ services:
     stop_grace_period: 1m
     depends_on:
       - stratum-bridge
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "19114:80"

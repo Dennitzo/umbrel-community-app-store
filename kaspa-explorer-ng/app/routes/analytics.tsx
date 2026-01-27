@@ -239,7 +239,12 @@ export default function Analytics() {
           <PageTable
             className="mt-4 text-black table-fixed w-full"
             headers={["Time", "Hash", "BlueScore", "TXs"]}
-            additionalClassNames={{ 0: "w-24 whitespace-nowrap", 1: "overflow-hidden " }}
+            additionalClassNames={{
+              0: "w-24 whitespace-nowrap",
+              1: "overflow-hidden w-72",
+              2: "w-20 whitespace-nowrap",
+              3: "w-12 whitespace-nowrap",
+            }}
             rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
             rows={blocks.slice(0, 8).map((block) => [
               dayjs(parseInt(block.timestamp)).format("HH:mm:ss"),
@@ -257,10 +262,14 @@ export default function Analytics() {
           <PageTable
             className="mt-4 text-black table-fixed w-full"
             headers={["Time", "Transaction ID", "Amount"]}
-            additionalClassNames={{ 0: "w-24 whitespace-nowrap", 1: "overflow-hidden ", 2: "whitespace-nowrap w-36" }}
+            additionalClassNames={{
+              0: "w-24 whitespace-nowrap",
+              1: "overflow-hidden w-72",
+              2: "whitespace-nowrap w-36",
+            }}
             rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
             rows={transactions.slice(0, 8).map((transaction) => [
-              "a moment ago",
+              transaction.timestamp ? dayjs(parseInt(transaction.timestamp)).format("HH:mm:ss") : "--:--:--",
               <KasLink linkType="transaction" link to={transaction.txId} mono />,
               <>
                 {numeral(transaction.outputs.reduce((acc, output) => acc + Number(output[1]), 0) / 1_0000_0000).format(
