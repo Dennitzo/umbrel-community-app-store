@@ -14,7 +14,7 @@ WORKDIR /app
 # ---------------------------------------- Planner image ----------------------------------------
 FROM chef AS planner
 COPY . .
-RUN cargo chef prepare --recipe-path recipe.json -p kaspa-stratum-bridge --bin stratum-bridge
+RUN cargo chef prepare --recipe-path recipe.json
 
 # ---------------------------------------- Builder image ----------------------------------------
 FROM chef AS builder
