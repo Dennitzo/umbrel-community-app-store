@@ -113,7 +113,8 @@ class StratumBridgeDashboard {
   async fetchNodeStatus() {
     try {
       const host = window.location.hostname || 'umbrel.local';
-      const response = await fetch(`http://${host}:19112/api/status?t=${Date.now()}`, {
+      const protocol = window.location.protocol || 'http:';
+      const response = await fetch(`${protocol}//${host}:19112/api/status?t=${Date.now()}`, {
         cache: 'no-store',
       });
       if (!response.ok) {

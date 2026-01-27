@@ -18,7 +18,6 @@ import { useHalving } from "../hooks/useHalving";
 import { useHashrate } from "../hooks/useHashrate";
 import { useIncomingBlocks } from "../hooks/useIncomingBlocks";
 import { useMempoolSize } from "../hooks/useMempoolSize";
-import { useTransactionsCount } from "../hooks/useTransactionsCount";
 import dayjs from "dayjs";
 import numeral from "numeral";
 import React, { useContext } from "react";
@@ -59,13 +58,13 @@ const formatDifficulty = (value: number) => {
   };
 };
 
-const formatHashrate = (value: number) => {
-  if (!Number.isFinite(value) || value <= 0) {
-    return { value: "--", unit: "" };
+const formatHashrate = (valueTh: number) => {
+  if (!Number.isFinite(valueTh) || valueTh <= 0) {
+    return { value: "0", unit: "TH/s" };
   }
-  const units = ["H/s", "kH/s", "MH/s", "GH/s", "TH/s", "PH/s", "EH/s", "ZH/s"];
+  const units = ["TH/s", "PH/s", "EH/s", "ZH/s"];
   let unitIndex = 0;
-  let scaled = value;
+  let scaled = valueTh;
   while (scaled >= 1000 && unitIndex < units.length - 1) {
     scaled /= 1000;
     unitIndex += 1;
@@ -80,7 +79,6 @@ export default function Analytics() {
   const { data: halving, isLoading: isLoadingHalving } = useHalving();
   const { data: hashrate, isLoading: isLoadingHashrate } = useHashrate();
   const { data: feeEstimate, isLoading: isLoadingFee } = useFeeEstimate();
-  const { data: transactionsCount, isLoading: isLoadingTxCount } = useTransactionsCount();
   const { mempoolSize } = useMempoolSize();
   const { blocks, avgBlockTime, avgTxRate, transactions } = useIncomingBlocks();
   const marketData = useContext(MarketDataContext);
@@ -92,11 +90,11 @@ export default function Analytics() {
 
   const circulatingSupply = (coinSupply?.circulatingSupply || 0) / 1_0000_0000;
   const minedPercent = (circulatingSupply / TOTAL_SUPPLY) * 100;
-  const totalTxCount = isLoadingTxCount
-    ? "--"
-    : numeral(((transactionsCount?.regular ?? 0) + (transactionsCount?.coinbase ?? 0)) / 1_000_000).format("0");
   const regularFee = feeEstimate ? (feeEstimate.normalBuckets[0].feerate * 2036) / 1_0000_0000 : 0;
-  const regularFeeUsd = regularFee * (marketData?.price || 0);
+  const regularFeeUsd = feeEstimate ? regularFee * (marketData?.price || 0) : 0;
+  const mempoolSizeValue = Number(mempoolSize) || 0;
+  const mempoolCapacity = 100000;
+  const mempoolPercent = Math.min(100, (mempoolSizeValue / mempoolCapacity) * 100);
 
   return (
     <div className="flex w-full flex-col gap-y-6 text-black">
@@ -131,7 +129,6 @@ export default function Analytics() {
             <div className="mt-2 text-2xl font-semibold">
               {difficultyDisplay.value} <span className="text-base text-gray-500">{difficultyDisplay.unit}</span>
             </div>
-            <div className="mt-2 text-xs text-gray-400">Scaled to K/M/G/T/P/E</div>
           </div>
           <div className="rounded-3xl bg-gray-50 p-4">
             <div className="flex items-center justify-between">
@@ -142,7 +139,6 @@ export default function Analytics() {
               {numeral(avgBlockTime).format("0.0")}
               <span className="text-base text-gray-500"> BPS</span>
             </div>
-            <div className="mt-2 text-xs text-gray-400">Live from new blocks</div>
           </div>
           <div className="rounded-3xl bg-gray-50 p-4">
             <div className="flex items-center justify-between">
@@ -152,7 +148,6 @@ export default function Analytics() {
             <div className="mt-2 text-2xl font-semibold">
               {numeral(avgTxRate).format("0.0")} <span className="text-base text-gray-500">TPS</span>
             </div>
-            <div className="mt-2 text-xs text-gray-400">Live from new blocks</div>
           </div>
         </div>
       </section>
@@ -212,35 +207,24 @@ export default function Analytics() {
               <span className="text-sm text-gray-500">Mempool size</span>
               <span className="font-medium">{mempoolSize}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Total transactions</span>
-              <span className="font-medium">{totalTxCount} M</span>
-            </div>
           </div>
         </div>
 
         <div className="rounded-4xl bg-white p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Network mix</h2>
+            <h2 className="text-lg font-semibold">Mempool</h2>
             <PieChart className="h-5 w-5 text-gray-400" />
           </div>
           <div className="mt-4 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Virtual DAA score</span>
-              <span className="font-medium">
-                {isLoadingBlockDagInfo ? "--" : numeral(blockDagInfo?.virtualDaaScore || 0).format("0,0")}
-              </span>
+              <span className="text-sm text-gray-500">Mempool size</span>
+              <span className="font-medium">{mempoolSize}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Blocks in view</span>
-              <span className="font-medium">{blocks.length}</span>
+            <div className="h-2 w-full rounded-full bg-gray-100">
+              <div className="h-2 rounded-full bg-gray-300" style={{ width: `${mempoolPercent}%` }} />
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Transactions in view</span>
-              <span className="font-medium">{transactions.length}</span>
-            </div>
-            <div className="rounded-3xl bg-gray-50 p-4 text-sm text-gray-500">
-              These stats update in real time as new blocks arrive.
+            <div className="text-xs text-gray-400">
+              100% equals {numeral(mempoolCapacity).format("0,0")} transactions in mempool.
             </div>
           </div>
         </div>
@@ -271,9 +255,9 @@ export default function Analytics() {
             <AnalyticsIcon className="h-5 w-5 text-gray-400" />
           </div>
           <PageTable
-            className="mt-4 text-black"
+            className="mt-4 text-black table-fixed w-full"
             headers={["Time", "Transaction ID", "Amount"]}
-            additionalClassNames={{ 1: "overflow-hidden " }}
+            additionalClassNames={{ 1: "overflow-hidden ", 2: "whitespace-nowrap w-36" }}
             rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
             rows={transactions.slice(0, 8).map((transaction) => [
               "a moment ago",
