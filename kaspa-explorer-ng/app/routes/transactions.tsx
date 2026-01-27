@@ -12,6 +12,7 @@ import CardContainer from "../layout/CardContainer";
 import FooterHelper from "../layout/FooterHelper";
 import HelperBox from "../layout/HelperBox";
 import MainBox from "../layout/MainBox";
+import dayjs from "dayjs";
 import numeral from "numeral";
 import { useContext } from "react";
 
@@ -51,7 +52,6 @@ export default function Transactions() {
     <>
       <MainBox>
         <CardContainer title="Transactions">
-          <Card title="Total transactions" value={`${numeral(totalTxCount).format("0")} M`} />
           <Card title="Average transactions" value={`${numeral(avgTxRate).format("0.0")} TPS`} loading={isLoadingTxCount} />
           <Card
             title="Regular fee"
@@ -68,11 +68,11 @@ export default function Transactions() {
 
         <PageTable
           className="text-black w-full"
-          headers={["Timestamp", "Transaction ID", "Amount"]}
-          additionalClassNames={{ 1: "overflow-hidden " }}
+          headers={["Time", "Transaction ID", "Amount"]}
+          additionalClassNames={{ 0: "w-24 whitespace-nowrap", 1: "overflow-hidden " }}
           rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
           rows={transactions.map((transaction) => [
-            "a moment ago",
+            transaction.timestamp ? dayjs(parseInt(transaction.timestamp)).format("HH:mm:ss") : "--:--:--",
             <KasLink linkType="transaction" link to={transaction.txId} mono />,
             <>
               {numeral(transaction.outputs.reduce((acc, output) => acc + Number(output[1]), 0) / 1_0000_0000).format(

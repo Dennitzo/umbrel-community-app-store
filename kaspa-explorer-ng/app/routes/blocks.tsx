@@ -68,7 +68,6 @@ export default function Blocks() {
             title="Total blocks"
             value={`${numeral(blockDagInfo?.virtualDaaScore).format("0,0")}`}
           />
-          <Card loading={isLoadingTxCount} title="Total transactions" value={`> ${totalTxCount} M `} />
           <Card title="Average block time" value={`${numeral(avgBlockTime).format("0.0")} BPS`} />
           <Card
             loading={isLoadingBlockReward}
