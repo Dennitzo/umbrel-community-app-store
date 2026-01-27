@@ -14,7 +14,7 @@ WORKDIR /app
 # ---------------------------------------- Planner image ----------------------------------------
 FROM chef AS planner
 COPY . .
-RUN cargo chef prepare --recipe-path recipe.json
+RUN cargo chef prepare --recipe-path recipe.json -p kaspa-stratum-bridge --bin stratum-bridge
 
 # ---------------------------------------- Builder image ----------------------------------------
 FROM chef AS builder
@@ -30,7 +30,7 @@ COPY . .
 RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=cargo-git,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=cache,id=cargo-target,target=/app/target,sharing=locked \
-    cargo build --release --bin stratum-bridge \
+    cargo build --release -p kaspa-stratum-bridge --bin stratum-bridge \
     && cp /app/target/release/stratum-bridge /app/stratum-bridge   # <-- outside the mount, persists
 
 
