@@ -4,6 +4,7 @@ import BackToTab from "./assets/back_to_tab.svg";
 import Box from "./assets/box.svg";
 import Coins from "./assets/coins.svg";
 import Dag from "./assets/dag.svg";
+import BarChart from "./assets/bar_chart.svg";
 import FlashOn from "./assets/flash_on.svg";
 import KaspaDifferent from "./assets/kaspadifferent.svg";
 import Landslide from "./assets/landslide.svg";
@@ -23,6 +24,25 @@ import { useState } from "react";
 
 const TOTAL_SUPPLY = 28_700_000_000;
 
+const formatDifficulty = (value: number) => {
+  if (!Number.isFinite(value) || value <= 0) {
+    return { value: "0", unit: "" };
+  }
+
+  const units = ["", "K", "M", "G", "T", "P", "E"];
+  let unitIndex = 0;
+  let scaled = value;
+  while (scaled >= 1000 && unitIndex < units.length - 1) {
+    scaled /= 1000;
+    unitIndex += 1;
+  }
+
+  return {
+    value: numeral(scaled).format("0,0.[00]"),
+    unit: units[unitIndex],
+  };
+};
+
 const Dashboard = () => {
   const [search, setSearch] = useState("");
 
@@ -33,6 +53,9 @@ const Dashboard = () => {
   const { data: hashrate, isLoading: isLoadingHashrate } = useHashrate();
 
   const hashrateDisplay = isLoadingHashrate ? { value: "", unit: "" } : formatHashrate(hashrate?.hashrate ?? 0);
+  const difficultyDisplay = isLoadingBlockDagInfo
+    ? { value: "", unit: "" }
+    : formatDifficulty(blockDagInfo?.difficulty ?? 0);
 
   return (
     <>
@@ -58,8 +81,9 @@ const Dashboard = () => {
           />
           <DashboardBox
             description="Network difficulty"
-            value={numeral(blockDagInfo?.difficulty || 0).format("0,0")}
-            icon={<Dag className="w-5" />}
+            value={difficultyDisplay.value}
+            unit={difficultyDisplay.unit}
+            icon={<BarChart className="w-5" />}
             loading={isLoadingBlockDagInfo}
           />
           <DashboardBox

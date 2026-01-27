@@ -88,6 +88,7 @@ export default function Blocks() {
           className="text-black"
           headers={["Timestamp", "Hash", "BlueScore", "TX Count"]}
           additionalClassNames={{ 1: "overflow-hidden " }}
+          rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
           rows={blocks
             .slice(0, 10)
             .map((block) => [

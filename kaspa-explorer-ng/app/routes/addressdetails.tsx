@@ -70,7 +70,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
     setCurrentPage(1); // Reset currentPage state
   }, [loaderData.address]);
 
-  const pageSize = 100;
+  const pageSize = 25;
 
   // fetch transactions with resolve_previous_outpoints set to "light"
   const { data: txData } = useTransactions(
@@ -243,6 +243,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
                     4: "md:w-40 lg:w-50",
                     3: "hidden md:table-cell",
                   }}
+                  rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
                   rows={(filteredTransactions || []).map((transaction) => [
                     <Tooltip
                       message={dayjs(transaction.block_time).format("MMM D, YYYY h:mm A")}
@@ -320,7 +321,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
                             {numeral(kasAmount).format("+0,0.00[000000]")}
                             <span className="text-gray-500 text-nowrap"> KAS</span>
                           </div>
-                          <div className="text-xs text-gray-500">{numeral(usdValue).format("$0,0.00[00]")}</div>
+                          <div className="text-xs text-gray-500">{numeral(usdValue).format("$0,0.00")}</div>
                         </>
                       );
                     })(),

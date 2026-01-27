@@ -264,6 +264,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             {transaction.inputs && transaction.inputs.length > 0 ? (
               <div className="text-nowrap">
                 <PageTable
+                  rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
                   rows={transaction.inputs.map((input) => {
                     return [
                       input.sig_op_count,
@@ -304,6 +305,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
         {isTabActive("outputs") && transaction.outputs && transaction.outputs.length > 0 && (
           <PageTable
             headers={["Index", "Type", "Script Public Key", "Script Public Key Address", "Amount"]}
+            rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
             rows={transaction.outputs.map((output) => {
               return [
                 output.index || "0",

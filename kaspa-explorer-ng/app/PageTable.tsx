@@ -6,6 +6,7 @@ interface PageTableProps {
   additionalClassNames?: Record<number, string>;
   className?: string;
   alignTop?: boolean;
+  rowClassName?: (index: number) => string;
 }
 
 const PageTable = (props: PageTableProps) => {
@@ -24,11 +25,11 @@ const PageTable = (props: PageTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {props.rows.map((row) => (
+        {props.rows.map((row, rowIndex) => (
           <tr
             className={`grid grid-cols-1 gap-x-10 hover:bg-gray-25
              transition-colors duration-200 ease-out
-             md:table-row pt-2 md:pt-0 border-t first:border-t-0 border-gray-100`}
+             md:table-row pt-2 md:pt-0 border-t first:border-t-0 border-gray-100 ${props.rowClassName ? props.rowClassName(rowIndex) : ""}`}
           >
             {row.map((cell, cellNr) => (
               <>

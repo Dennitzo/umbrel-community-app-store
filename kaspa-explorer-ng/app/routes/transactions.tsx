@@ -70,6 +70,7 @@ export default function Transactions() {
           className="text-black w-full"
           headers={["Timestamp", "Transaction ID", "Amount"]}
           additionalClassNames={{ 1: "overflow-hidden " }}
+          rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
           rows={transactions.map((transaction) => [
             "a moment ago",
             <KasLink linkType="transaction" link to={transaction.txId} mono />,

@@ -209,6 +209,7 @@ export default function Blocks({ loaderData }: Route.ComponentProps) {
         <PageTable
           alignTop
           headers={["Transaction ID", "From", "", "To", "Amount", "Status"]}
+          rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
           rows={
             block?.transactions.map((transaction) => [
               <KasLink linkType="transaction" to={transaction.verboseData.transactionId} link shorten mono />,
