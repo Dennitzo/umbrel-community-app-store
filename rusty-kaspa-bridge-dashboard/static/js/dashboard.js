@@ -252,11 +252,14 @@ class StratumBridgeDashboard {
         const hash = this.hideBlockWallets
           ? this.maskHash(block.hash)
           : this.escape(block.hash);
+        const hashCell = this.hideBlockWallets
+          ? hash
+          : `<a class="text-link hover:underline" href="http://umbrel.local:19113/blocks/${encodeURIComponent(block.hash)}" target="_blank" rel="noopener noreferrer">${hash}</a>`;
         return `
           <tr>
             <td>${this.escape(block.worker)}</td>
             <td class="break-all">${wallet}</td>
-            <td class="break-all">${hash}</td>
+            <td class="break-all">${hashCell}</td>
           </tr>
         `;
       })
