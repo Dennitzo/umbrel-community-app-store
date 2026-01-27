@@ -165,7 +165,8 @@ class KaspaDatabaseDashboard {
             return '—';
         }
         const withoutNamespace = trimmed.includes('/') ? trimmed.split('/').pop() || trimmed : trimmed;
-        return `kaspanet/${withoutNamespace}`;
+        const normalized = withoutNamespace.replace('rusty-kaspad', 'rusty-kaspa');
+        return `kaspanet/${normalized}`;
     }
 
     populateTableStats(stats, container) {

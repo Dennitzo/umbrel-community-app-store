@@ -17,7 +17,7 @@ PROJECT_NAME = os.environ.get("APP_COMPOSE_PROJECT", "kaspa-node")
 KASPAD_SERVICE = os.environ.get("APP_KASPAD_SERVICE", "kaspad")
 GRAPH_PROCESSING_SERVICE = os.environ.get("APP_GRAPH_PROCESSING_SERVICE", "graph-processing")
 KNOWN_SERVICES = {
-    "kaspad": "kaspanet/rusty-kaspad",
+    "kaspad": "kaspanet/rusty-kaspa",
     "kaspa-api": "kaspa-node-api",
     "frontend": "kaspa-node-ui",
 }

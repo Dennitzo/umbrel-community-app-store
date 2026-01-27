@@ -9,6 +9,7 @@ class StratumBridgeDashboard {
     this.hideWallets = true;
     this.hideBlockWallets = true;
     this.lastStats = null;
+    this.nodeApiBase = this.resolveApiBase('kaspa-node');
     this.init();
   }
 
@@ -37,9 +38,10 @@ class StratumBridgeDashboard {
 
   async fetchData() {
     try {
-      const [statusRes, statsRes] = await Promise.all([
+      const [statusRes, statsRes, nodeStatus] = await Promise.all([
         fetch(`/api/status?t=${Date.now()}`, { cache: 'no-store' }),
         fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' }),
+        this.fetchNodeStatus(),
       ]);
 
       if (!statusRes.ok || !statsRes.ok) {
@@ -49,12 +51,12 @@ class StratumBridgeDashboard {
       const status = await statusRes.json();
       const stats = await statsRes.json();
 
-      this.renderStatus(status);
-    this.renderStats(stats);
-    this.updateStatus(true, 'Live');
-    this.setLastUpdated();
-    this.scheduleNext(this.updateInterval);
-  } catch (error) {
+      this.renderStatus(status, nodeStatus);
+      this.renderStats(stats);
+      this.updateStatus(true, 'Live');
+      this.setLastUpdated();
+      this.scheduleNext(this.updateInterval);
+    } catch (error) {
       console.error(error);
       this.updateStatus(false, 'Offline');
       this.scheduleNext(this.retryInterval);
@@ -86,14 +88,58 @@ class StratumBridgeDashboard {
     }
   }
 
-  renderStatus(status) {
+  resolveApiBase(appOverride) {
+    const params = new URLSearchParams(window.location.search);
+    const origin = params.get('origin');
+    const app = appOverride || params.get('app');
+
+    if (!origin || !app) {
+      return '';
+    }
+
+    return `${window.location.origin}/?origin=${encodeURIComponent(origin)}&app=${encodeURIComponent(app)}&path=`;
+  }
+
+  buildApiUrl(base, path) {
+    if (!base) {
+      return path;
+    }
+
+    return `${base}${encodeURIComponent(path)}`;
+  }
+
+  async fetchNodeStatus() {
+    if (!this.nodeApiBase) {
+      return null;
+    }
+
+    try {
+      const response = await fetch(this.buildApiUrl(this.nodeApiBase, `/api/status?t=${Date.now()}`), {
+        cache: 'no-store',
+      });
+      if (!response.ok) {
+        return null;
+      }
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        return null;
+      }
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+
+  renderStatus(status, nodeStatus) {
     this.lastStatus = status || null;
     this.setText('kaspadAddressValue', status?.kaspad_address);
     this.setText('kaspadVersionValue', status?.kaspad_version || '—');
     const kaspadVersion = status?.kaspad_version || status?.kaspadVersion || '—';
-    const imageLabel = kaspadVersion && kaspadVersion !== '—'
-      ? `kaspanet/rusty-kaspa-stratum:${kaspadVersion}`
-      : '—';
+    let imageLabel = nodeStatus?.image || '';
+    if (!imageLabel && kaspadVersion && kaspadVersion !== '—') {
+      imageLabel = `kaspanet/rusty-kaspa-stratum:${kaspadVersion}`;
+    }
+    imageLabel = imageLabel ? imageLabel.replace(/^dennitzo\//, 'kaspanet/') : '—';
     this.setText('bridgeVersionValue', imageLabel);
     this.renderEndpoints(status);
   }

@@ -46,8 +46,8 @@ git pull
 rm -rf rusty-kaspa/kaspa-wasm32-sdk
 cp -a kaspa-wasm32-sdk rusty-kaspa/kaspa-wasm32-sdk
 
-docker build -t dennitzo/rusty-kaspad:v1.1.0-rc.2 -f rusty-kaspa/docker/Dockerfile.kaspad rusty-kaspa
-docker push dennitzo/rusty-kaspad:v1.1.0-rc.2
+docker build -t dennitzo/rusty-kaspa:v1.1.0-rc.2 -f rusty-kaspa/docker/Dockerfile.kaspad rusty-kaspa
+docker push dennitzo/rusty-kaspa:v1.1.0-rc.2
 
 docker build -t dennitzo/kaspa-node-ui:latest -f kaspa-node/frontend/Dockerfile kaspa-node/frontend
 docker push dennitzo/kaspa-node-ui:latest
