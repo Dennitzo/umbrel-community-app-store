@@ -208,11 +208,7 @@ class StratumBridgeDashboard {
     this.lastStatus = status || null;
     this.setText('kaspadAddressValue', status?.kaspad_address);
     this.setText('kaspadVersionValue', status?.kaspad_version || '—');
-    const kaspadVersion = status?.kaspad_version || status?.kaspadVersion || '—';
     let imageLabel = nodeStatus?.image || '';
-    if (!imageLabel && kaspadVersion && kaspadVersion !== '—') {
-      imageLabel = `kaspanet/rusty-kaspa:${kaspadVersion}`;
-    }
     imageLabel = imageLabel ? imageLabel.replace(/^dennitzo\//, 'kaspanet/') : '—';
     this.setText('bridgeVersionValue', imageLabel);
     this.renderEndpoints(status);
