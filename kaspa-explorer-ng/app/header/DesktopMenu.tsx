@@ -15,10 +15,6 @@ const MAIN_MENU = [
         name: "Transactions",
         linkTo: "/transactions",
       },
-      {
-        name: "Addresses",
-        linkTo: "/addresses",
-      },
     ],
   },
   {
