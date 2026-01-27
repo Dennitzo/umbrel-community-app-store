@@ -20,7 +20,7 @@ import { useIncomingBlocks } from "../hooks/useIncomingBlocks";
 import { useMempoolSize } from "../hooks/useMempoolSize";
 import dayjs from "dayjs";
 import numeral from "numeral";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 export function meta() {
   return [
@@ -82,6 +82,8 @@ export default function Analytics() {
   const { mempoolSize } = useMempoolSize();
   const { blocks, avgBlockTime, avgTxRate, transactions } = useIncomingBlocks();
   const marketData = useContext(MarketDataContext);
+  const [hashrateRange, setHashrateRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
+  const [difficultyRange, setDifficultyRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
 
   const hashrateDisplay = isLoadingHashrate ? { value: "--", unit: "" } : formatHashrate(hashrate?.hashrate ?? 0);
   const difficultyDisplay = isLoadingBlockDagInfo
@@ -90,11 +92,60 @@ export default function Analytics() {
 
   const circulatingSupply = (coinSupply?.circulatingSupply || 0) / 1_0000_0000;
   const minedPercent = (circulatingSupply / TOTAL_SUPPLY) * 100;
-  const regularFee = feeEstimate ? (feeEstimate.normalBuckets[0].feerate * 2036) / 1_0000_0000 : 0;
-  const regularFeeUsd = feeEstimate ? regularFee * (marketData?.price || 0) : 0;
+  const baseFeeRate = Number(feeEstimate?.normalBuckets?.[0]?.feerate ?? NaN);
+  const regularFee = Number.isFinite(baseFeeRate) ? (baseFeeRate * 2036) / 1_0000_0000 : null;
+  const price = Number(marketData?.price ?? NaN);
+  const regularFeeUsd = regularFee != null && Number.isFinite(price) ? regularFee * price : null;
   const mempoolSizeValue = Number(mempoolSize) || 0;
-  const mempoolCapacity = 100000;
-  const mempoolPercent = Math.min(100, (mempoolSizeValue / mempoolCapacity) * 100);
+  const [mempoolRange, setMempoolRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
+  const mempoolPercent =
+    mempoolRange.max > mempoolRange.min
+      ? ((mempoolSizeValue - mempoolRange.min) / (mempoolRange.max - mempoolRange.min)) * 100
+      : mempoolRange.max > 0
+        ? 100
+        : 0;
+
+  useEffect(() => {
+    const current = Number(hashrate?.hashrate ?? 0);
+    if (!Number.isFinite(current) || current <= 0) return;
+    setHashrateRange((prev) => ({
+      min: prev.min === 0 ? current : Math.min(prev.min, current),
+      max: Math.max(prev.max, current),
+    }));
+  }, [hashrate]);
+
+  useEffect(() => {
+    const current = Number(blockDagInfo?.difficulty ?? 0);
+    if (!Number.isFinite(current) || current <= 0) return;
+    setDifficultyRange((prev) => ({
+      min: prev.min === 0 ? current : Math.min(prev.min, current),
+      max: Math.max(prev.max, current),
+    }));
+  }, [blockDagInfo]);
+
+  useEffect(() => {
+    const current = mempoolSizeValue;
+    if (!Number.isFinite(current) || current <= 0) return;
+    setMempoolRange((prev) => ({
+      min: prev.min === 0 ? current : Math.min(prev.min, current),
+      max: Math.max(prev.max, current),
+    }));
+  }, [mempoolSizeValue]);
+
+  const hashratePercent =
+    hashrateRange.max > hashrateRange.min
+      ? ((Number(hashrate?.hashrate ?? 0) - hashrateRange.min) / (hashrateRange.max - hashrateRange.min)) * 100
+      : hashrateRange.max > 0
+        ? 100
+        : 0;
+
+  const difficultyPercent =
+    difficultyRange.max > difficultyRange.min
+      ? ((Number(blockDagInfo?.difficulty ?? 0) - difficultyRange.min) / (difficultyRange.max - difficultyRange.min)) *
+        100
+      : difficultyRange.max > 0
+        ? 100
+        : 0;
 
   return (
     <div className="flex w-full flex-col gap-y-6 text-black">
@@ -118,7 +169,7 @@ export default function Analytics() {
               {hashrateDisplay.value} <span className="text-base text-gray-500">{hashrateDisplay.unit}</span>
             </div>
             <div className="mt-2 h-2 w-full rounded-full bg-white">
-              <div className="h-2 w-2/3 rounded-full bg-gray-200" />
+              <div className="h-2 rounded-full bg-gray-200" style={{ width: `${Math.min(100, Math.max(0, hashratePercent))}%` }} />
             </div>
           </div>
           <div className="rounded-3xl bg-gray-50 p-4">
@@ -128,6 +179,9 @@ export default function Analytics() {
             </div>
             <div className="mt-2 text-2xl font-semibold">
               {difficultyDisplay.value} <span className="text-base text-gray-500">{difficultyDisplay.unit}</span>
+            </div>
+            <div className="mt-2 h-2 w-full rounded-full bg-white">
+              <div className="h-2 rounded-full bg-gray-200" style={{ width: `${Math.min(100, Math.max(0, difficultyPercent))}%` }} />
             </div>
           </div>
           <div className="rounded-3xl bg-gray-50 p-4">
@@ -187,25 +241,21 @@ export default function Analytics() {
 
         <div className="rounded-4xl bg-white p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Fees & mempool</h2>
+            <h2 className="text-lg font-semibold">Fees</h2>
             <Reward className="h-5 w-5 text-gray-400" />
           </div>
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Regular fee</span>
               <span className="font-medium">
-                {isLoadingFee ? "--" : numeral(regularFee).format("0.00000000")} KAS
+                {isLoadingFee || regularFee == null ? "--" : `${numeral(regularFee).format("0.00000000")} KAS`}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Regular fee (USD)</span>
               <span className="font-medium">
-                {isLoadingFee ? "--" : numeral(regularFeeUsd).format("$0,0.00")}
+                {isLoadingFee || regularFeeUsd == null ? "--" : numeral(regularFeeUsd).format("$0,0.00")}
               </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Mempool size</span>
-              <span className="font-medium">{mempoolSize}</span>
             </div>
           </div>
         </div>
@@ -221,10 +271,7 @@ export default function Analytics() {
               <span className="font-medium">{mempoolSize}</span>
             </div>
             <div className="h-2 w-full rounded-full bg-gray-100">
-              <div className="h-2 rounded-full bg-gray-300" style={{ width: `${mempoolPercent}%` }} />
-            </div>
-            <div className="text-xs text-gray-400">
-              100% equals {numeral(mempoolCapacity).format("0,0")} transactions in mempool.
+              <div className="h-2 rounded-full bg-gray-300" style={{ width: `${Math.min(100, Math.max(0, mempoolPercent))}%` }} />
             </div>
           </div>
         </div>
