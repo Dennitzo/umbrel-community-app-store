@@ -637,11 +637,7 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
         }
     }
 
-    // If network hashrate is 0 or unavailable, use total worker hashrate as fallback
-    // Convert from GH/s to H/s for network hashrate display
-    if stats.networkHashrate == 0 && total_worker_hashrate_ghs > 0.0 {
-        stats.networkHashrate = (total_worker_hashrate_ghs * 1e9) as u64;
-    }
+    // Keep network hashrate separate from worker hashrate; do not override with worker totals.
 
     stats.workers = worker_stats.into_values().collect();
     stats.activeWorkers = stats.workers.len();

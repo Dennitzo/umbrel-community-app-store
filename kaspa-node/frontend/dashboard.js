@@ -106,7 +106,7 @@ class KaspaDatabaseDashboard {
             const versionValue = kaspadVersion || imageVersion || '—';
             this.elements.kaspadVersion.textContent = versionValue;
         }
-        this.elements.largestTableValue.textContent = image;
+        this.elements.largestTableValue.textContent = this.formatImageName(image);
         if (this.elements.uptimeValue) {
             this.elements.uptimeValue.textContent = this.formatDuration(uptimeSeconds);
         }
@@ -154,6 +154,18 @@ class KaspaDatabaseDashboard {
             return '';
         }
         return tag.startsWith('v') ? tag.slice(1) : tag;
+    }
+
+    formatImageName(image) {
+        if (!image || image === '—' || typeof image !== 'string') {
+            return '—';
+        }
+        const trimmed = image.trim();
+        if (!trimmed) {
+            return '—';
+        }
+        const withoutNamespace = trimmed.includes('/') ? trimmed.split('/').pop() || trimmed : trimmed;
+        return `kaspanet/${withoutNamespace}`;
     }
 
     populateTableStats(stats, container) {

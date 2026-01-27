@@ -104,7 +104,8 @@ class StratumBridgeDashboard {
     this.setText('totalBlocksValue', this.formatNumber(stats?.totalBlocks));
     this.setText('totalSharesValue', this.formatNumber(stats?.totalShares));
     this.setText('activeWorkersValue', this.formatNumber(stats?.activeWorkers));
-    this.setText('networkHashrateValue', this.formatHashrateHs(Number(stats?.networkHashrate || 0)));
+    const networkHashrate = Number(stats?.networkHashrate || 0);
+    this.setText('networkHashrateValue', networkHashrate > 0 ? this.formatHashrateHs(networkHashrate) : '--');
     if (stats?.kaspadVersion) {
       this.setText('kaspadVersionValue', stats.kaspadVersion);
     }
