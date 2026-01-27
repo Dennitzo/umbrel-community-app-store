@@ -114,6 +114,9 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
     isTabActive("transactions") && txFilter === "accepted"
       ? transactions.filter((transaction) => transaction.is_accepted)
       : transactions;
+  const txTimeById = new Map(
+    (transactions || []).map((transaction) => [transaction.transaction_id, transaction.block_time]),
+  );
 
 
   const balance = numeral((data?.balance || 0) / 1_0000_0000).format("0,0.00[000000]");
@@ -326,12 +329,24 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
               <>
                 <PageTable
                   rows={(utxoData?.slice(0, 50) || []).map((utxo) => [
+                    txTimeById.has(utxo.outpoint.transactionId) ? (
+                      <Tooltip
+                        message={dayjs(txTimeById.get(utxo.outpoint.transactionId) as number).format(
+                          "MMM D, YYYY h:mm A",
+                        )}
+                        display={TooltipDisplayMode.Hover}
+                      >
+                        {dayjs(txTimeById.get(utxo.outpoint.transactionId) as number).fromNow()}
+                      </Tooltip>
+                    ) : (
+                      "--"
+                    ),
                     utxo.utxoEntry.blockDaaScore,
                     <KasLink linkType="transaction" to={utxo.outpoint.transactionId} link />,
                     utxo.outpoint.index,
                     numeral(parseFloat(utxo.utxoEntry.amount) / 1_0000_0000).format("0,0.00[000000]") + " KAS",
                   ])}
-                  headers={["Block DAA Score", "Transaction ID", "Index", "Amount"]}
+                  headers={["Timestamp", "Block DAA Score", "Transaction ID", "Index", "Amount"]}
                 />
                 {utxoData?.slice(0, 50).length === 50 && (
                   <div className="me-auto ms-auto">
