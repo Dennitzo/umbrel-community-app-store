@@ -112,7 +112,7 @@ class StratumBridgeDashboard {
 
   async fetchNodeStatus() {
     try {
-      const response = await fetch(`http://host.docker.internal:19112/api/status`, {
+      const response = await fetch(`/api/node-status`, {
         cache: 'no-store',
       });
       if (!response.ok) {
