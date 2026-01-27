@@ -158,13 +158,15 @@ class StratumBridgeDashboard {
   bindCoinbaseTagSuffix() {
     const input = document.getElementById('coinbaseTagSuffixInput');
     const button = document.getElementById('coinbaseTagSuffixSave');
-    const statusEl = document.getElementById('coinbaseTagSuffixStatus');
     if (!input || !button) {
       return;
     }
     button.addEventListener('click', async () => {
       const value = input.value.trim();
-      if (statusEl) statusEl.textContent = 'Saving...';
+      const originalText = button.textContent;
+      button.textContent = 'Saving';
+      button.disabled = true;
+      button.classList.add('opacity-70', 'cursor-not-allowed');
       try {
         const response = await fetch('/api/config', {
           method: 'POST',
@@ -174,9 +176,19 @@ class StratumBridgeDashboard {
         if (!response.ok) {
           throw new Error('Save failed');
         }
-        if (statusEl) statusEl.textContent = 'Saved. Restart bridge to apply.';
+        button.textContent = 'Saved';
+        setTimeout(() => {
+          button.textContent = originalText || 'Save';
+          button.disabled = false;
+          button.classList.remove('opacity-70', 'cursor-not-allowed');
+        }, 2000);
       } catch {
-        if (statusEl) statusEl.textContent = 'Save failed. Try again.';
+        button.textContent = 'Failed';
+        setTimeout(() => {
+          button.textContent = originalText || 'Save';
+          button.disabled = false;
+          button.classList.remove('opacity-70', 'cursor-not-allowed');
+        }, 2000);
       }
     });
   }
