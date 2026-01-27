@@ -621,7 +621,7 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
     // Calculate hashrate for workers using share_diff_counter and start_time
     let current_time = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_secs() as f64;
 
-    let mut total_worker_hashrate_ghs = 0.0;
+    let mut _total_worker_hashrate_ghs = 0.0;
 
     // Calculate hashrate for each worker
     for (key, worker) in worker_stats.iter_mut() {
@@ -632,7 +632,7 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
             // Formula: hashrate = total_hash_value / elapsed (already in GH/s units)
             if elapsed > 0.0 && total_hash_value > 0.0 {
                 worker.hashrate = total_hash_value / elapsed;
-                total_worker_hashrate_ghs += worker.hashrate;
+                _total_worker_hashrate_ghs += worker.hashrate;
             }
         }
     }

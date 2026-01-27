@@ -28,7 +28,7 @@ export function meta() {
 }
 
 export default function Transactions() {
-  const { transactions } = useIncomingBlocks();
+  const { transactions, avgTxRate } = useIncomingBlocks();
   const { data: transactionCount, isLoading: isLoadingTxCount } = useTransactionCount();
   const { data: feeEstimate, isLoading: isLoadingFee } = useFeeEstimate();
   const marketData = useContext(MarketDataContext);
@@ -52,7 +52,7 @@ export default function Transactions() {
       <MainBox>
         <CardContainer title="Transactions">
           <Card title="Total transactions" value={`${numeral(totalTxCount).format("0")} M`} />
-          <Card title="Average TPS (1 hr)" value={`${numeral(txCount).format("0.0")}`} loading={isLoadingTxCount} />
+          <Card title="Average transactions" value={`${numeral(avgTxRate).format("0.0")} TPS`} loading={isLoadingTxCount} />
           <Card
             title="Regular fee"
             value={`${numeral(regularFee).format("0.00000000")} KAS`}

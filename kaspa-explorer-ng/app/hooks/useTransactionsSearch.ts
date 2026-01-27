@@ -7,6 +7,7 @@ export const useTransactionsSearch = (
   fields: string,
   resolve_previous_outpoints: "no" | "light" | "full",
   enabled: boolean = true,
+  refetchInterval?: number,
 ) =>
   useQuery({
     enabled,
@@ -26,6 +27,7 @@ export const useTransactionsSearch = (
       );
       return data as Transaction[];
     },
+    refetchInterval,
   });
 
 export interface PreviousOutpointResolved {

@@ -69,8 +69,8 @@ cd "${ROOT_DIR}/rusty-kaspa"
 git pull
 
 cd "${ROOT_DIR}"
-docker build --no-cache -t dennitzo/kaspa-stratum-bridge:latest -f rusty-kaspa/docker/Dockerfile.stratum-bridge rusty-kaspa
-docker push dennitzo/kaspa-stratum-bridge:latest
+docker build --no-cache -t dennitzo/kaspa-stratum-bridge:v1.1.0-rc.2 -f rusty-kaspa/docker/Dockerfile.stratum-bridge rusty-kaspa
+docker push dennitzo/kaspa-stratum-bridge:v1.1.0-rc.2
 
 docker build -t dennitzo/kaspa-stratum-dashboard:latest -f rusty-kaspa-bridge-dashboard/Dockerfile rusty-kaspa-bridge-dashboard
 docker push dennitzo/kaspa-stratum-dashboard:latest

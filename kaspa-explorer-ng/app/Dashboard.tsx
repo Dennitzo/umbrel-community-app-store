@@ -50,11 +50,17 @@ const Dashboard = () => {
         <span className="mb-7 text-black text-3xl md:text-4xl lg:text-5xl">Kaspa by the numbers</span>
         <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
           <DashboardBox
-            description="Network Hashrate"
+            description="Network hashrate"
             value={hashrateDisplay.value}
             unit={hashrateDisplay.unit}
             icon={<FlashOn className="w-5" />}
             loading={isLoadingHashrate}
+          />
+          <DashboardBox
+            description="Network difficulty"
+            value={numeral(blockDagInfo?.difficulty || 0).format("0,0")}
+            icon={<Dag className="w-5" />}
+            loading={isLoadingBlockDagInfo}
           />
           <DashboardBox
             description="Total blocks"

@@ -1,6 +1,6 @@
 services:
   stratum-bridge:
-    image: dennitzo/kaspa-stratum-bridge:latest
+    image: dennitzo/kaspa-stratum-bridge:v1.1.0-rc.2
     restart: on-failure
     stop_grace_period: 1m
     volumes:

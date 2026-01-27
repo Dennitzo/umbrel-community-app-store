@@ -31,10 +31,39 @@ const KasLink = ({ to, linkType, copy, qr, link, shorten, resolveName, mono }: K
   const [showQr, setShowQr] = useState(false);
   const linkHref = linkTypeToAddress[linkType] + to;
 
-  const handleClick = () => {
-    navigator.clipboard.writeText(to);
-    setClicked(true);
-    setTimeout(() => setClicked(false), 1000);
+  const handleClick = async () => {
+    const markCopied = () => {
+      setClicked(true);
+      setTimeout(() => setClicked(false), 1000);
+    };
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(to);
+        markCopied();
+        return;
+      }
+    } catch {
+      // Fallback to execCommand below.
+    }
+
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = to;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.top = "-1000px";
+      textarea.style.left = "-1000px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const success = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      if (success) {
+        markCopied();
+      }
+    } catch {
+      // No-op; Safari may block clipboard in some contexts.
+    }
   };
 
   if (!to) {

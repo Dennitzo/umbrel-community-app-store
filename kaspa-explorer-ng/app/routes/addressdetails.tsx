@@ -15,6 +15,7 @@ import { useAddressBalance } from "../hooks/useAddressBalance";
 import { useAddressTxCount } from "../hooks/useAddressTxCount";
 import { useAddressUtxos } from "../hooks/useAddressUtxos";
 import { useTransactions } from "../hooks/useTransactions";
+import { useTransactionsSearch } from "../hooks/useTransactionsSearch";
 import FooterHelper from "../layout/FooterHelper";
 import { isValidKaspaAddressSyntax } from "../utils/kaspa";
 import type { Route } from "./+types/addressdetails";
@@ -23,7 +24,7 @@ import localeData from "dayjs/plugin/localeData";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import numeral from "numeral";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router";
 
 dayjs().locale("en");
@@ -69,10 +70,12 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
     setCurrentPage(1); // Reset currentPage state
   }, [loaderData.address]);
 
+  const pageSize = 100;
+
   // fetch transactions with resolve_previous_outpoints set to "light"
   const { data: txData } = useTransactions(
     loaderData.address,
-    10,
+    pageSize,
     currentPage === 1 ? 0 : beforeAfter[0],
     currentPage === 1 ? 0 : beforeAfter[1],
     "",
@@ -95,7 +98,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
       setCurrentPage((currentPage) => currentPage - 1);
     } else if (page === 3) {
       setBeforeAfter([0, 1]);
-      setCurrentPage(Math.ceil(txCount!.total / 10));
+      setCurrentPage(Math.ceil(txCount!.total / pageSize));
     }
   };
 
@@ -114,8 +117,22 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
     isTabActive("transactions") && txFilter === "accepted"
       ? transactions.filter((transaction) => transaction.is_accepted)
       : transactions;
-  const txTimeById = new Map(
-    (transactions || []).map((transaction) => [transaction.transaction_id, transaction.block_time]),
+  const utxoTxIds = useMemo(() => {
+    const ids = new Set<string>();
+    (utxoData?.slice(0, 50) || []).forEach((utxo) => ids.add(utxo.outpoint.transactionId));
+    return Array.from(ids);
+  }, [utxoData]);
+
+  const { data: utxoTxData } = useTransactionsSearch(
+    utxoTxIds,
+    "block_time,transaction_id",
+    "no",
+    isTabActive("utxos") && utxoTxIds.length > 0,
+    60000,
+  );
+  const utxoTxTimeById = useMemo(
+    () => new Map((utxoTxData || []).map((transaction) => [transaction.transaction_id, transaction.block_time])),
+    [utxoTxData],
   );
 
 
@@ -165,10 +182,9 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
           <FieldValue value={!isLoadingUtxoData ? numeral(utxoData!.length).format("0,") : <LoadingSpinner />} />
         </div>
       </div>
-      <div className="mt-3 text-xs uppercase tracking-wide text-gray-400">
+      <div className="my-2 text-center text-xs uppercase tracking-wide text-gray-400">
         Last updated: <span className="text-gray-500">{lastUpdated}</span>
       </div>
-      <div className="h-3" />
 
       <div className="flex w-full flex-col gap-x-18 gap-y-6 rounded-4xl bg-white p-4 text-left text-black sm:p-8">
         <div className="mr-auto flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1">
@@ -281,8 +297,8 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
                         </li>
                       ))}
                     </ul>,
-                    <>
-                      {numeral(
+                    (() => {
+                      const kasAmount =
                         ((transaction.inputs || []).reduce(
                           (acc, input) =>
                             acc -
@@ -296,10 +312,18 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
                               acc + (loaderData.address === output.script_public_key_address ? output.amount : 0),
                             0,
                           )) /
-                          1_0000_0000,
-                      ).format("+0,0.00[000000]")}
-                      <span className="text-gray-500 text-nowrap"> KAS</span>
-                    </>,
+                        1_0000_0000;
+                      const usdValue = kasAmount * (marketData?.price || 0);
+                      return (
+                        <>
+                          <div>
+                            {numeral(kasAmount).format("+0,0.00[000000]")}
+                            <span className="text-gray-500 text-nowrap"> KAS</span>
+                          </div>
+                          <div className="text-xs text-gray-500">{numeral(usdValue).format("$0,0.00[00]")}</div>
+                        </>
+                      );
+                    })(),
                     <span className="text-sm">{transaction.is_accepted ? <Accepted /> : <NotAccepted />}</span>,
                   ])}
                 />
@@ -307,7 +331,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
                   {!isLoadingTxCount && (
                     <PageSelector
                       currentPage={currentPage}
-                      totalPages={Math.ceil(txCount!.total / 10)}
+                      totalPages={Math.ceil(txCount!.total / pageSize)}
                       onPageChange={pageChange}
                     />
                   )}
@@ -329,14 +353,14 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
               <>
                 <PageTable
                   rows={(utxoData?.slice(0, 50) || []).map((utxo) => [
-                    txTimeById.has(utxo.outpoint.transactionId) ? (
+                    utxoTxTimeById.has(utxo.outpoint.transactionId) ? (
                       <Tooltip
-                        message={dayjs(txTimeById.get(utxo.outpoint.transactionId) as number).format(
+                        message={dayjs(utxoTxTimeById.get(utxo.outpoint.transactionId) as number).format(
                           "MMM D, YYYY h:mm A",
                         )}
                         display={TooltipDisplayMode.Hover}
                       >
-                        {dayjs(txTimeById.get(utxo.outpoint.transactionId) as number).fromNow()}
+                        {dayjs(utxoTxTimeById.get(utxo.outpoint.transactionId) as number).fromNow()}
                       </Tooltip>
                     ) : (
                       "--"
