@@ -112,6 +112,11 @@ body {
   background: rgba(6, 182, 212, 0.1);
 }
 
+#blocksTableBody td:first-child,
+#blocksTableBody th:first-child {
+  width: 26%;
+}
+
 .stack-list {
   list-style: none;
   padding: 0;

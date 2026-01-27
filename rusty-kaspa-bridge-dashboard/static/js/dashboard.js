@@ -93,7 +93,7 @@ class StratumBridgeDashboard {
     this.setText('webBindValue', this.formatWebBind(status));
     const kaspadVersion = status?.kaspad_version || status?.kaspadVersion || '—';
     const imageLabel = kaspadVersion && kaspadVersion !== '—'
-      ? `dennitzo/rusty-kaspa-stratum:${kaspadVersion}`
+      ? `kaspanet/rusty-kaspa-stratum:${kaspadVersion}`
       : '—';
     this.setText('bridgeVersionValue', imageLabel);
     this.renderEndpoints(status);
