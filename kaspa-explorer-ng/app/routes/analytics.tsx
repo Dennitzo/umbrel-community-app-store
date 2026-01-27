@@ -10,7 +10,7 @@ import PieChart from "../assets/pie_chart.svg";
 import Reward from "../assets/reward.svg";
 import Swap from "../assets/swap.svg";
 import { MarketDataContext } from "../context/MarketDataProvider";
-import { useBlockDagInfo } from "../hooks/useBlockDagInfo";
+import { useBlockdagInfo } from "../hooks/useBlockDagInfo";
 import { useBlockReward } from "../hooks/useBlockReward";
 import { useCoinSupply } from "../hooks/useCoinSupply";
 import { useFeeEstimate } from "../hooks/useFeeEstimate";
@@ -74,7 +74,7 @@ const formatHashrate = (value: number) => {
 };
 
 export default function Analytics() {
-  const { data: blockDagInfo, isLoading: isLoadingBlockDagInfo } = useBlockDagInfo();
+  const { data: blockDagInfo, isLoading: isLoadingBlockDagInfo } = useBlockdagInfo();
   const { data: coinSupply, isLoading: isLoadingCoinSupply } = useCoinSupply();
   const { data: blockReward, isLoading: isLoadingBlockReward } = useBlockReward();
   const { data: halving, isLoading: isLoadingHalving } = useHalving();
