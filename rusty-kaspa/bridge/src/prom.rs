@@ -578,7 +578,7 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
         }
 
         // Parse network hashrate
-        if name == "ks_estimated_network_hashrate" {
+        if name == "ks_estimated_network_hashrate_gauge" || name == "ks_estimated_network_hashrate" {
             if let Some(metric) = family.get_metric().first() {
                 stats.networkHashrate = metric.get_gauge().get_value() as u64;
             }
