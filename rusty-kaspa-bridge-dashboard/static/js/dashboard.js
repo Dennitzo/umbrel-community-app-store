@@ -9,7 +9,7 @@ class StratumBridgeDashboard {
     this.hideWallets = true;
     this.hideBlockWallets = true;
     this.lastStats = null;
-    this.nodeApiBase = this.resolveApiBase('kaspa-node');
+    this.nodeApiBase = '';
     this.init();
   }
 
@@ -113,12 +113,9 @@ class StratumBridgeDashboard {
   }
 
   async fetchNodeStatus() {
-    if (!this.nodeApiBase) {
-      return null;
-    }
-
     try {
-      const response = await fetch(this.buildApiUrl(this.nodeApiBase, `/api/status?t=${Date.now()}`), {
+      const host = window.location.hostname || 'umbrel.local';
+      const response = await fetch(`http://${host}:19112/api/status?t=${Date.now()}`, {
         cache: 'no-store',
       });
       if (!response.ok) {
@@ -214,7 +211,7 @@ class StratumBridgeDashboard {
     const kaspadVersion = status?.kaspad_version || status?.kaspadVersion || '—';
     let imageLabel = nodeStatus?.image || '';
     if (!imageLabel && kaspadVersion && kaspadVersion !== '—') {
-      imageLabel = `kaspanet/rusty-kaspa-stratum:${kaspadVersion}`;
+      imageLabel = `kaspanet/rusty-kaspa:${kaspadVersion}`;
     }
     imageLabel = imageLabel ? imageLabel.replace(/^dennitzo\//, 'kaspanet/') : '—';
     this.setText('bridgeVersionValue', imageLabel);
