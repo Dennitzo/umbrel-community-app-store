@@ -3,6 +3,7 @@ use prometheus::{register_counter_vec, register_gauge, register_gauge_vec, Count
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
+use std::time::Instant;
 
 /// Worker labels for Prometheus metrics
 const WORKER_LABELS: &[&str] = &["instance", "worker", "miner", "wallet", "ip"];
@@ -46,6 +47,8 @@ static JOB_COUNTER: OnceLock<CounterVec> = OnceLock::new();
 
 /// Balance gauge - wallet balance for connected workers
 static BALANCE_GAUGE: OnceLock<GaugeVec> = OnceLock::new();
+
+static BRIDGE_START_TIME: OnceLock<Instant> = OnceLock::new();
 
 /// Error counter - errors by worker
 static ERROR_BY_WALLET: OnceLock<CounterVec> = OnceLock::new();
@@ -343,6 +346,7 @@ struct StatsResponse {
     totalShares: u64,
     networkHashrate: u64,
     activeWorkers: usize,
+    uptimeSeconds: u64,
     blocks: Vec<BlockInfo>,
     workers: Vec<WorkerInfo>,
 }
@@ -378,6 +382,7 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
         totalShares: 0,
         networkHashrate: 0,
         activeWorkers: 0,
+        uptimeSeconds: BRIDGE_START_TIME.get_or_init(Instant::now).elapsed().as_secs(),
         blocks: Vec::new(),
         workers: Vec::new(),
     };

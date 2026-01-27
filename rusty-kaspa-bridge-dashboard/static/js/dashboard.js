@@ -90,7 +90,6 @@ class StratumBridgeDashboard {
     this.lastStatus = status || null;
     this.setText('kaspadAddressValue', status?.kaspad_address);
     this.setText('kaspadVersionValue', status?.kaspad_version || '—');
-    this.setText('webBindValue', this.formatWebBind(status));
     const kaspadVersion = status?.kaspad_version || status?.kaspadVersion || '—';
     const imageLabel = kaspadVersion && kaspadVersion !== '—'
       ? `kaspanet/rusty-kaspa-stratum:${kaspadVersion}`
@@ -101,6 +100,7 @@ class StratumBridgeDashboard {
 
   renderStats(stats) {
     this.lastStats = stats || null;
+    this.setText('uptimeValue', this.formatUptimeSeconds(stats?.uptimeSeconds));
     this.setText('totalBlocksValue', this.formatNumber(stats?.totalBlocks));
     this.setText('totalSharesValue', this.formatNumber(stats?.totalShares));
     this.setText('activeWorkersValue', this.formatNumber(stats?.activeWorkers));
@@ -508,14 +508,19 @@ class StratumBridgeDashboard {
     el.textContent = value == null || value === '' ? '--' : String(value);
   }
 
-  formatWebBind(status) {
-    const webBind = status?.web_bind || status?.webBind;
-    if (webBind) return webBind;
-    const rawPort = status?.prom_port || status?.health_check_port;
-    if (!rawPort) return '—';
-    const host = 'umbrel.local';
-    const port = this.normalizePort(String(rawPort));
-    return `http://${host}${port}`;
+  formatUptimeSeconds(value) {
+    const totalSeconds = Number(value ?? 0);
+    if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return '--';
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    const parts = [];
+    if (days) parts.push(`${days}d`);
+    if (hours) parts.push(`${hours}h`);
+    if (minutes) parts.push(`${minutes}m`);
+    parts.push(`${seconds}s`);
+    return parts.join(' ');
   }
 
   renderEndpoints(status) {
