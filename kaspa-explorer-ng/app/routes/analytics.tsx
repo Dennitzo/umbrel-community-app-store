@@ -72,6 +72,13 @@ const formatHashrate = (valueTh: number) => {
   return { value: numeral(scaled).format("0,0.[00]"), unit: units[unitIndex] };
 };
 
+const formatUsdSignificant = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumSignificantDigits: 2,
+  }).format(value);
+
 export default function Analytics() {
   const { data: blockDagInfo, isLoading: isLoadingBlockDagInfo } = useBlockdagInfo();
   const { data: coinSupply, isLoading: isLoadingCoinSupply } = useCoinSupply();
@@ -93,9 +100,9 @@ export default function Analytics() {
   const circulatingSupply = (coinSupply?.circulatingSupply || 0) / 1_0000_0000;
   const minedPercent = (circulatingSupply / TOTAL_SUPPLY) * 100;
   const baseFeeRate = Number(feeEstimate?.normalBuckets?.[0]?.feerate ?? NaN);
-  const regularFee = Number.isFinite(baseFeeRate) ? (baseFeeRate * 2036) / 1_0000_0000 : null;
+  const regularFee = Number.isFinite(baseFeeRate) ? (baseFeeRate * 2036) / 1_0000_0000 : NaN;
   const price = Number(marketData?.price ?? NaN);
-  const regularFeeUsd = regularFee != null && Number.isFinite(price) ? regularFee * price : null;
+  const regularFeeUsd = Number.isFinite(regularFee) && Number.isFinite(price) ? regularFee * price : NaN;
   const mempoolSizeValue = Number(mempoolSize) || 0;
   const [mempoolRange, setMempoolRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
   const mempoolPercent =
@@ -248,13 +255,13 @@ export default function Analytics() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Regular fee</span>
               <span className="font-medium">
-                {isLoadingFee || regularFee == null ? "--" : `${numeral(regularFee).format("0.00000000")} KAS`}
+                {isLoadingFee || !Number.isFinite(regularFee) ? "--" : `${numeral(regularFee).format("0.00000000")} KAS`}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Regular fee (USD)</span>
               <span className="font-medium">
-                {isLoadingFee || regularFeeUsd == null ? "--" : numeral(regularFeeUsd).format("$0,0.00")}
+                {isLoadingFee || !Number.isFinite(regularFeeUsd) ? "--" : formatUsdSignificant(regularFeeUsd)}
               </span>
             </div>
           </div>
