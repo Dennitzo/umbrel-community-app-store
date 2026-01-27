@@ -237,9 +237,9 @@ export default function Analytics() {
             <Box className="h-5 w-5 text-gray-400" />
           </div>
           <PageTable
-            className="mt-4 text-black"
+            className="mt-4 text-black table-fixed w-full"
             headers={["Time", "Hash", "BlueScore", "TXs"]}
-            additionalClassNames={{ 1: "overflow-hidden " }}
+            additionalClassNames={{ 0: "w-24 whitespace-nowrap", 1: "overflow-hidden " }}
             rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
             rows={blocks.slice(0, 8).map((block) => [
               dayjs(parseInt(block.timestamp)).format("HH:mm:ss"),
@@ -257,7 +257,7 @@ export default function Analytics() {
           <PageTable
             className="mt-4 text-black table-fixed w-full"
             headers={["Time", "Transaction ID", "Amount"]}
-            additionalClassNames={{ 1: "overflow-hidden ", 2: "whitespace-nowrap w-36" }}
+            additionalClassNames={{ 0: "w-24 whitespace-nowrap", 1: "overflow-hidden ", 2: "whitespace-nowrap w-36" }}
             rowClassName={(index) => (index % 2 === 1 ? "bg-gray-25" : "")}
             rows={transactions.slice(0, 8).map((transaction) => [
               "a moment ago",

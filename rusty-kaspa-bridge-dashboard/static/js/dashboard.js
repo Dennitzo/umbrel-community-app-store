@@ -112,7 +112,7 @@ class StratumBridgeDashboard {
 
   async fetchNodeStatus() {
     try {
-      const response = await fetch(`http://umbrel.local:19112/api/status?t=${Date.now()}`, {
+      const response = await fetch(`http://host.docker.internal:19112/api/status`, {
         cache: 'no-store',
       });
       if (!response.ok) {
