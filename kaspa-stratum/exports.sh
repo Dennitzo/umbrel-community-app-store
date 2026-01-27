@@ -9,6 +9,7 @@ if [ ! -f "${CONFIG_PATH}" ]; then
   cat > "${CONFIG_PATH}" <<CONFIG
 kaspad_address: "${APP_KASPA_STRATUM_KASPAD_ADDRESS}"
 print_stats: true
+coinbase_tag_suffix: "Umbrel"
 
 instances:
   - stratum_port: ":5555"
@@ -17,4 +18,8 @@ instances:
     log_to_file: false
     var_diff: true
 CONFIG
+fi
+
+if ! grep -q '^coinbase_tag_suffix:' "${CONFIG_PATH}"; then
+  echo 'coinbase_tag_suffix: "Umbrel"' >> "${CONFIG_PATH}"
 fi

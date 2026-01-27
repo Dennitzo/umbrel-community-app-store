@@ -17,7 +17,6 @@ class StratumBridgeDashboard {
     this.bindWalletToggle();
     this.bindBlocksWalletToggle();
     this.syncWalletToggles();
-    this.bindCoinbaseTagSuffix();
     this.fetchData();
   }
 
@@ -39,11 +38,10 @@ class StratumBridgeDashboard {
 
   async fetchData() {
     try {
-      const [statusRes, statsRes, nodeStatus, config] = await Promise.all([
+      const [statusRes, statsRes, nodeStatus] = await Promise.all([
         fetch(`/api/status?t=${Date.now()}`, { cache: 'no-store' }),
         fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' }),
         this.fetchNodeStatus(),
-        this.fetchConfig(),
       ]);
 
       if (!statusRes.ok || !statsRes.ok) {
@@ -54,7 +52,6 @@ class StratumBridgeDashboard {
       const stats = await statsRes.json();
 
       this.renderStatus(status, nodeStatus);
-      this.renderConfig(config);
       this.renderStats(stats);
       const connected = status?.kaspad_connected === true;
       this.updateStatus(true, connected);
@@ -126,71 +123,6 @@ class StratumBridgeDashboard {
     } catch {
       return null;
     }
-  }
-
-  async fetchConfig() {
-    try {
-      const response = await fetch(`/api/config?t=${Date.now()}`, { cache: 'no-store' });
-      if (!response.ok) {
-        return null;
-      }
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        return null;
-      }
-      return await response.json();
-    } catch {
-      return null;
-    }
-  }
-
-  renderConfig(config) {
-    const input = document.getElementById('coinbaseTagSuffixInput');
-    if (!config || !input) {
-      return;
-    }
-    const current = typeof config.coinbase_tag_suffix === 'string' ? config.coinbase_tag_suffix : '';
-    if (!input.value) {
-      input.value = current;
-    }
-  }
-
-  bindCoinbaseTagSuffix() {
-    const input = document.getElementById('coinbaseTagSuffixInput');
-    const button = document.getElementById('coinbaseTagSuffixSave');
-    if (!input || !button) {
-      return;
-    }
-    button.addEventListener('click', async () => {
-      const value = input.value.trim();
-      const originalText = button.textContent;
-      button.textContent = 'Saving';
-      button.disabled = true;
-      button.classList.add('opacity-70', 'cursor-not-allowed');
-      try {
-        const response = await fetch('/api/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ coinbase_tag_suffix: value }),
-        });
-        if (!response.ok) {
-          throw new Error('Save failed');
-        }
-        button.textContent = 'Saved';
-        setTimeout(() => {
-          button.textContent = originalText || 'Save';
-          button.disabled = false;
-          button.classList.remove('opacity-70', 'cursor-not-allowed');
-        }, 2000);
-      } catch {
-        button.textContent = 'Failed';
-        setTimeout(() => {
-          button.textContent = originalText || 'Save';
-          button.disabled = false;
-          button.classList.remove('opacity-70', 'cursor-not-allowed');
-        }, 2000);
-      }
-    });
   }
 
   renderStatus(status, nodeStatus) {
