@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
 use std::time::Instant;
-use std::time::Duration;
 
 /// Worker labels for Prometheus metrics
 const WORKER_LABELS: &[&str] = &["instance", "worker", "miner", "wallet", "ip"];
@@ -946,9 +945,11 @@ pub async fn start_prom_server(port: &str, instance_id: &str) -> Result<(), Box<
                     .server_version
                     .clone()
                     .unwrap_or_else(|| "-".to_string());
+                let kaspad_connected = crate::kaspaapi::NODE_STATUS.lock().is_connected;
                 let status = WebStatusResponse {
                     kaspad_address: get_kaspad_address(),
                     kaspad_version,
+                    kaspad_connected,
                     bridge_version: env!("CARGO_PKG_VERSION").to_string(),
                     instances: 1,
                     web_bind: addr_str.clone(),
@@ -995,18 +996,6 @@ pub async fn start_prom_server(port: &str, instance_id: &str) -> Result<(), Box<
                     json_response
                 );
                 stream.write_all(response.as_bytes()).await?;
-            } else if request.starts_with("POST /api/restart") {
-                let json_response = r#"{"success": true, "message": "Restarting bridge..."}"#;
-                let response = format!(
-                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\n\r\n{}",
-                    json_response.len(),
-                    json_response
-                );
-                stream.write_all(response.as_bytes()).await?;
-                tokio::spawn(async {
-                    tokio::time::sleep(Duration::from_millis(200)).await;
-                    std::process::exit(1);
-                });
             } else {
                 let response = "HTTP/1.1 404 Not Found\r\n\r\n";
                 stream.write_all(response.as_bytes()).await?;
@@ -1019,6 +1008,7 @@ pub async fn start_prom_server(port: &str, instance_id: &str) -> Result<(), Box<
 struct WebStatusResponse {
     kaspad_address: String,
     kaspad_version: String,
+    kaspad_connected: bool,
     bridge_version: String,
     instances: usize,
     web_bind: String,

@@ -18,7 +18,6 @@ class StratumBridgeDashboard {
     this.bindBlocksWalletToggle();
     this.syncWalletToggles();
     this.bindCoinbaseTagSuffix();
-    this.bindRestart();
     this.fetchData();
   }
 
@@ -57,12 +56,13 @@ class StratumBridgeDashboard {
       this.renderStatus(status, nodeStatus);
       this.renderConfig(config);
       this.renderStats(stats);
-      this.updateStatus(true, 'Live');
+      const connected = status?.kaspad_connected === true;
+      this.updateStatus(true, connected);
       this.setLastUpdated();
       this.scheduleNext(this.updateInterval);
     } catch (error) {
       console.error(error);
-      this.updateStatus(false, 'Offline');
+      this.updateStatus(false, false);
       this.scheduleNext(this.retryInterval);
     }
   }
@@ -74,21 +74,19 @@ class StratumBridgeDashboard {
     this.pollTimer = setTimeout(() => this.fetchData(), delayMs);
   }
 
-  updateStatus(isOk, label) {
+  updateStatus(bridgeOk, kaspadOk) {
     const badge = document.getElementById('statusBadge');
-    const dot = document.getElementById('statusDot');
-    const statusLabel = document.getElementById('statusLabel');
+    const kaspadBadge = document.getElementById('kaspadBadge');
 
     if (badge) {
-      badge.textContent = isOk ? 'Bridge Online' : 'Bridge Offline';
-      badge.style.borderColor = isOk ? 'rgba(16, 185, 129, 0.6)' : 'rgba(248, 113, 113, 0.6)';
-      badge.style.background = isOk ? 'rgba(16, 185, 129, 0.15)' : 'rgba(248, 113, 113, 0.15)';
+      badge.textContent = bridgeOk ? 'BRIDGE ONLINE' : 'BRIDGE OFFLINE';
+      badge.style.borderColor = bridgeOk ? 'rgba(16, 185, 129, 0.6)' : 'rgba(248, 113, 113, 0.6)';
+      badge.style.background = bridgeOk ? 'rgba(16, 185, 129, 0.15)' : 'rgba(248, 113, 113, 0.15)';
     }
-    if (dot) {
-      dot.className = `w-3 h-3 rounded-full ${isOk ? 'bg-emerald-400' : 'bg-red-400'} ${isOk ? 'animate-pulse' : ''}`;
-    }
-    if (statusLabel) {
-      statusLabel.textContent = label || (isOk ? 'Live' : 'Offline');
+    if (kaspadBadge) {
+      kaspadBadge.textContent = kaspadOk ? 'KASPAD ONLINE' : 'KASPAD OFFLINE';
+      kaspadBadge.style.borderColor = kaspadOk ? 'rgba(16, 185, 129, 0.6)' : 'rgba(248, 113, 113, 0.6)';
+      kaspadBadge.style.background = kaspadOk ? 'rgba(16, 185, 129, 0.15)' : 'rgba(248, 113, 113, 0.15)';
     }
   }
 
@@ -180,26 +178,6 @@ class StratumBridgeDashboard {
         if (statusEl) statusEl.textContent = 'Saved. Restart bridge to apply.';
       } catch {
         if (statusEl) statusEl.textContent = 'Save failed. Try again.';
-      }
-    });
-  }
-
-  bindRestart() {
-    const button = document.getElementById('bridgeRestartButton');
-    const statusEl = document.getElementById('bridgeRestartStatus');
-    if (!button) {
-      return;
-    }
-    button.addEventListener('click', async () => {
-      if (statusEl) statusEl.textContent = 'Restarting...';
-      try {
-        const response = await fetch('/api/restart', { method: 'POST' });
-        if (!response.ok) {
-          throw new Error('Restart failed');
-        }
-        if (statusEl) statusEl.textContent = 'Restart requested. Bridge will come back shortly.';
-      } catch {
-        if (statusEl) statusEl.textContent = 'Restart failed. Try again.';
       }
     });
   }
