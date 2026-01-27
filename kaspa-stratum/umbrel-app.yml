@@ -3,11 +3,11 @@ id: kaspa-stratum
 category: crypto
 name: Kaspa Stratum
 icon: https://raw.githubusercontent.com/Dennitzo/umbrel-community-app-store/master/kaspa_icon.svg
-version: "v0.5.4"
+version: "v0.5.5"
 tagline: Connect miners to your Kaspa node with RK-Stratum
 
 description: >-
-  Kaspa Stratum Bridge aggregates mining workers and shares, providing real-time
+  Rusty Kaspa Stratum Bridge aggregates mining workers and shares, providing real-time
   dashboards and metrics for your local Kaspa node. Use it to coordinate miners,
   monitor hashrate, and verify share health from a single Umbrel-hosted view.
 

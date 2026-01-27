@@ -7,6 +7,7 @@ use std::time::Instant;
 
 /// Worker labels for Prometheus metrics
 const WORKER_LABELS: &[&str] = &["instance", "worker", "miner", "wallet", "ip"];
+const WORKER_ACTIVE_WINDOW_SECS: u64 = 600;
 
 /// Invalid share type labels
 const INVALID_LABELS: &[&str] = &["instance", "worker", "miner", "wallet", "ip", "type"];
@@ -64,6 +65,8 @@ static NETWORK_BLOCK_COUNT: OnceLock<Gauge> = OnceLock::new();
 
 /// Worker start time gauge (Unix timestamp in seconds)
 static WORKER_START_TIME: OnceLock<GaugeVec> = OnceLock::new();
+/// Worker last share time gauge (Unix timestamp in seconds)
+static WORKER_LAST_SHARE_TIME: OnceLock<GaugeVec> = OnceLock::new();
 
 /// Initialize Prometheus metrics
 pub fn init_metrics() {
@@ -137,6 +140,14 @@ pub fn init_metrics() {
     WORKER_START_TIME.get_or_init(|| {
         register_gauge_vec!("ks_worker_start_time", "Unix timestamp (seconds) when worker first connected", WORKER_LABELS).unwrap()
     });
+    WORKER_LAST_SHARE_TIME.get_or_init(|| {
+        register_gauge_vec!(
+            "ks_worker_last_share_time",
+            "Unix timestamp (seconds) when worker last submitted a share",
+            WORKER_LABELS
+        )
+        .unwrap()
+    });
 }
 
 /// Worker context for metrics
@@ -166,8 +177,19 @@ pub fn record_block_not_confirmed_blue(worker: &WorkerContext) {
     }
 }
 
+fn record_last_share(worker: &WorkerContext) {
+    if let Some(gauge) = WORKER_LAST_SHARE_TIME.get() {
+        let now_secs = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as f64;
+        gauge.with_label_values(&worker.labels()).set(now_secs);
+    }
+}
+
 /// Record a valid share found
 pub fn record_share_found(worker: &WorkerContext, share_diff: f64) {
+    record_last_share(worker);
     if let Some(counter) = SHARE_COUNTER.get() {
         counter.with_label_values(&worker.labels()).inc();
     }
@@ -178,6 +200,7 @@ pub fn record_share_found(worker: &WorkerContext, share_diff: f64) {
 
 /// Record a stale share
 pub fn record_stale_share(worker: &WorkerContext) {
+    record_last_share(worker);
     if let Some(counter) = INVALID_COUNTER.get() {
         let mut labels = worker.labels();
         labels.push("stale");
@@ -187,6 +210,7 @@ pub fn record_stale_share(worker: &WorkerContext) {
 
 /// Record a duplicate share
 pub fn record_dupe_share(worker: &WorkerContext) {
+    record_last_share(worker);
     if let Some(counter) = INVALID_COUNTER.get() {
         let mut labels = worker.labels();
         labels.push("duplicate");
@@ -196,6 +220,7 @@ pub fn record_dupe_share(worker: &WorkerContext) {
 
 /// Record an invalid share
 pub fn record_invalid_share(worker: &WorkerContext) {
+    record_last_share(worker);
     if let Some(counter) = INVALID_COUNTER.get() {
         let mut labels = worker.labels();
         labels.push("invalid");
@@ -205,6 +230,7 @@ pub fn record_invalid_share(worker: &WorkerContext) {
 
 /// Record a weak share
 pub fn record_weak_share(worker: &WorkerContext) {
+    record_last_share(worker);
     if let Some(counter) = INVALID_COUNTER.get() {
         let mut labels = worker.labels();
         labels.push("weak");
@@ -337,6 +363,10 @@ pub fn init_worker_counters(worker: &WorkerContext) {
         let start_time = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_secs() as f64;
         gauge.with_label_values(&worker.labels()).set(start_time);
     }
+    if let Some(gauge) = WORKER_LAST_SHARE_TIME.get() {
+        let now_secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_secs() as f64;
+        gauge.with_label_values(&worker.labels()).set(now_secs);
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -390,6 +420,7 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
     let mut worker_stats: HashMap<String, WorkerInfo> = HashMap::new();
     let mut worker_hash_values: HashMap<String, f64> = HashMap::new(); // Store hash values for hashrate calculation
     let mut worker_start_times: HashMap<String, f64> = HashMap::new(); // Store start times for hashrate calculation
+    let mut worker_last_share_times: HashMap<String, f64> = HashMap::new(); // Store last share times for pruning
     let mut block_set: HashSet<String> = HashSet::new();
 
     for family in metric_families {
@@ -616,6 +647,28 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
                 }
             }
         }
+
+        if name == "ks_worker_last_share_time" {
+            for metric in family.get_metric() {
+                let labels = metric.get_label();
+                let mut worker_key = String::new();
+                let mut wallet = String::new();
+
+                for label in labels {
+                    match label.get_name() {
+                        "worker" => worker_key = label.get_value().to_string(),
+                        "wallet" => wallet = label.get_value().to_string(),
+                        _ => {}
+                    }
+                }
+
+                if !worker_key.is_empty() {
+                    let key = format!("{}:{}", worker_key, wallet);
+                    let last_share_secs = metric.get_gauge().get_value();
+                    worker_last_share_times.insert(key.clone(), last_share_secs);
+                }
+            }
+        }
     }
 
     // Calculate hashrate for workers using share_diff_counter and start_time
@@ -638,6 +691,14 @@ async fn get_stats_json(instance_id: &str) -> StatsResponse {
     }
 
     // Keep network hashrate separate from worker hashrate; do not override with worker totals.
+
+    worker_stats.retain(|key, _| {
+        if let Some(last_share) = worker_last_share_times.get(key) {
+            (current_time - *last_share) <= WORKER_ACTIVE_WINDOW_SECS as f64
+        } else {
+            true
+        }
+    });
 
     stats.workers = worker_stats.into_values().collect();
     stats.activeWorkers = stats.workers.len();
