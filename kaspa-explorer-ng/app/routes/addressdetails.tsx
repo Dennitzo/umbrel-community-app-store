@@ -165,6 +165,7 @@ export default function Addressdetails({ loaderData }: Route.ComponentProps) {
       <div className="mt-3 text-xs uppercase tracking-wide text-gray-400">
         Last updated: <span className="text-gray-500">{lastUpdated}</span>
       </div>
+      <div className="h-3" />
 
       <div className="flex w-full flex-col gap-x-18 gap-y-6 rounded-4xl bg-white p-4 text-left text-black sm:p-8">
         <div className="mr-auto flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1">
