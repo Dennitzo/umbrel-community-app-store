@@ -17,6 +17,8 @@ class StratumBridgeDashboard {
     this.bindWalletToggle();
     this.bindBlocksWalletToggle();
     this.syncWalletToggles();
+    this.bindCoinbaseTagSuffix();
+    this.bindRestart();
     this.fetchData();
   }
 
@@ -38,10 +40,11 @@ class StratumBridgeDashboard {
 
   async fetchData() {
     try {
-      const [statusRes, statsRes, nodeStatus] = await Promise.all([
+      const [statusRes, statsRes, nodeStatus, config] = await Promise.all([
         fetch(`/api/status?t=${Date.now()}`, { cache: 'no-store' }),
         fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' }),
         this.fetchNodeStatus(),
+        this.fetchConfig(),
       ]);
 
       if (!statusRes.ok || !statsRes.ok) {
@@ -52,6 +55,7 @@ class StratumBridgeDashboard {
       const stats = await statsRes.json();
 
       this.renderStatus(status, nodeStatus);
+      this.renderConfig(config);
       this.renderStats(stats);
       this.updateStatus(true, 'Live');
       this.setLastUpdated();
@@ -128,6 +132,79 @@ class StratumBridgeDashboard {
     } catch {
       return null;
     }
+  }
+
+  async fetchConfig() {
+    try {
+      const response = await fetch(`/api/config?t=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) {
+        return null;
+      }
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        return null;
+      }
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+
+  renderConfig(config) {
+    const input = document.getElementById('coinbaseTagSuffixInput');
+    if (!config || !input) {
+      return;
+    }
+    const current = typeof config.coinbase_tag_suffix === 'string' ? config.coinbase_tag_suffix : '';
+    if (!input.value) {
+      input.value = current;
+    }
+  }
+
+  bindCoinbaseTagSuffix() {
+    const input = document.getElementById('coinbaseTagSuffixInput');
+    const button = document.getElementById('coinbaseTagSuffixSave');
+    const statusEl = document.getElementById('coinbaseTagSuffixStatus');
+    if (!input || !button) {
+      return;
+    }
+    button.addEventListener('click', async () => {
+      const value = input.value.trim();
+      if (statusEl) statusEl.textContent = 'Saving...';
+      try {
+        const response = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coinbase_tag_suffix: value }),
+        });
+        if (!response.ok) {
+          throw new Error('Save failed');
+        }
+        if (statusEl) statusEl.textContent = 'Saved. Restart bridge to apply.';
+      } catch {
+        if (statusEl) statusEl.textContent = 'Save failed. Try again.';
+      }
+    });
+  }
+
+  bindRestart() {
+    const button = document.getElementById('bridgeRestartButton');
+    const statusEl = document.getElementById('bridgeRestartStatus');
+    if (!button) {
+      return;
+    }
+    button.addEventListener('click', async () => {
+      if (statusEl) statusEl.textContent = 'Restarting...';
+      try {
+        const response = await fetch('/api/restart', { method: 'POST' });
+        if (!response.ok) {
+          throw new Error('Restart failed');
+        }
+        if (statusEl) statusEl.textContent = 'Restart requested. Bridge will come back shortly.';
+      } catch {
+        if (statusEl) statusEl.textContent = 'Restart failed. Try again.';
+      }
+    });
   }
 
   renderStatus(status, nodeStatus) {

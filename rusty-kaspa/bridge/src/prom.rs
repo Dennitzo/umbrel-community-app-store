@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
 use std::time::Instant;
+use std::time::Duration;
 
 /// Worker labels for Prometheus metrics
 const WORKER_LABELS: &[&str] = &["instance", "worker", "miner", "wallet", "ip"];
@@ -766,6 +767,9 @@ async fn get_config_json() -> String {
                 if let Some(clamp) = doc["pow2_clamp"].as_bool() {
                     config.insert("pow2_clamp".to_string(), serde_json::Value::Bool(clamp));
                 }
+                if let Some(suffix) = doc["coinbase_tag_suffix"].as_str() {
+                    config.insert("coinbase_tag_suffix".to_string(), serde_json::Value::String(suffix.to_string()));
+                }
 
                 return serde_json::to_string(&config).unwrap_or_else(|_| "{}".to_string());
             }
@@ -780,6 +784,11 @@ async fn update_config_from_json(json_body: &str) -> Result<(), Box<dyn std::err
 
     let config: serde_json::Value = serde_json::from_str(json_body)?;
     let config_path = "config.yaml";
+    if let Some(suffix_value) = config.get("coinbase_tag_suffix") {
+        let suffix = suffix_value.as_str().unwrap_or("");
+        update_coinbase_tag_suffix_in_file(config_path, suffix)?;
+        return Ok(());
+    }
 
     // Build YAML content directly from JSON values
     let mut out_str = String::new();
@@ -843,6 +852,52 @@ async fn update_config_from_json(json_body: &str) -> Result<(), Box<dyn std::err
     // Write to file
     fs::write(config_path, out_str)?;
 
+    Ok(())
+}
+
+fn update_coinbase_tag_suffix_in_file(
+    config_path: &str,
+    suffix: &str,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    use std::fs;
+
+    let content = fs::read_to_string(config_path).unwrap_or_default();
+    let suffix_escaped = suffix.replace('"', "\\\"");
+    let new_line = format!("coinbase_tag_suffix: \"{}\"", suffix_escaped);
+
+    let mut found = false;
+    let mut lines: Vec<String> = content
+        .lines()
+        .map(|line| {
+            if line.trim_start().starts_with("coinbase_tag_suffix:") {
+                found = true;
+                new_line.clone()
+            } else {
+                line.to_string()
+            }
+        })
+        .collect();
+
+    if !found {
+        let mut out = Vec::with_capacity(lines.len() + 2);
+        let mut inserted = false;
+        for line in lines {
+            if !inserted && line.trim_start().starts_with("instances:") {
+                out.push(new_line.clone());
+                out.push(String::new());
+                inserted = true;
+            }
+            out.push(line);
+        }
+        if !inserted {
+            out.push(String::new());
+            out.push(new_line);
+        }
+        fs::write(config_path, out.join("\n"))?;
+        return Ok(());
+    }
+
+    fs::write(config_path, lines.join("\n"))?;
     Ok(())
 }
 
@@ -940,6 +995,18 @@ pub async fn start_prom_server(port: &str, instance_id: &str) -> Result<(), Box<
                     json_response
                 );
                 stream.write_all(response.as_bytes()).await?;
+            } else if request.starts_with("POST /api/restart") {
+                let json_response = r#"{"success": true, "message": "Restarting bridge..."}"#;
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\n\r\n{}",
+                    json_response.len(),
+                    json_response
+                );
+                stream.write_all(response.as_bytes()).await?;
+                tokio::spawn(async {
+                    tokio::time::sleep(Duration::from_millis(200)).await;
+                    std::process::exit(1);
+                });
             } else {
                 let response = "HTTP/1.1 404 Not Found\r\n\r\n";
                 stream.write_all(response.as_bytes()).await?;

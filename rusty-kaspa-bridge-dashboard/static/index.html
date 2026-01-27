@@ -76,6 +76,37 @@
               <span class="text-zinc-400">Image</span>
               <span id="bridgeVersionValue">--</span>
             </div>
+            <div class="mt-4">
+              <label class="block text-xs uppercase tracking-[0.3em] text-zinc-500">Coinbase tag suffix</label>
+              <div class="mt-2 flex items-center gap-2">
+                <input
+                  id="coinbaseTagSuffixInput"
+                  class="w-full rounded-lg border border-zinc-700 bg-zinc-900/60 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500"
+                  placeholder="e.g. Dennitzo"
+                  type="text"
+                />
+                <button
+                  id="coinbaseTagSuffixSave"
+                  class="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs uppercase tracking-[0.2em] text-zinc-200 hover:bg-zinc-700"
+                  type="button"
+                >
+                  Save
+                </button>
+              </div>
+              <p id="coinbaseTagSuffixStatus" class="mt-2 text-xs text-zinc-500">
+                Applied on bridge restart.
+              </p>
+            </div>
+            <div class="mt-4">
+              <button
+                id="bridgeRestartButton"
+                class="rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-xs uppercase tracking-[0.2em] text-zinc-200 hover:bg-zinc-800"
+                type="button"
+              >
+                Restart Bridge
+              </button>
+              <p id="bridgeRestartStatus" class="mt-2 text-xs text-zinc-500"></p>
+            </div>
           </div>
         </section>
 
