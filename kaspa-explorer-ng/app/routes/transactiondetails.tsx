@@ -58,6 +58,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const [graphMode, setGraphMode] = useState<"minimal" | "detailed">("minimal");
   const flowContainerRef = useRef<HTMLDivElement>(null);
   const [flowHover, setFlowHover] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [flowActiveKey, setFlowActiveKey] = useState<string | null>(null);
 
   if (isLoading) {
     return <LoadingMessage>Fetching transaction details...</LoadingMessage>;
@@ -134,12 +135,23 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
     count === 1 ? (flowTop + flowBottom) / 2 : flowTop + (flowBottom - flowTop) * (index / (count - 1));
   const strokeFor = (amount: number, total: number, min: number, max: number) =>
     total > 0 ? Math.max(min, max * (amount / total)) : min;
-  const handleFlowHover = (event: React.MouseEvent<SVGElement | HTMLDivElement>, text: string) => {
+  const handleFlowHover = (event: React.MouseEvent<SVGElement | HTMLDivElement>, text: string, key: string) => {
     if (!flowContainerRef.current) return;
     const rect = flowContainerRef.current.getBoundingClientRect();
     setFlowHover({ text, x: event.clientX - rect.left + 12, y: event.clientY - rect.top + 12 });
+    setFlowActiveKey(key);
   };
-  const clearFlowHover = () => setFlowHover(null);
+  const clearFlowHover = () => {
+    setFlowHover(null);
+    setFlowActiveKey(null);
+  };
+
+  const flowColors = {
+    input: { base: "#b9e3dd", hover: "#9fd4cc" },
+    output: { base: "#70C7BA", hover: "#5aaea3" },
+    fee: { base: "#F4B860", hover: "#d79a3a" },
+    wall: { base: "#e5e7eb", hover: "#d1d5db" },
+  };
 
   const blockTime = dayjs(transaction?.block_time);
 
@@ -237,20 +249,31 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 1000 ${flowHeight}`} preserveAspectRatio="none">
               <defs>
                 <marker id="arrow-output" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
-                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#70C7BA" />
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="url(#flow-gradient)" />
+                </marker>
+                <marker id="arrow-output-hover" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="url(#flow-gradient-hover)" />
                 </marker>
                 <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#F4B860" />
                 </marker>
+                <linearGradient id="flow-gradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#4FA9A1" />
+                  <stop offset="100%" stopColor="#9FE2D8" />
+                </linearGradient>
+                <linearGradient id="flow-gradient-hover" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#3D8F88" />
+                  <stop offset="100%" stopColor="#86D5CA" />
+                </linearGradient>
               </defs>
               <rect
-                x="482"
-                y={flowTop}
-                width="36"
-                height={flowBottom - flowTop}
-                rx="18"
-                fill="#e5e7eb"
-                onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`)}
+                x="490"
+                y={hubY - 30}
+                width="20"
+                height={60}
+                rx="10"
+                fill={flowActiveKey === "wall" ? flowColors.wall.hover : flowColors.wall.base}
+                onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`, "wall")}
                 onMouseLeave={clearFlowHover}
               />
               {inputGraphItems.map((input, index) => {
@@ -259,44 +282,54 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 const label = input.isOverflow
                   ? `${input.address} • ${displayKAS(input.amount)} KAS`
                   : `Input: ${displayKAS(input.amount)} KAS • ${input.address}`;
+                const key = `in-${index}`;
                 return (
                   <path
                     key={`in-path-${index}`}
                     d={`M 120 ${y} C 260 ${y}, 360 ${y + (hubY - y) * 0.35}, 500 ${y}`}
                     fill="none"
-                    stroke={input.isOverflow ? "#70C7BA" : "#b9e3dd"}
+                    stroke={flowActiveKey === key ? "url(#flow-gradient-hover)" : "url(#flow-gradient)"}
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
-                    onMouseMove={(event) => handleFlowHover(event, label)}
+                    onMouseMove={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
-                  >
-                    <title>{label}</title>
-                  </path>
+                  />
                 );
               })}
               {renderOutputs.map((output, index) => {
                 const y = yFor(index, outputCount);
                 const strokeWidth = strokeFor(output.amount, inputSum, 4, output.isFee ? 12 : 18);
-                const strokeColor = output.isFee ? "#F4B860" : output.isOverflow ? "#70C7BA" : "#70C7BA";
                 const label = output.isFee
                   ? `Fee: ${displayKAS(output.amount)} KAS • ${output.address}`
                   : output.isOverflow
                     ? `${output.address} • ${displayKAS(output.amount)} KAS`
                     : `Output: ${displayKAS(output.amount)} KAS • ${output.address}`;
+                const key = `out-${index}`;
+                const strokeColor = output.isFee
+                  ? flowActiveKey === key
+                    ? flowColors.fee.hover
+                    : flowColors.fee.base
+                  : flowActiveKey === key
+                    ? "url(#flow-gradient-hover)"
+                    : "url(#flow-gradient)";
                 return (
                   <path
                     key={`out-path-${index}`}
-                    d={`M 500 ${y} C 640 ${y + (y - y) * 0.35}, 760 ${y}, 880 ${y}`}
+                    d={`M 500 ${y} C 640 ${y}, 760 ${y}, 880 ${y}`}
                     fill="none"
                     stroke={strokeColor}
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
-                    markerEnd={output.isFee ? "url(#arrow-fee)" : "url(#arrow-output)"}
-                    onMouseMove={(event) => handleFlowHover(event, label)}
+                    markerEnd={
+                      output.isFee
+                        ? "url(#arrow-fee)"
+                        : flowActiveKey === key
+                          ? "url(#arrow-output-hover)"
+                          : "url(#arrow-output)"
+                    }
+                    onMouseMove={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
-                  >
-                    <title>{label}</title>
-                  </path>
+                  />
                 );
               })}
             </svg>
@@ -307,6 +340,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 const label = input.isOverflow
                   ? `${input.address} • ${displayKAS(input.amount)} KAS`
                   : `Input: ${displayKAS(input.amount)} KAS • ${input.address}`;
+                const key = `in-${index}`;
                 return (
                   <div
                     key={`in-node-${index}`}
@@ -318,8 +352,17 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                       display={TooltipDisplayMode.Hover}
                     >
                       <div
-                        className="h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#70C7BA] shadow-sm"
-                        onMouseMove={(event) => handleFlowHover(event, label)}
+                        className="h-2.5 w-2.5 -translate-y-1/2 rounded-full shadow-sm"
+                        style={{
+                          backgroundColor: input.isOverflow
+                            ? flowActiveKey === key
+                              ? flowColors.output.hover
+                              : flowColors.output.base
+                            : flowActiveKey === key
+                              ? flowColors.input.hover
+                              : flowColors.input.base,
+                        }}
+                        onMouseMove={(event) => handleFlowHover(event, label, key)}
                         onMouseLeave={clearFlowHover}
                       />
                     </Tooltip>
@@ -333,6 +376,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   : output.isOverflow
                     ? `${output.address} • ${displayKAS(output.amount)} KAS`
                     : `Output: ${displayKAS(output.amount)} KAS • ${output.address}`;
+                const key = `out-${index}`;
                 return (
                   <div
                     key={`out-node-${index}`}
@@ -344,8 +388,17 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                       display={TooltipDisplayMode.Hover}
                     >
                       <div
-                        className={`h-2.5 w-5 -translate-y-1/2 rounded-full shadow-sm ${output.isFee ? "bg-[#F4B860]" : "bg-[#70C7BA]"}`}
-                        onMouseMove={(event) => handleFlowHover(event, label)}
+                        className="h-2.5 w-5 -translate-y-1/2 rounded-full shadow-sm"
+                        style={{
+                          backgroundColor: output.isFee
+                            ? flowActiveKey === key
+                              ? flowColors.fee.hover
+                              : flowColors.fee.base
+                            : flowActiveKey === key
+                              ? flowColors.output.hover
+                              : flowColors.output.base,
+                        }}
+                        onMouseMove={(event) => handleFlowHover(event, label, key)}
                         onMouseLeave={clearFlowHover}
                       />
                     </Tooltip>
