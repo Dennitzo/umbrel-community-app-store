@@ -21,7 +21,7 @@ import localeData from "dayjs/plugin/localeData";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import numeral from "numeral";
-import { useContext, useRef, useState } from "react";
+import { useContext, useLayoutEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router";
 
 dayjs().locale("en");
@@ -57,8 +57,10 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const marketData = useContext(MarketDataContext);
   const [graphMode, setGraphMode] = useState<"minimal" | "detailed">("minimal");
   const flowContainerRef = useRef<HTMLDivElement>(null);
+  const flowTooltipRef = useRef<HTMLDivElement>(null);
   const [flowHover, setFlowHover] = useState<{ text: string; x: number; y: number } | null>(null);
   const [flowActiveKey, setFlowActiveKey] = useState<string | null>(null);
+  const [flowHoverPos, setFlowHoverPos] = useState<{ x: number; y: number } | null>(null);
 
   if (isLoading) {
     return <LoadingMessage>Fetching transaction details...</LoadingMessage>;
@@ -143,6 +145,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const clearFlowHover = () => {
     setFlowHover(null);
     setFlowActiveKey(null);
+    setFlowHoverPos(null);
   };
 
   const flowColors = {
@@ -151,6 +154,20 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
     fee: { base: "#f7931a", hover: "#ffd9a1" },
     wall: { base: "#e5e7eb", hover: "#f3f4f6" },
   };
+
+  useLayoutEffect(() => {
+    if (!flowHover || !flowContainerRef.current || !flowTooltipRef.current) return;
+    const container = flowContainerRef.current.getBoundingClientRect();
+    const tip = flowTooltipRef.current.getBoundingClientRect();
+    const pad = 8;
+    let x = flowHover.x;
+    let y = flowHover.y;
+    if (x + tip.width + pad > container.width) x = container.width - tip.width - pad;
+    if (y + tip.height + pad > container.height) y = container.height - tip.height - pad;
+    x = Math.max(pad, x);
+    y = Math.max(pad, y);
+    setFlowHoverPos({ x, y });
+  }, [flowHover]);
 
   const blockTime = dayjs(transaction?.block_time);
 
@@ -268,28 +285,22 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   <stop offset="100%" stopColor="#9ff7e5" />
                 </linearGradient>
               </defs>
-              <circle
-                cx="500"
-                cy={hubY}
-                r="16"
-                fill={flowActiveKey === "wall" ? flowColors.wall.hover : flowColors.wall.base}
-                onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`, "wall")}
-                onMouseLeave={clearFlowHover}
-              />
               {renderOutputs.map((output, index) => {
                 const y = yFor(index, outputCount);
-                const strokeWidth = strokeFor(output.amount, inputSum, 4, output.isFee ? 12 : 18);
+                const baseStrokeWidth = strokeFor(output.amount, inputSum, 4, output.isFee ? 12 : 18);
                 const label = output.isFee
                   ? `Fee: ${displayKAS(output.amount)} KAS • ${output.address}`
                   : output.isOverflow
                     ? `${output.address} • ${displayKAS(output.amount)} KAS`
                     : `Output: ${displayKAS(output.amount)} KAS • ${output.address}`;
                 const key = `out-${index}`;
+                const isHover = flowActiveKey === key;
+                const strokeWidth = output.isFee && isHover ? baseStrokeWidth + 2 : baseStrokeWidth;
                 const strokeColor = output.isFee
-                  ? flowActiveKey === key
+                  ? isHover
                     ? flowColors.fee.hover
                     : flowColors.fee.base
-                  : flowActiveKey === key
+                  : isHover
                     ? flowColors.output.hover
                     : "url(#flow-gradient)";
                 return (
@@ -346,21 +357,29 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <div
                     key={`in-node-${index}`}
-                    className="pointer-events-auto absolute"
+                    className="pointer-events-auto absolute flex items-center gap-2 -translate-y-1/2"
                     style={{ left: "6%", top: y }}
+                    onMouseMove={(event) => handleFlowHover(event, label, key)}
+                    onMouseLeave={clearFlowHover}
                   >
+                    <span className="text-xs text-gray-500">Input #{index}</span>
                     <div
-                      className="h-2.5 w-2.5 -translate-y-1/2 rounded-full shadow-sm"
+                      className={`rounded-full shadow-sm ${flowActiveKey === key ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`}
                       style={{
                         backgroundColor: flowActiveKey === key ? flowColors.input.hover : flowColors.output.base,
                       }}
-                      onMouseMove={(event) => handleFlowHover(event, label, key)}
-                      onMouseLeave={clearFlowHover}
                     />
-                    <span className="ml-2 -translate-y-1/2 text-xs text-gray-500">Input #{index}</span>
                   </div>
                 );
               })}
+              <div className="pointer-events-auto absolute" style={{ left: "50%", top: `${(hubY / flowHeight) * 100}%` }}>
+                <div
+                  className="h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm"
+                  style={{ backgroundColor: flowActiveKey === "wall" ? flowColors.wall.hover : flowColors.wall.base }}
+                  onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`, "wall")}
+                  onMouseLeave={clearFlowHover}
+                />
+              </div>
               {renderOutputs.map((output, index) => {
                 const y = yFor(index, outputCount);
                 const label = output.isFee
@@ -372,11 +391,13 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <div
                     key={`out-node-${index}`}
-                    className="pointer-events-auto absolute"
+                    className="pointer-events-auto absolute flex items-center gap-2 -translate-y-1/2"
                     style={{ left: "94%", top: y }}
+                    onMouseMove={(event) => handleFlowHover(event, label, key)}
+                    onMouseLeave={clearFlowHover}
                   >
                     <div
-                      className="h-2.5 w-5 -translate-y-1/2 rounded-full shadow-sm"
+                      className={`rounded-full shadow-sm ${flowActiveKey === key ? "h-3.5 w-6" : "h-2.5 w-5"}`}
                       style={{
                         backgroundColor: output.isFee
                           ? flowActiveKey === key
@@ -386,11 +407,11 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                             ? flowColors.output.hover
                             : flowColors.output.base,
                       }}
-                      onMouseMove={(event) => handleFlowHover(event, label, key)}
-                      onMouseLeave={clearFlowHover}
                     />
-                    <span className="ml-2 -translate-y-1/2 text-xs text-gray-500">
-                      {output.isFee ? "Fee" : `Output #${index}`}
+                    <span className="text-xs text-gray-500">
+                      {output.isFee
+                        ? "Fee"
+                        : `Output #${renderOutputs.slice(0, index).filter((item) => !item.isFee).length}`}
                     </span>
                   </div>
                 );
@@ -398,8 +419,9 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             </div>
             {flowHover && (
               <div
-                className="pointer-events-none absolute z-10 rounded-md bg-black/80 px-2 py-1 text-xs text-white"
-                style={{ left: flowHover.x, top: flowHover.y }}
+                ref={flowTooltipRef}
+                className="pointer-events-none absolute z-10 max-w-xs rounded-md bg-black/80 px-2 py-1 text-xs text-white"
+                style={{ left: (flowHoverPos ?? flowHover).x, top: (flowHoverPos ?? flowHover).y }}
               >
                 {flowHover.text}
               </div>
