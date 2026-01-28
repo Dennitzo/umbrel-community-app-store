@@ -239,13 +239,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
               <Swap className="mr-2 h-8 w-8" />
               <span>Transaction flow</span>
             </div>
-            {!isDetailed && (allInputItems.length > minimalLimit || allOutputItems.length > minimalLimit) && (
-              <div className="text-sm text-gray-500">
-                {allInputItems.length > minimalLimit ? `+${allInputItems.length - minimalLimit} more inputs` : ""}
-                {allInputItems.length > minimalLimit && allOutputItems.length > minimalLimit ? " • " : ""}
-                {allOutputItems.length > minimalLimit ? `+${allOutputItems.length - minimalLimit} more outputs` : ""}
-              </div>
-            )}
             <div className="flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1 text-sm">
               <button
                 type="button"
