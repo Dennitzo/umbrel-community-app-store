@@ -103,9 +103,10 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
     address: input.previous_outpoint_address,
     amount: input.previous_outpoint_amount || 0,
   }));
-  const extraInputCount = Math.max(0, allInputItems.length - 20);
-  const extraInputAmount = allInputItems.slice(20).reduce((sum, input) => sum + input.amount, 0);
-  const inputItems = allInputItems.slice(0, extraInputCount > 0 ? 19 : 20);
+  const minimalLimit = 10;
+  const extraInputCount = Math.max(0, allInputItems.length - minimalLimit);
+  const extraInputAmount = allInputItems.slice(minimalLimit).reduce((sum, input) => sum + input.amount, 0);
+  const inputItems = allInputItems.slice(0, extraInputCount > 0 ? minimalLimit - 1 : minimalLimit);
   const inputItemsWithOverflow =
     extraInputCount > 0
       ? [
@@ -117,9 +118,9 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
     address: output.script_public_key_address,
     amount: output.amount || 0,
   }));
-  const extraOutputCount = Math.max(0, allOutputItems.length - 20);
-  const extraOutputAmount = allOutputItems.slice(20).reduce((sum, output) => sum + output.amount, 0);
-  const outputItems = allOutputItems.slice(0, extraOutputCount > 0 ? 19 : 20);
+  const extraOutputCount = Math.max(0, allOutputItems.length - minimalLimit);
+  const extraOutputAmount = allOutputItems.slice(minimalLimit).reduce((sum, output) => sum + output.amount, 0);
+  const outputItems = allOutputItems.slice(0, extraOutputCount > 0 ? minimalLimit - 1 : minimalLimit);
   const outputItemsWithOverflow =
     extraOutputCount > 0
       ? [
@@ -238,9 +239,11 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
               <Swap className="mr-2 h-8 w-8" />
               <span>Transaction flow</span>
             </div>
-            {!isDetailed && allOutputItems.length > 20 && (
+            {!isDetailed && (allInputItems.length > minimalLimit || allOutputItems.length > minimalLimit) && (
               <div className="text-sm text-gray-500">
-                {`+${allOutputItems.length - 20} more outputs`}
+                {allInputItems.length > minimalLimit ? `+${allInputItems.length - minimalLimit} more inputs` : ""}
+                {allInputItems.length > minimalLimit && allOutputItems.length > minimalLimit ? " • " : ""}
+                {allOutputItems.length > minimalLimit ? `+${allOutputItems.length - minimalLimit} more outputs` : ""}
               </div>
             )}
             <div className="flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1 text-sm">
@@ -300,8 +303,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                     : `Output: ${displayKAS(output.amount)} KAS • ${output.address}`;
                 const key = `out-${index}`;
                 const isHover = flowActiveKey === key;
-                const isDimmed = flowActiveKey !== null && !isHover;
-                const strokeWidth = isHover ? baseStrokeWidth + 2 : baseStrokeWidth;
+                const strokeWidth = output.isFee && isHover ? baseStrokeWidth + 2 : baseStrokeWidth;
                 const strokeColor = output.isFee
                   ? isHover
                     ? flowColors.fee.hover
@@ -317,7 +319,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                     stroke={strokeColor}
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
-                    opacity={isDimmed ? 0.35 : 1}
                     markerEnd={
                       output.isFee
                         ? flowActiveKey === key
@@ -339,7 +340,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   ? `${input.address} • ${displayKAS(input.amount)} KAS`
                   : `Input: ${displayKAS(input.amount)} KAS • ${input.address}`;
                 const key = `in-${index}`;
-                const isDimmed = flowActiveKey !== null && flowActiveKey !== key;
                 const strokeWidth = flowActiveKey === key ? baseStrokeWidth + 2 : baseStrokeWidth;
                 return (
                   <path
@@ -349,7 +349,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                     stroke={flowActiveKey === key ? flowColors.input.hover : "url(#flow-gradient)"}
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
-                    opacity={isDimmed ? 0.35 : 1}
                     onMouseEnter={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
                   />
@@ -372,17 +371,11 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                     onMouseEnter={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
                   >
-                    <span
-                      className={`mr-2 w-16 text-right text-gray-500 ${flowActiveKey === key ? "text-sm" : "text-xs"}`}
-                      style={{ opacity: flowActiveKey !== null && flowActiveKey !== key ? 0.5 : 1 }}
-                    >
-                      Input #{index}
-                    </span>
+                    <span className="mr-2 w-16 text-right text-xs text-gray-500">Input #{index}</span>
                     <div
                       className={`rounded-full shadow-sm ${flowActiveKey === key ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`}
                       style={{
-                        backgroundColor: flowActiveKey === key ? flowColors.input.hover : flowColors.input.base,
-                        opacity: flowActiveKey !== null && flowActiveKey !== key ? 0.5 : 1,
+                        backgroundColor: flowActiveKey === key ? flowColors.input.hover : flowColors.output.base,
                       }}
                     />
                   </div>
@@ -422,13 +415,9 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                           : flowActiveKey === key
                             ? flowColors.output.hover
                             : flowColors.output.base,
-                        opacity: flowActiveKey !== null && flowActiveKey !== key ? 0.5 : 1,
                       }}
                     />
-                    <span
-                      className={`ml-2 w-20 text-left text-gray-500 ${flowActiveKey === key ? "text-sm" : "text-xs"}`}
-                      style={{ opacity: flowActiveKey !== null && flowActiveKey !== key ? 0.5 : 1 }}
-                    >
+                    <span className="ml-2 w-20 text-left text-xs text-gray-500">
                       {output.isFee
                         ? "Fee"
                         : `Output #${renderOutputs.slice(0, index).filter((item) => !item.isFee).length}`}
@@ -440,7 +429,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             {flowHover && (
               <div
                 ref={flowTooltipRef}
-                className="pointer-events-none absolute z-10 max-w-xs break-all rounded-md bg-black/80 px-2 py-1 text-xs text-white"
+                className="pointer-events-none absolute z-10 max-w-xs break-words whitespace-normal rounded-md bg-black/80 px-2 py-1 text-xs text-white"
                 style={{ left: (flowHoverPos ?? flowHover).x, top: (flowHoverPos ?? flowHover).y }}
               >
                 {flowHover.text}
