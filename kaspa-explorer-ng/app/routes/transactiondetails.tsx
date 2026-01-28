@@ -79,6 +79,25 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const feePercent = inputSum > 0 ? (feeAmountAtomic / inputSum) * 100 : 0;
   const outputTooltip = `Outputs: ${displayKAS(transactionSum)} KAS (${numeral(outputPercent).format("0.00")}%)`;
   const feeTooltip = `Fee: ${displayKAS(feeAmountAtomic)} KAS (${numeral(feePercent).format("0.00")}%)`;
+  const inputItems = (transaction.inputs || []).slice(0, 20).map((input) => ({
+    address: input.previous_outpoint_address,
+    amount: input.previous_outpoint_amount || 0,
+  }));
+  const outputItems = (transaction.outputs || []).slice(0, 20).map((output) => ({
+    address: output.script_public_key_address,
+    amount: output.amount || 0,
+  }));
+  const outputNodes = [...outputItems, { address: "Fee", amount: feeAmountAtomic, isFee: true }].filter(
+    (item) => item.amount > 0
+  );
+  const inputCount = inputItems.length || 1;
+  const outputCount = outputNodes.length || 1;
+  const flowTop = 30;
+  const flowBottom = 210;
+  const yFor = (index: number, count: number) =>
+    count === 1 ? (flowTop + flowBottom) / 2 : flowTop + (flowBottom - flowTop) * (index / (count - 1));
+  const strokeFor = (amount: number, total: number, min: number, max: number) =>
+    total > 0 ? Math.max(min, max * (amount / total)) : min;
 
   const blockTime = dayjs(transaction?.block_time);
 
@@ -149,7 +168,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             <span>Transaction flow</span>
           </div>
 
-          <div className="relative mt-6">
+          <div className="relative mt-6 h-72 w-full">
             <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1000 240" preserveAspectRatio="none">
               <defs>
                 <marker id="arrow-primary" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
@@ -159,90 +178,78 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#F4B860" />
                 </marker>
               </defs>
-              <path d="M 220 120 C 340 120, 420 120, 500 120" fill="none" stroke="#e2e8f0" strokeWidth="12" strokeLinecap="round" />
-              <path d="M 500 120 C 620 80, 700 70, 820 60" fill="none" stroke="#cfeeea" strokeWidth="16" strokeLinecap="round" />
-              <path d="M 500 120 C 620 80, 700 70, 820 60" fill="none" stroke="#a8ddd6" strokeWidth="12" strokeLinecap="round" />
-              <path
-                d="M 500 120 C 620 80, 700 70, 820 60"
-                fill="none"
-                stroke="#70C7BA"
-                strokeWidth={Math.max(5, 20 * (outputPercent / 100))}
-                strokeLinecap="round"
-                markerEnd="url(#arrow-primary)"
-              >
-                <title>{outputTooltip}</title>
-              </path>
-              <path d="M 500 120 C 620 160, 700 170, 820 180" fill="none" stroke="#fde5c5" strokeWidth="12" strokeLinecap="round" />
-              <path d="M 500 120 C 620 160, 700 170, 820 180" fill="none" stroke="#f8d299" strokeWidth="9" strokeLinecap="round" />
-              <path
-                d="M 500 120 C 620 160, 700 170, 820 180"
-                fill="none"
-                stroke="#F4B860"
-                strokeWidth={Math.max(4, 14 * (feePercent / 100))}
-                strokeLinecap="round"
-                markerEnd="url(#arrow-fee)"
-              >
-                <title>{feeTooltip}</title>
-              </path>
+              {inputItems.map((input, index) => {
+                const y = yFor(index, inputCount);
+                const strokeWidth = strokeFor(input.amount, inputSum, 2, 10);
+                return (
+                  <path
+                    key={`in-path-${index}`}
+                    d={`M 120 ${y} C 260 ${y}, 360 120, 500 120`}
+                    fill="none"
+                    stroke="#b9e3dd"
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    markerEnd="url(#arrow-primary)"
+                  >
+                    <title>{`Input: ${displayKAS(input.amount)} KAS • ${input.address}`}</title>
+                  </path>
+                );
+              })}
+              {outputNodes.map((output, index) => {
+                const y = yFor(index, outputCount);
+                const strokeWidth = strokeFor(output.amount, inputSum, 2, output.isFee ? 8 : 12);
+                const strokeColor = output.isFee ? "#F4B860" : "#70C7BA";
+                const marker = output.isFee ? "url(#arrow-fee)" : "url(#arrow-primary)";
+                return (
+                  <path
+                    key={`out-path-${index}`}
+                    d={`M 500 120 C 640 ${y}, 740 ${y}, 880 ${y}`}
+                    fill="none"
+                    stroke={strokeColor}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    markerEnd={marker}
+                  >
+                    <title>{`${output.isFee ? "Fee" : "Output"}: ${displayKAS(output.amount)} KAS • ${output.address}`}</title>
+                  </path>
+                );
+              })}
             </svg>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,1fr)]">
-              <div className="rounded-2xl bg-gray-50 p-4">
-                <div className="text-sm text-gray-500">Inputs</div>
-                <div className="mt-3 flex max-h-56 flex-col gap-2 overflow-auto text-sm">
-                  {(transaction.inputs || []).map((input, index) => (
+            <div className="absolute left-0 top-0 h-full w-full">
+              {inputItems.map((input, index) => {
+                const y = yFor(index, inputCount);
+                return (
+                  <div key={`in-node-${index}`} className="absolute" style={{ left: "6%", top: `${(y / 240) * 100}%` }}>
                     <Tooltip
-                      key={`${input.previous_outpoint_hash}-${input.previous_outpoint_index}-${index}`}
-                      message={`Input: ${displayKAS(input.previous_outpoint_amount)} KAS`}
+                      message={`Input: ${displayKAS(input.amount)} KAS • ${input.address}`}
                       display={TooltipDisplayMode.Hover}
                     >
-                      <div className="rounded-full bg-white px-3 py-1 text-gray-600 shadow-sm">
-                        <KasLink linkType="address" to={input.previous_outpoint_address} shorten />
-                      </div>
+                      <div className="h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#70C7BA] shadow-sm" />
                     </Tooltip>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center justify-center rounded-2xl bg-gray-50 p-4 text-center">
+                  </div>
+                );
+              })}
+              <div className="absolute" style={{ left: "50%", top: "50%" }}>
                 <Tooltip message={`Total input: ${displayKAS(inputSum)} KAS`} display={TooltipDisplayMode.Hover}>
-                  <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm">
-                    Total
-                  </div>
+                  <div className="h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 shadow-sm" />
                 </Tooltip>
-                <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                  <div className="flex h-full w-full">
-                    <Tooltip message={outputTooltip} display={TooltipDisplayMode.Hover}>
-                      <div className="h-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, outputPercent))}%` }} />
-                    </Tooltip>
-                    <Tooltip message={feeTooltip} display={TooltipDisplayMode.Hover}>
-                      <div className="h-full bg-amber-400" style={{ width: `${Math.max(0, Math.min(100, feePercent))}%` }} />
-                    </Tooltip>
-                  </div>
-                </div>
               </div>
-
-              <div className="rounded-2xl bg-gray-50 p-4">
-                <div className="text-sm text-gray-500">Outputs</div>
-                <div className="mt-3 flex max-h-56 flex-col gap-2 overflow-auto text-sm">
-                  {(transaction.outputs || []).map((output, index) => (
+              {outputNodes.map((output, index) => {
+                const y = yFor(index, outputCount);
+                return (
+                  <div key={`out-node-${index}`} className="absolute" style={{ left: "94%", top: `${(y / 240) * 100}%` }}>
                     <Tooltip
-                      key={`${output.script_public_key_address}-${output.index ?? index}`}
-                      message={`Output: ${displayKAS(output.amount)} KAS`}
+                      message={`${output.isFee ? "Fee" : "Output"}: ${displayKAS(output.amount)} KAS • ${output.address}`}
                       display={TooltipDisplayMode.Hover}
                     >
-                      <div className="rounded-full bg-white px-3 py-1 text-gray-600 shadow-sm">
-                        <KasLink linkType="address" to={output.script_public_key_address} shorten />
-                      </div>
+                      <div
+                        className={`h-2.5 w-5 -translate-y-1/2 rounded-full shadow-sm ${output.isFee ? "bg-[#F4B860]" : "bg-[#70C7BA]"}`}
+                      />
                     </Tooltip>
-                  ))}
-                  <Tooltip message={`Fee: ${displayKAS(feeAmountAtomic)} KAS`} display={TooltipDisplayMode.Hover}>
-                    <div className="rounded-full bg-amber-50 px-3 py-1 text-gray-600 shadow-sm">
-                      Fee
-                    </div>
-                  </Tooltip>
-                </div>
-              </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
