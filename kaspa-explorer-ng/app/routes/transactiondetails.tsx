@@ -128,6 +128,8 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const flowHeight = Math.max(300, (maxFlowCount - 1) * minDotSpacing + flowPadding);
   const flowTop = 30;
   const flowBottom = flowHeight - 30;
+  const hubY = flowTop + (flowBottom - flowTop) * 0.45;
+  const renderOutputs = [...outputGraphItems].sort((a, b) => (a.isFee ? -1 : 1) - (b.isFee ? -1 : 1));
   const yFor = (index: number, count: number) =>
     count === 1 ? (flowTop + flowBottom) / 2 : flowTop + (flowBottom - flowTop) * (index / (count - 1));
   const strokeFor = (amount: number, total: number, min: number, max: number) =>
@@ -234,13 +236,16 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
           <div ref={flowContainerRef} className="relative mt-6 w-full" style={{ height: `${flowHeight}px` }}>
             <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 1000 ${flowHeight}`} preserveAspectRatio="none">
               <defs>
-                <marker id="arrow" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
-                  <path d="M 0 0 L 12 6 L 0 12 z" fill="context-stroke" />
+                <marker id="arrow-output" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#70C7BA" />
+                </marker>
+                <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#F4B860" />
                 </marker>
               </defs>
               <rect
                 x="470"
-                y="108"
+                y={hubY - 12}
                 width="60"
                 height="24"
                 rx="12"
@@ -257,7 +262,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <path
                     key={`in-path-${index}`}
-                    d={`M 120 ${y} C 260 ${y}, 360 120, 500 120`}
+                    d={`M 120 ${y} C 260 ${y}, 360 ${y + (hubY - y) * 0.35}, 500 ${hubY}`}
                     fill="none"
                     stroke={input.isOverflow ? "#70C7BA" : "#b9e3dd"}
                     strokeWidth={strokeWidth}
@@ -269,7 +274,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   </path>
                 );
               })}
-              {outputGraphItems.map((output, index) => {
+              {renderOutputs.map((output, index) => {
                 const y = yFor(index, outputCount);
                 const strokeWidth = strokeFor(output.amount, inputSum, 4, output.isFee ? 12 : 18);
                 const strokeColor = output.isFee ? "#F4B860" : output.isOverflow ? "#70C7BA" : "#70C7BA";
@@ -281,12 +286,12 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <path
                     key={`out-path-${index}`}
-                    d={`M 500 120 C 640 ${y}, 740 ${y}, 880 ${y}`}
+                    d={`M 500 ${hubY} C 640 ${hubY + (y - hubY) * 0.35}, 760 ${y}, 880 ${y}`}
                     fill="none"
                     stroke={strokeColor}
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
-                    markerEnd="url(#arrow)"
+                    markerEnd={output.isFee ? "url(#arrow-fee)" : "url(#arrow-output)"}
                     onMouseMove={(event) => handleFlowHover(event, label)}
                     onMouseLeave={clearFlowHover}
                   >
@@ -296,7 +301,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
               })}
             </svg>
 
-            <div className="absolute left-0 top-0 h-full w-full">
+            <div className="pointer-events-none absolute left-0 top-0 h-full w-full">
               {inputGraphItems.map((input, index) => {
                 const y = yFor(index, inputCount);
                 const label = input.isOverflow
@@ -305,8 +310,8 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <div
                     key={`in-node-${index}`}
-                    className="absolute"
-                    style={{ left: "6%", top: `${(y / flowHeight) * 100}%` }}
+                    className="pointer-events-auto absolute"
+                    style={{ left: "10%", top: `${(y / flowHeight) * 100}%` }}
                   >
                     <Tooltip
                       message={label}
@@ -321,7 +326,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   </div>
                 );
               })}
-              <div className="absolute" style={{ left: "50%", top: "50%" }}>
+              <div className="pointer-events-auto absolute" style={{ left: "50%", top: `${(hubY / flowHeight) * 100}%` }}>
                 <Tooltip message={`Total input: ${displayKAS(inputSum)} KAS`} display={TooltipDisplayMode.Hover}>
                   <div
                     className="h-3 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 shadow-sm"
@@ -340,8 +345,8 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <div
                     key={`out-node-${index}`}
-                    className="absolute"
-                    style={{ left: "94%", top: `${(y / flowHeight) * 100}%` }}
+                    className="pointer-events-auto absolute"
+                    style={{ left: "90%", top: `${(y / flowHeight) * 100}%` }}
                   >
                     <Tooltip
                       message={label}
