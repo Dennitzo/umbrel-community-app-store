@@ -198,10 +198,10 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
           <div className="relative mt-6 h-72 w-full">
             <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1000 240" preserveAspectRatio="none">
               <defs>
-                <marker id="arrow-primary" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="6" markerHeight="6" orient="auto">
+                <marker id="arrow-primary" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#70C7BA" />
                 </marker>
-                <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="6" markerHeight="6" orient="auto">
+                <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#F4B860" />
                 </marker>
               </defs>
@@ -219,7 +219,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                     stroke="#b9e3dd"
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
-                    markerEnd="url(#arrow-primary)"
                   >
                     <title>{`Input: ${displayKAS(input.amount)} KAS • ${input.address}`}</title>
                   </path>
