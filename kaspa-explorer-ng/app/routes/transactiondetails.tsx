@@ -62,6 +62,20 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const [flowActiveKey, setFlowActiveKey] = useState<string | null>(null);
   const [flowHoverPos, setFlowHoverPos] = useState<{ x: number; y: number } | null>(null);
 
+  useLayoutEffect(() => {
+    if (!flowHover || !flowContainerRef.current || !flowTooltipRef.current) return;
+    const container = flowContainerRef.current.getBoundingClientRect();
+    const tip = flowTooltipRef.current.getBoundingClientRect();
+    const pad = 8;
+    let x = flowHover.x;
+    let y = flowHover.y;
+    if (x + tip.width + pad > container.width) x = container.width - tip.width - pad;
+    if (y + tip.height + pad > container.height) y = container.height - tip.height - pad;
+    x = Math.max(pad, x);
+    y = Math.max(pad, y);
+    setFlowHoverPos({ x, y });
+  }, [flowHover]);
+
   if (isLoading) {
     return <LoadingMessage>Fetching transaction details...</LoadingMessage>;
   }
@@ -154,20 +168,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
     fee: { base: "#f7931a", hover: "#ffd9a1" },
     wall: { base: "#e5e7eb", hover: "#f3f4f6" },
   };
-
-  useLayoutEffect(() => {
-    if (!flowHover || !flowContainerRef.current || !flowTooltipRef.current) return;
-    const container = flowContainerRef.current.getBoundingClientRect();
-    const tip = flowTooltipRef.current.getBoundingClientRect();
-    const pad = 8;
-    let x = flowHover.x;
-    let y = flowHover.y;
-    if (x + tip.width + pad > container.width) x = container.width - tip.width - pad;
-    if (y + tip.height + pad > container.height) y = container.height - tip.height - pad;
-    x = Math.max(pad, x);
-    y = Math.max(pad, y);
-    setFlowHoverPos({ x, y });
-  }, [flowHover]);
 
   const blockTime = dayjs(transaction?.block_time);
 
