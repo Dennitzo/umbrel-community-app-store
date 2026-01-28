@@ -21,7 +21,7 @@ import localeData from "dayjs/plugin/localeData";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import numeral from "numeral";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { NavLink, useLocation } from "react-router";
 
 dayjs().locale("en");
@@ -90,8 +90,17 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const outputNodes = [...outputItems, { address: "Fee", amount: feeAmountAtomic, isFee: true }].filter(
     (item) => item.amount > 0
   );
-  const inputCount = inputItems.length || 1;
-  const outputCount = outputNodes.length || 1;
+  const [graphMode, setGraphMode] = useState<"minimal" | "detailed">("minimal");
+  const isDetailed = graphMode === "detailed";
+  const inputGraphItems = isDetailed ? inputItems : [{ address: "Inputs", amount: inputSum }];
+  const outputGraphItems = isDetailed
+    ? outputNodes
+    : [
+        { address: "Outputs", amount: transactionSum },
+        { address: "Fee", amount: feeAmountAtomic, isFee: true },
+      ].filter((item) => item.amount > 0);
+  const inputCount = inputGraphItems.length || 1;
+  const outputCount = outputGraphItems.length || 1;
   const flowTop = 30;
   const flowBottom = 210;
   const yFor = (index: number, count: number) =>
@@ -163,24 +172,45 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
 
       {inputSum > 0 && (
         <div className="flex w-full flex-col rounded-4xl bg-white p-4 text-left text-black sm:p-8">
-          <div className="flex flex-row items-center text-2xl sm:col-span-2">
-            <Swap className="mr-2 h-8 w-8" />
-            <span>Transaction flow</span>
+          <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center text-2xl">
+              <Swap className="mr-2 h-8 w-8" />
+              <span>Transaction flow</span>
+            </div>
+            <div className="flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1 text-sm">
+              <button
+                type="button"
+                onClick={() => setGraphMode("minimal")}
+                className={`rounded-full px-4 py-1.5 hover:cursor-pointer hover:bg-white ${graphMode === "minimal" ? "bg-white" : ""}`}
+              >
+                Minimal graph
+              </button>
+              <button
+                type="button"
+                onClick={() => setGraphMode("detailed")}
+                className={`rounded-full px-4 py-1.5 hover:cursor-pointer hover:bg-white ${graphMode === "detailed" ? "bg-white" : ""}`}
+              >
+                Detailed graph
+              </button>
+            </div>
           </div>
 
           <div className="relative mt-6 h-72 w-full">
             <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1000 240" preserveAspectRatio="none">
               <defs>
-                <marker id="arrow-primary" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+                <marker id="arrow-primary" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="6" markerHeight="6" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#70C7BA" />
                 </marker>
-                <marker id="arrow-fee" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+                <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="6" markerHeight="6" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#F4B860" />
                 </marker>
               </defs>
-              {inputItems.map((input, index) => {
+              <rect x="470" y="108" width="60" height="24" rx="12" fill="#e5e7eb">
+                <title>{`Total input: ${displayKAS(inputSum)} KAS`}</title>
+              </rect>
+              {inputGraphItems.map((input, index) => {
                 const y = yFor(index, inputCount);
-                const strokeWidth = strokeFor(input.amount, inputSum, 2, 10);
+                const strokeWidth = strokeFor(input.amount, inputSum, 4, 16);
                 return (
                   <path
                     key={`in-path-${index}`}
@@ -195,9 +225,9 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   </path>
                 );
               })}
-              {outputNodes.map((output, index) => {
+              {outputGraphItems.map((output, index) => {
                 const y = yFor(index, outputCount);
-                const strokeWidth = strokeFor(output.amount, inputSum, 2, output.isFee ? 8 : 12);
+                const strokeWidth = strokeFor(output.amount, inputSum, 4, output.isFee ? 12 : 18);
                 const strokeColor = output.isFee ? "#F4B860" : "#70C7BA";
                 const marker = output.isFee ? "url(#arrow-fee)" : "url(#arrow-primary)";
                 return (
@@ -217,7 +247,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             </svg>
 
             <div className="absolute left-0 top-0 h-full w-full">
-              {inputItems.map((input, index) => {
+              {inputGraphItems.map((input, index) => {
                 const y = yFor(index, inputCount);
                 return (
                   <div key={`in-node-${index}`} className="absolute" style={{ left: "6%", top: `${(y / 240) * 100}%` }}>
@@ -232,10 +262,10 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
               })}
               <div className="absolute" style={{ left: "50%", top: "50%" }}>
                 <Tooltip message={`Total input: ${displayKAS(inputSum)} KAS`} display={TooltipDisplayMode.Hover}>
-                  <div className="h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 shadow-sm" />
+                  <div className="h-3 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 shadow-sm" />
                 </Tooltip>
               </div>
-              {outputNodes.map((output, index) => {
+              {outputGraphItems.map((output, index) => {
                 const y = yFor(index, outputCount);
                 return (
                   <div key={`out-node-${index}`} className="absolute" style={{ left: "94%", top: `${(y / 240) * 100}%` }}>
