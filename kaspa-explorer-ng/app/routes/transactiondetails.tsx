@@ -164,9 +164,9 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
 
   const flowColors = {
     input: { base: "#b9e3dd", hover: "#c7f2ea" },
-    output: { base: "#70C7BA", hover: "#b9f1e6" },
-    fee: { base: "#f7931a", hover: "#ffd9a1" },
-    wall: { base: "#e5e7eb", hover: "#f3f4f6" },
+    output: { base: "#70C7BA", hover: "#c7f2ea" },
+    fee: { base: "#f7931a", hover: "#ffd08a" },
+    wall: { base: "#e5e7eb", hover: "#c7f2ea" },
   };
 
   const blockTime = dayjs(transaction?.block_time);
@@ -261,28 +261,33 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             </div>
           </div>
 
-          <div ref={flowContainerRef} className="relative mt-6 w-full" style={{ height: `${flowHeight}px` }}>
+          <div
+            ref={flowContainerRef}
+            className="relative mt-6 w-full"
+            style={{ height: `${flowHeight}px` }}
+            onMouseLeave={clearFlowHover}
+          >
             <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 1000 ${flowHeight}`} preserveAspectRatio="none">
               <defs>
                 <marker id="arrow-output" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="url(#flow-gradient)" />
                 </marker>
                 <marker id="arrow-output-hover" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
-                  <path d="M 0 0 L 12 6 L 0 12 z" fill="url(#flow-gradient-hover)" />
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#c7f2ea" />
                 </marker>
                 <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#f7931a" />
                 </marker>
                 <marker id="arrow-fee-hover" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
-                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#ffd9a1" />
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#ffd08a" />
                 </marker>
                 <linearGradient id="flow-gradient" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#70C7BA" />
                   <stop offset="100%" stopColor="#49EACB" />
                 </linearGradient>
                 <linearGradient id="flow-gradient-hover" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#b9f1e6" />
-                  <stop offset="100%" stopColor="#9ff7e5" />
+                  <stop offset="0%" stopColor="#c7f2ea" />
+                  <stop offset="100%" stopColor="#c7f2ea" />
                 </linearGradient>
               </defs>
               {renderOutputs.map((output, index) => {
@@ -320,18 +325,19 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                           ? "url(#arrow-output-hover)"
                           : "url(#arrow-output)"
                     }
-                    onMouseMove={(event) => handleFlowHover(event, label, key)}
+                    onMouseEnter={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
                   />
                 );
               })}
               {inputGraphItems.map((input, index) => {
                 const y = yFor(index, inputCount);
-                const strokeWidth = strokeFor(input.amount, inputSum, 4, 16);
+                const baseStrokeWidth = strokeFor(input.amount, inputSum, 4, 16);
                 const label = input.isOverflow
                   ? `${input.address} • ${displayKAS(input.amount)} KAS`
                   : `Input: ${displayKAS(input.amount)} KAS • ${input.address}`;
                 const key = `in-${index}`;
+                const strokeWidth = flowActiveKey === key ? baseStrokeWidth + 2 : baseStrokeWidth;
                 return (
                   <path
                     key={`in-path-${index}`}
@@ -340,7 +346,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                     stroke={flowActiveKey === key ? flowColors.input.hover : "url(#flow-gradient)"}
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
-                    onMouseMove={(event) => handleFlowHover(event, label, key)}
+                    onMouseEnter={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
                   />
                 );
@@ -357,12 +363,12 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <div
                     key={`in-node-${index}`}
-                    className="pointer-events-auto absolute flex items-center gap-2 -translate-y-1/2"
+                    className="pointer-events-auto absolute flex items-center -translate-y-1/2"
                     style={{ left: "6%", top: y }}
-                    onMouseMove={(event) => handleFlowHover(event, label, key)}
+                    onMouseEnter={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
                   >
-                    <span className="text-xs text-gray-500">Input #{index}</span>
+                    <span className="mr-2 w-16 text-right text-xs text-gray-500">Input #{index}</span>
                     <div
                       className={`rounded-full shadow-sm ${flowActiveKey === key ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`}
                       style={{
@@ -376,7 +382,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 <div
                   className="h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm"
                   style={{ backgroundColor: flowActiveKey === "wall" ? flowColors.wall.hover : flowColors.wall.base }}
-                  onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`, "wall")}
+                  onMouseEnter={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`, "wall")}
                   onMouseLeave={clearFlowHover}
                 />
               </div>
@@ -391,9 +397,9 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <div
                     key={`out-node-${index}`}
-                    className="pointer-events-auto absolute flex items-center gap-2 -translate-y-1/2"
+                    className="pointer-events-auto absolute flex items-center -translate-y-1/2"
                     style={{ left: "94%", top: y }}
-                    onMouseMove={(event) => handleFlowHover(event, label, key)}
+                    onMouseEnter={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
                   >
                     <div
@@ -408,7 +414,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                             : flowColors.output.base,
                       }}
                     />
-                    <span className="text-xs text-gray-500">
+                    <span className="ml-2 w-20 text-left text-xs text-gray-500">
                       {output.isFee
                         ? "Fee"
                         : `Output #${renderOutputs.slice(0, index).filter((item) => !item.isFee).length}`}
