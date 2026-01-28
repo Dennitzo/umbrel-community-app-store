@@ -74,6 +74,11 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const displayKAS = (x: number) => numeral((x || 0) / 1_0000_0000).format("0,0.00[000000]");
   const displaySum = displayKAS(transactionSum);
   const inputSum = transaction?.inputs?.reduce((sum, input) => sum + input.previous_outpoint_amount, 0) || 0;
+  const feeAmountAtomic = Math.max(0, inputSum - transactionSum);
+  const outputPercent = inputSum > 0 ? (transactionSum / inputSum) * 100 : 0;
+  const feePercent = inputSum > 0 ? (feeAmountAtomic / inputSum) * 100 : 0;
+  const outputTooltip = `Outputs: ${displayKAS(transactionSum)} KAS (${numeral(outputPercent).format("0.00")}%)`;
+  const feeTooltip = `Fee: ${displayKAS(feeAmountAtomic)} KAS (${numeral(feePercent).format("0.00")}%)`;
 
   const blockTime = dayjs(transaction?.block_time);
 
@@ -96,6 +101,43 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
         <span className="ml-1 text-gray-500">
           {numeral(((transactionSum || 0) / 1_0000_0000) * (marketData?.price || 0)).format("$0,0.00")}
         </span>
+        {inputSum > 0 && (
+          <div className="mt-4 w-full rounded-2xl bg-gray-50 p-4">
+            <div className="mb-2 text-sm text-gray-500">Flow</div>
+            <div className="grid grid-cols-1 items-center gap-3 lg:grid-cols-[auto_1fr_auto]">
+              <div className="text-sm">
+                <div className="text-gray-500">Input total</div>
+                <div className="font-semibold text-black">{displayKAS(inputSum)} KAS</div>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+                <div className="flex h-full w-full">
+                  <div className="h-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, outputPercent))}%` }} />
+                  <div className="h-full bg-amber-400" style={{ width: `${Math.max(0, Math.min(100, feePercent))}%` }} />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 text-sm">
+                <div className="flex items-center gap-2">
+                  <Tooltip message={outputTooltip} display={TooltipDisplayMode.Hover}>
+                    <span className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-primary" />
+                      <span className="text-gray-500">Outputs</span>
+                      <span className="font-semibold text-black">{displayKAS(transactionSum)} KAS</span>
+                    </span>
+                  </Tooltip>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Tooltip message={feeTooltip} display={TooltipDisplayMode.Hover}>
+                    <span className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-amber-400" />
+                      <span className="text-gray-500">Fee</span>
+                      <span className="font-semibold text-black">{displayKAS(feeAmountAtomic)} KAS</span>
+                    </span>
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/*horizontal rule*/}
         <div className={`my-4 h-[1px] bg-gray-100 sm:col-span-2`} />
 
