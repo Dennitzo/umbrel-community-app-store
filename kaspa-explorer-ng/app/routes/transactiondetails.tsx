@@ -55,6 +55,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
 
   const { data: transaction, isLoading, isError } = useTransactionById(loaderData.transactionId);
   const marketData = useContext(MarketDataContext);
+  const [graphMode, setGraphMode] = useState<"minimal" | "detailed">("minimal");
 
   if (isLoading) {
     return <LoadingMessage>Fetching transaction details...</LoadingMessage>;
@@ -90,7 +91,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const outputNodes = [...outputItems, { address: "Fee", amount: feeAmountAtomic, isFee: true }].filter(
     (item) => item.amount > 0
   );
-  const [graphMode, setGraphMode] = useState<"minimal" | "detailed">("minimal");
   const isDetailed = graphMode === "detailed";
   const inputGraphItems = isDetailed ? inputItems : [{ address: "Inputs", amount: inputSum }];
   const outputGraphItems = isDetailed
