@@ -21,7 +21,7 @@ import localeData from "dayjs/plugin/localeData";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import numeral from "numeral";
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router";
 
 dayjs().locale("en");
@@ -56,6 +56,8 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const { data: transaction, isLoading, isError } = useTransactionById(loaderData.transactionId);
   const marketData = useContext(MarketDataContext);
   const [graphMode, setGraphMode] = useState<"minimal" | "detailed">("minimal");
+  const flowContainerRef = useRef<HTMLDivElement>(null);
+  const [flowHover, setFlowHover] = useState<{ text: string; x: number; y: number } | null>(null);
 
   if (isLoading) {
     return <LoadingMessage>Fetching transaction details...</LoadingMessage>;
@@ -84,30 +86,58 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
     address: input.previous_outpoint_address,
     amount: input.previous_outpoint_amount || 0,
   }));
-  const inputItems = allInputItems.slice(0, 20);
-  const outputItems = (transaction.outputs || []).slice(0, 20).map((output) => ({
+  const extraInputCount = Math.max(0, allInputItems.length - 20);
+  const extraInputAmount = allInputItems.slice(20).reduce((sum, input) => sum + input.amount, 0);
+  const inputItems = allInputItems.slice(0, extraInputCount > 0 ? 19 : 20);
+  const inputItemsWithOverflow =
+    extraInputCount > 0
+      ? [
+          ...inputItems,
+          { address: `+${extraInputCount} inputs`, amount: extraInputAmount, isOverflow: true },
+        ]
+      : inputItems;
+  const allOutputItems = (transaction.outputs || []).map((output) => ({
     address: output.script_public_key_address,
     amount: output.amount || 0,
   }));
-  const outputNodes = [...outputItems, { address: "Fee", amount: feeAmountAtomic, isFee: true }].filter(
+  const extraOutputCount = Math.max(0, allOutputItems.length - 20);
+  const extraOutputAmount = allOutputItems.slice(20).reduce((sum, output) => sum + output.amount, 0);
+  const outputItems = allOutputItems.slice(0, extraOutputCount > 0 ? 19 : 20);
+  const outputItemsWithOverflow =
+    extraOutputCount > 0
+      ? [
+          ...outputItems,
+          { address: `+${extraOutputCount} outputs`, amount: extraOutputAmount, isOverflow: true },
+        ]
+      : outputItems;
+  const outputNodes = [...allOutputItems, { address: "Fee", amount: feeAmountAtomic, isFee: true }].filter(
     (item) => item.amount > 0
   );
   const isDetailed = graphMode === "detailed";
-  const inputGraphItems = isDetailed ? allInputItems : inputItems;
+  const inputGraphItems = isDetailed ? allInputItems : inputItemsWithOverflow;
   const outputGraphItems = isDetailed
     ? outputNodes
-    : [
-        { address: "Outputs", amount: transactionSum },
-        { address: "Fee", amount: feeAmountAtomic, isFee: true },
-      ].filter((item) => item.amount > 0);
+    : [...outputItemsWithOverflow, { address: "Fee", amount: feeAmountAtomic, isFee: true }].filter(
+        (item) => item.amount > 0
+      );
   const inputCount = inputGraphItems.length || 1;
   const outputCount = outputGraphItems.length || 1;
+  const maxFlowCount = Math.max(inputCount, outputCount, 1);
+  const minDotSpacing = 12;
+  const flowPadding = 60;
+  const flowHeight = Math.max(300, (maxFlowCount - 1) * minDotSpacing + flowPadding);
   const flowTop = 30;
-  const flowBottom = 210;
+  const flowBottom = flowHeight - 30;
   const yFor = (index: number, count: number) =>
     count === 1 ? (flowTop + flowBottom) / 2 : flowTop + (flowBottom - flowTop) * (index / (count - 1));
   const strokeFor = (amount: number, total: number, min: number, max: number) =>
     total > 0 ? Math.max(min, max * (amount / total)) : min;
+  const handleFlowHover = (event: React.MouseEvent<SVGElement | HTMLDivElement>, text: string) => {
+    if (!flowContainerRef.current) return;
+    const rect = flowContainerRef.current.getBoundingClientRect();
+    setFlowHover({ text, x: event.clientX - rect.left + 12, y: event.clientY - rect.top + 12 });
+  };
+  const clearFlowHover = () => setFlowHover(null);
 
   const blockTime = dayjs(transaction?.block_time);
 
@@ -178,8 +208,10 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
               <Swap className="mr-2 h-8 w-8" />
               <span>Transaction flow</span>
             </div>
-            {!isDetailed && allInputItems.length > 20 && (
-              <div className="text-sm text-gray-500">+{allInputItems.length - 20} more inputs</div>
+            {!isDetailed && allOutputItems.length > 20 && (
+              <div className="text-sm text-gray-500">
+                {`+${allOutputItems.length - 20} more outputs`}
+              </div>
             )}
             <div className="flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1 text-sm">
               <button
@@ -199,40 +231,53 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             </div>
           </div>
 
-          <div className="relative mt-6 h-72 w-full">
-            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1000 240" preserveAspectRatio="none">
+          <div ref={flowContainerRef} className="relative mt-6 w-full" style={{ height: `${flowHeight}px` }}>
+            <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 1000 ${flowHeight}`} preserveAspectRatio="none">
               <defs>
-                <marker id="arrow-primary" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
-                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#70C7BA" />
-                </marker>
-                <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
-                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#F4B860" />
+                <marker id="arrow" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="context-stroke" />
                 </marker>
               </defs>
-              <rect x="470" y="108" width="60" height="24" rx="12" fill="#e5e7eb">
-                <title>{`Total input: ${displayKAS(inputSum)} KAS`}</title>
-              </rect>
+              <rect
+                x="470"
+                y="108"
+                width="60"
+                height="24"
+                rx="12"
+                fill="#e5e7eb"
+                onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`)}
+                onMouseLeave={clearFlowHover}
+              />
               {inputGraphItems.map((input, index) => {
                 const y = yFor(index, inputCount);
                 const strokeWidth = strokeFor(input.amount, inputSum, 4, 16);
+                const label = input.isOverflow
+                  ? `${input.address} • ${displayKAS(input.amount)} KAS`
+                  : `Input: ${displayKAS(input.amount)} KAS • ${input.address}`;
                 return (
                   <path
                     key={`in-path-${index}`}
                     d={`M 120 ${y} C 260 ${y}, 360 120, 500 120`}
                     fill="none"
-                    stroke="#b9e3dd"
+                    stroke={input.isOverflow ? "#70C7BA" : "#b9e3dd"}
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
+                    onMouseMove={(event) => handleFlowHover(event, label)}
+                    onMouseLeave={clearFlowHover}
                   >
-                    <title>{`Input: ${displayKAS(input.amount)} KAS • ${input.address}`}</title>
+                    <title>{label}</title>
                   </path>
                 );
               })}
               {outputGraphItems.map((output, index) => {
                 const y = yFor(index, outputCount);
                 const strokeWidth = strokeFor(output.amount, inputSum, 4, output.isFee ? 12 : 18);
-                const strokeColor = output.isFee ? "#F4B860" : "#70C7BA";
-                const marker = output.isFee ? "url(#arrow-fee)" : "url(#arrow-primary)";
+                const strokeColor = output.isFee ? "#F4B860" : output.isOverflow ? "#70C7BA" : "#70C7BA";
+                const label = output.isFee
+                  ? `Fee: ${displayKAS(output.amount)} KAS • ${output.address}`
+                  : output.isOverflow
+                    ? `${output.address} • ${displayKAS(output.amount)} KAS`
+                    : `Output: ${displayKAS(output.amount)} KAS • ${output.address}`;
                 return (
                   <path
                     key={`out-path-${index}`}
@@ -241,9 +286,11 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                     stroke={strokeColor}
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
-                    markerEnd={marker}
+                    markerEnd="url(#arrow)"
+                    onMouseMove={(event) => handleFlowHover(event, label)}
+                    onMouseLeave={clearFlowHover}
                   >
-                    <title>{`${output.isFee ? "Fee" : "Output"}: ${displayKAS(output.amount)} KAS • ${output.address}`}</title>
+                    <title>{label}</title>
                   </path>
                 );
               })}
@@ -252,38 +299,72 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
             <div className="absolute left-0 top-0 h-full w-full">
               {inputGraphItems.map((input, index) => {
                 const y = yFor(index, inputCount);
+                const label = input.isOverflow
+                  ? `${input.address} • ${displayKAS(input.amount)} KAS`
+                  : `Input: ${displayKAS(input.amount)} KAS • ${input.address}`;
                 return (
-                  <div key={`in-node-${index}`} className="absolute" style={{ left: "6%", top: `${(y / 240) * 100}%` }}>
+                  <div
+                    key={`in-node-${index}`}
+                    className="absolute"
+                    style={{ left: "6%", top: `${(y / flowHeight) * 100}%` }}
+                  >
                     <Tooltip
-                      message={`Input: ${displayKAS(input.amount)} KAS • ${input.address}`}
+                      message={label}
                       display={TooltipDisplayMode.Hover}
                     >
-                      <div className="h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#70C7BA] shadow-sm" />
+                      <div
+                        className="h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#70C7BA] shadow-sm"
+                        onMouseMove={(event) => handleFlowHover(event, label)}
+                        onMouseLeave={clearFlowHover}
+                      />
                     </Tooltip>
                   </div>
                 );
               })}
               <div className="absolute" style={{ left: "50%", top: "50%" }}>
                 <Tooltip message={`Total input: ${displayKAS(inputSum)} KAS`} display={TooltipDisplayMode.Hover}>
-                  <div className="h-3 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 shadow-sm" />
+                  <div
+                    className="h-3 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 shadow-sm"
+                    onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`)}
+                    onMouseLeave={clearFlowHover}
+                  />
                 </Tooltip>
               </div>
               {outputGraphItems.map((output, index) => {
                 const y = yFor(index, outputCount);
+                const label = output.isFee
+                  ? `Fee: ${displayKAS(output.amount)} KAS • ${output.address}`
+                  : output.isOverflow
+                    ? `${output.address} • ${displayKAS(output.amount)} KAS`
+                    : `Output: ${displayKAS(output.amount)} KAS • ${output.address}`;
                 return (
-                  <div key={`out-node-${index}`} className="absolute" style={{ left: "94%", top: `${(y / 240) * 100}%` }}>
+                  <div
+                    key={`out-node-${index}`}
+                    className="absolute"
+                    style={{ left: "94%", top: `${(y / flowHeight) * 100}%` }}
+                  >
                     <Tooltip
-                      message={`${output.isFee ? "Fee" : "Output"}: ${displayKAS(output.amount)} KAS • ${output.address}`}
+                      message={label}
                       display={TooltipDisplayMode.Hover}
                     >
                       <div
                         className={`h-2.5 w-5 -translate-y-1/2 rounded-full shadow-sm ${output.isFee ? "bg-[#F4B860]" : "bg-[#70C7BA]"}`}
+                        onMouseMove={(event) => handleFlowHover(event, label)}
+                        onMouseLeave={clearFlowHover}
                       />
                     </Tooltip>
                   </div>
                 );
               })}
             </div>
+            {flowHover && (
+              <div
+                className="pointer-events-none absolute z-10 rounded-md bg-black/80 px-2 py-1 text-xs text-white"
+                style={{ left: flowHover.x, top: flowHover.y }}
+              >
+                {flowHover.text}
+              </div>
+            )}
           </div>
         </div>
       )}
