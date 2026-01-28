@@ -149,7 +149,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const flowColors = {
     input: { base: "#b9e3dd", hover: "#9fd4cc" },
     output: { base: "#70C7BA", hover: "#5aaea3" },
-    fee: { base: "#F4B860", hover: "#d79a3a" },
+    fee: { base: "#f7931a", hover: "#d97706" },
     wall: { base: "#e5e7eb", hover: "#d1d5db" },
   };
 
@@ -255,7 +255,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="url(#flow-gradient-hover)" />
                 </marker>
                 <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
-                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#F4B860" />
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#f7931a" />
                 </marker>
                 <linearGradient id="flow-gradient" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#4FA9A1" />
@@ -267,23 +267,13 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 </linearGradient>
               </defs>
               <rect
-<<<<<<< ours
-                x="490"
-                y={hubY - 30}
-                width="20"
-                height={60}
-                rx="10"
-                fill={flowActiveKey === "wall" ? flowColors.wall.hover : flowColors.wall.base}
-                onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`, "wall")}
-=======
                 x="470"
                 y={hubY - 12}
                 width="60"
                 height="24"
                 rx="12"
-                fill="#e5e7eb"
-                onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`)}
->>>>>>> theirs
+                fill={flowActiveKey === "wall" ? flowColors.wall.hover : flowColors.wall.base}
+                onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`, "wall")}
                 onMouseLeave={clearFlowHover}
               />
               {inputGraphItems.map((input, index) => {
@@ -325,11 +315,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <path
                     key={`out-path-${index}`}
-<<<<<<< ours
-                    d={`M 500 ${y} C 640 ${y}, 760 ${y}, 880 ${y}`}
-=======
                     d={`M 500 ${hubY} C 640 ${hubY + (y - hubY) * 0.35}, 760 ${y}, 880 ${y}`}
->>>>>>> theirs
                     fill="none"
                     stroke={strokeColor}
                     strokeWidth={strokeWidth}
@@ -386,8 +372,9 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
               <div className="pointer-events-auto absolute" style={{ left: "50%", top: `${(hubY / flowHeight) * 100}%` }}>
                 <Tooltip message={`Total input: ${displayKAS(inputSum)} KAS`} display={TooltipDisplayMode.Hover}>
                   <div
-                    className="h-3 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 shadow-sm"
-                    onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`)}
+                    className="h-3 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm"
+                    style={{ backgroundColor: flowActiveKey === "wall" ? flowColors.wall.hover : flowColors.wall.base }}
+                    onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`, "wall")}
                     onMouseLeave={clearFlowHover}
                   />
                 </Tooltip>
