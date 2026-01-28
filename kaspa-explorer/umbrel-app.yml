@@ -3,7 +3,7 @@ id: kaspa-explorer
 category: crypto
 name: Kaspa Explorer
 icon: https://raw.githubusercontent.com/Dennitzo/umbrel-community-app-store/master/kaspa_icon.svg
-version: "0.5.4"
+version: "0.5.5"
 tagline: Explore the Kaspa blockDAG through a rich REST-powered UI
 description: >-
   Kaspa Explorer surfaces blocks, transactions, and address history from a

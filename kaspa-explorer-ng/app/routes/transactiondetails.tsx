@@ -364,7 +364,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                     onMouseEnter={(event) => handleFlowHover(event, label, key)}
                     onMouseLeave={clearFlowHover}
                   >
-                    <span className="mr-2 w-16 text-right text-xs text-gray-500">Input #{index}</span>
+                    <span className="mr-2 w-16 text-left text-xs text-gray-500">Input #{index}</span>
                     <div
                       className={`rounded-full shadow-sm ${flowActiveKey === key ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`}
                       style={{
