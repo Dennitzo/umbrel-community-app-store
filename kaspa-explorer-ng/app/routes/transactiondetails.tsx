@@ -80,10 +80,11 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const feePercent = inputSum > 0 ? (feeAmountAtomic / inputSum) * 100 : 0;
   const outputTooltip = `Outputs: ${displayKAS(transactionSum)} KAS (${numeral(outputPercent).format("0.00")}%)`;
   const feeTooltip = `Fee: ${displayKAS(feeAmountAtomic)} KAS (${numeral(feePercent).format("0.00")}%)`;
-  const inputItems = (transaction.inputs || []).slice(0, 20).map((input) => ({
+  const allInputItems = (transaction.inputs || []).map((input) => ({
     address: input.previous_outpoint_address,
     amount: input.previous_outpoint_amount || 0,
   }));
+  const inputItems = allInputItems.slice(0, 20);
   const outputItems = (transaction.outputs || []).slice(0, 20).map((output) => ({
     address: output.script_public_key_address,
     amount: output.amount || 0,
@@ -92,7 +93,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
     (item) => item.amount > 0
   );
   const isDetailed = graphMode === "detailed";
-  const inputGraphItems = isDetailed ? inputItems : [{ address: "Inputs", amount: inputSum }];
+  const inputGraphItems = isDetailed ? allInputItems : inputItems;
   const outputGraphItems = isDetailed
     ? outputNodes
     : [
@@ -177,6 +178,9 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
               <Swap className="mr-2 h-8 w-8" />
               <span>Transaction flow</span>
             </div>
+            {!isDetailed && allInputItems.length > 20 && (
+              <div className="text-sm text-gray-500">+{allInputItems.length - 20} more inputs</div>
+            )}
             <div className="flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1 text-sm">
               <button
                 type="button"
