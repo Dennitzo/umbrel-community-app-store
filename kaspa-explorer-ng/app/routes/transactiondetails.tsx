@@ -278,10 +278,10 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 <marker id="arrow-output-hover" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#c7f2ea" />
                 </marker>
-                <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
+                <marker id="arrow-fee" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="5" markerHeight="5" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#f7931a" />
                 </marker>
-                <marker id="arrow-fee-hover" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="4" markerHeight="4" orient="auto">
+                <marker id="arrow-fee-hover" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="6" markerHeight="6" orient="auto">
                   <path d="M 0 0 L 12 6 L 0 12 z" fill="#ffd08a" />
                 </marker>
                 <linearGradient id="flow-gradient" x1="0" y1="0" x2="1" y2="0">
