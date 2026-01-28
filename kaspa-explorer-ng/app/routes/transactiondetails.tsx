@@ -101,43 +101,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
         <span className="ml-1 text-gray-500">
           {numeral(((transactionSum || 0) / 1_0000_0000) * (marketData?.price || 0)).format("$0,0.00")}
         </span>
-        {inputSum > 0 && (
-          <div className="mt-4 w-full rounded-2xl bg-gray-50 p-4">
-            <div className="mb-2 text-sm text-gray-500">Flow</div>
-            <div className="grid grid-cols-1 items-center gap-3 lg:grid-cols-[auto_1fr_auto]">
-              <div className="text-sm">
-                <div className="text-gray-500">Input total</div>
-                <div className="font-semibold text-black">{displayKAS(inputSum)} KAS</div>
-              </div>
-              <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                <div className="flex h-full w-full">
-                  <div className="h-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, outputPercent))}%` }} />
-                  <div className="h-full bg-amber-400" style={{ width: `${Math.max(0, Math.min(100, feePercent))}%` }} />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1 text-sm">
-                <div className="flex items-center gap-2">
-                  <Tooltip message={outputTooltip} display={TooltipDisplayMode.Hover}>
-                    <span className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-primary" />
-                      <span className="text-gray-500">Outputs</span>
-                      <span className="font-semibold text-black">{displayKAS(transactionSum)} KAS</span>
-                    </span>
-                  </Tooltip>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Tooltip message={feeTooltip} display={TooltipDisplayMode.Hover}>
-                    <span className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-amber-400" />
-                      <span className="text-gray-500">Fee</span>
-                      <span className="font-semibold text-black">{displayKAS(feeAmountAtomic)} KAS</span>
-                    </span>
-                  </Tooltip>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
         {/*horizontal rule*/}
         <div className={`my-4 h-[1px] bg-gray-100 sm:col-span-2`} />
 
@@ -178,6 +141,112 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
           />
         </div>
       </div>
+
+      {inputSum > 0 && (
+        <div className="flex w-full flex-col rounded-4xl bg-white p-4 text-left text-black sm:p-8">
+          <div className="flex flex-row items-center text-2xl sm:col-span-2">
+            <Swap className="mr-2 h-8 w-8" />
+            <span>Transaction flow</span>
+          </div>
+
+          <div className="relative mt-6">
+            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1000 240" preserveAspectRatio="none">
+              <defs>
+                <marker id="arrow-primary" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#70C7BA" />
+                </marker>
+                <marker id="arrow-fee" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 z" fill="#F4B860" />
+                </marker>
+              </defs>
+              <path d="M 220 120 C 340 120, 420 120, 500 120" fill="none" stroke="#e2e8f0" strokeWidth="12" strokeLinecap="round" />
+              <path d="M 500 120 C 620 80, 700 70, 820 60" fill="none" stroke="#cfeeea" strokeWidth="16" strokeLinecap="round" />
+              <path d="M 500 120 C 620 80, 700 70, 820 60" fill="none" stroke="#a8ddd6" strokeWidth="12" strokeLinecap="round" />
+              <path
+                d="M 500 120 C 620 80, 700 70, 820 60"
+                fill="none"
+                stroke="#70C7BA"
+                strokeWidth={Math.max(5, 20 * (outputPercent / 100))}
+                strokeLinecap="round"
+                markerEnd="url(#arrow-primary)"
+              >
+                <title>{outputTooltip}</title>
+              </path>
+              <path d="M 500 120 C 620 160, 700 170, 820 180" fill="none" stroke="#fde5c5" strokeWidth="12" strokeLinecap="round" />
+              <path d="M 500 120 C 620 160, 700 170, 820 180" fill="none" stroke="#f8d299" strokeWidth="9" strokeLinecap="round" />
+              <path
+                d="M 500 120 C 620 160, 700 170, 820 180"
+                fill="none"
+                stroke="#F4B860"
+                strokeWidth={Math.max(4, 14 * (feePercent / 100))}
+                strokeLinecap="round"
+                markerEnd="url(#arrow-fee)"
+              >
+                <title>{feeTooltip}</title>
+              </path>
+            </svg>
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,1fr)]">
+              <div className="rounded-2xl bg-gray-50 p-4">
+                <div className="text-sm text-gray-500">Inputs</div>
+                <div className="mt-3 flex max-h-56 flex-col gap-2 overflow-auto text-sm">
+                  {(transaction.inputs || []).map((input, index) => (
+                    <Tooltip
+                      key={`${input.previous_outpoint_hash}-${input.previous_outpoint_index}-${index}`}
+                      message={`Input: ${displayKAS(input.previous_outpoint_amount)} KAS`}
+                      display={TooltipDisplayMode.Hover}
+                    >
+                      <div className="rounded-full bg-white px-3 py-1 text-gray-600 shadow-sm">
+                        <KasLink linkType="address" to={input.previous_outpoint_address} shorten />
+                      </div>
+                    </Tooltip>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center rounded-2xl bg-gray-50 p-4 text-center">
+                <Tooltip message={`Total input: ${displayKAS(inputSum)} KAS`} display={TooltipDisplayMode.Hover}>
+                  <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm">
+                    Total
+                  </div>
+                </Tooltip>
+                <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-gray-200">
+                  <div className="flex h-full w-full">
+                    <Tooltip message={outputTooltip} display={TooltipDisplayMode.Hover}>
+                      <div className="h-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, outputPercent))}%` }} />
+                    </Tooltip>
+                    <Tooltip message={feeTooltip} display={TooltipDisplayMode.Hover}>
+                      <div className="h-full bg-amber-400" style={{ width: `${Math.max(0, Math.min(100, feePercent))}%` }} />
+                    </Tooltip>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-gray-50 p-4">
+                <div className="text-sm text-gray-500">Outputs</div>
+                <div className="mt-3 flex max-h-56 flex-col gap-2 overflow-auto text-sm">
+                  {(transaction.outputs || []).map((output, index) => (
+                    <Tooltip
+                      key={`${output.script_public_key_address}-${output.index ?? index}`}
+                      message={`Output: ${displayKAS(output.amount)} KAS`}
+                      display={TooltipDisplayMode.Hover}
+                    >
+                      <div className="rounded-full bg-white px-3 py-1 text-gray-600 shadow-sm">
+                        <KasLink linkType="address" to={output.script_public_key_address} shorten />
+                      </div>
+                    </Tooltip>
+                  ))}
+                  <Tooltip message={`Fee: ${displayKAS(feeAmountAtomic)} KAS`} display={TooltipDisplayMode.Hover}>
+                    <div className="rounded-full bg-amber-50 px-3 py-1 text-gray-600 shadow-sm">
+                      Fee
+                    </div>
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex w-full flex-col gap-x-18 gap-y-6 rounded-4xl bg-white p-4 text-left text-black sm:p-8">
         <div className="mr-auto flex w-auto flex-row items-center justify-around gap-x-1 rounded-full bg-gray-50 p-1 px-1">
