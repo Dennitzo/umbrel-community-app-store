@@ -257,7 +257,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <path
                     key={`in-path-${index}`}
-                    d={`M 120 ${y} C 220 ${y}, 320 ${y + (120 - y) * 0.6}, 420 120 S 460 120, 500 120`}
+                    d={`M 120 ${y} C 260 ${y}, 360 ${y + (120 - y) * 0.35}, 500 120`}
                     fill="none"
                     stroke={input.isOverflow ? "#70C7BA" : "#b9e3dd"}
                     strokeWidth={strokeWidth}
@@ -281,7 +281,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <path
                     key={`out-path-${index}`}
-                    d={`M 500 120 C 580 120, 660 ${120 + (y - 120) * 0.4}, 740 ${y} S 820 ${y}, 880 ${y}`}
+                    d={`M 500 120 C 640 ${120 + (y - 120) * 0.35}, 760 ${y}, 880 ${y}`}
                     fill="none"
                     stroke={strokeColor}
                     strokeWidth={strokeWidth}
