@@ -121,7 +121,8 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
         (item) => item.amount > 0
       );
   const inputCount = inputGraphItems.length || 1;
-  const outputCount = outputGraphItems.length || 1;
+  const renderOutputs = [...outputGraphItems].sort((a, b) => (a.isFee ? -1 : 1) - (b.isFee ? -1 : 1));
+  const outputCount = renderOutputs.length || 1;
   const maxFlowCount = Math.max(inputCount, outputCount, 1);
   const minDotSpacing = 12;
   const flowPadding = 60;
@@ -129,7 +130,6 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
   const flowTop = 30;
   const flowBottom = flowHeight - 30;
   const hubY = flowTop + (flowBottom - flowTop) * 0.45;
-  const renderOutputs = [...outputGraphItems].sort((a, b) => (a.isFee ? -1 : 1) - (b.isFee ? -1 : 1));
   const yFor = (index: number, count: number) =>
     count === 1 ? (flowTop + flowBottom) / 2 : flowTop + (flowBottom - flowTop) * (index / (count - 1));
   const strokeFor = (amount: number, total: number, min: number, max: number) =>
@@ -244,11 +244,11 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 </marker>
               </defs>
               <rect
-                x="470"
-                y={hubY - 12}
-                width="60"
-                height="24"
-                rx="12"
+                x="482"
+                y={flowTop}
+                width="36"
+                height={flowBottom - flowTop}
+                rx="18"
                 fill="#e5e7eb"
                 onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`)}
                 onMouseLeave={clearFlowHover}
@@ -262,7 +262,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <path
                     key={`in-path-${index}`}
-                    d={`M 120 ${y} C 260 ${y}, 360 ${y + (hubY - y) * 0.35}, 500 ${hubY}`}
+                    d={`M 120 ${y} C 260 ${y}, 360 ${y + (hubY - y) * 0.35}, 500 ${y}`}
                     fill="none"
                     stroke={input.isOverflow ? "#70C7BA" : "#b9e3dd"}
                     strokeWidth={strokeWidth}
@@ -286,7 +286,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                 return (
                   <path
                     key={`out-path-${index}`}
-                    d={`M 500 ${hubY} C 640 ${hubY + (y - hubY) * 0.35}, 760 ${y}, 880 ${y}`}
+                    d={`M 500 ${y} C 640 ${y + (y - y) * 0.35}, 760 ${y}, 880 ${y}`}
                     fill="none"
                     stroke={strokeColor}
                     strokeWidth={strokeWidth}
@@ -326,16 +326,7 @@ export default function TransactionDetails({ loaderData }: Route.ComponentProps)
                   </div>
                 );
               })}
-              <div className="pointer-events-auto absolute" style={{ left: "50%", top: `${(hubY / flowHeight) * 100}%` }}>
-                <Tooltip message={`Total input: ${displayKAS(inputSum)} KAS`} display={TooltipDisplayMode.Hover}>
-                  <div
-                    className="h-3 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 shadow-sm"
-                    onMouseMove={(event) => handleFlowHover(event, `Total input: ${displayKAS(inputSum)} KAS`)}
-                    onMouseLeave={clearFlowHover}
-                  />
-                </Tooltip>
-              </div>
-              {outputGraphItems.map((output, index) => {
+              {renderOutputs.map((output, index) => {
                 const y = yFor(index, outputCount);
                 const label = output.isFee
                   ? `Fee: ${displayKAS(output.amount)} KAS • ${output.address}`
